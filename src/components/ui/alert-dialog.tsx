@@ -47,10 +47,13 @@ function AlertDialogOverlay({
 function AlertDialogContent({
   className,
   size = "default",
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content> & {
   size?: "default" | "sm"
 }) {
+  const returnFocus = React.useRef<HTMLElement | null>(null)
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -62,6 +65,22 @@ function AlertDialogContent({
           className
         )}
         {...props}
+        onOpenAutoFocus={(event) => {
+          const active = document.activeElement
+          if (!(event.target instanceof HTMLElement && event.target.contains(active))) {
+            returnFocus.current = active instanceof HTMLElement && active !== document.body ? active : null
+          }
+          onOpenAutoFocus?.(event)
+        }}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event)
+          if (event.defaultPrevented || !returnFocus.current) return
+          // Controlled dialogs do not always have a Radix Trigger.
+          const target = returnFocus.current.isConnected && !returnFocus.current.matches(':disabled')
+            ? returnFocus.current
+            : document.querySelector<HTMLElement>('main[tabindex="-1"]')
+          if (target) { event.preventDefault(); target.focus({ preventScroll: true }) }
+        }}
       />
     </AlertDialogPortal>
   )

@@ -30,7 +30,7 @@ export function ProfileForm({ commandId, profile, today, onSave, onCancel, onDir
   }
   return <form className="form" onSubmit={e => { e.preventDefault(); void submit() }}>
     <fieldset disabled={busy}><legend>{profile ? 'Editar perfil' : 'Crear perfil'}</legend>
-      <div className="field"><Label htmlFor="nickname">Nombre o apodo</Label><Input autoFocus id="nickname" value={nickname} maxLength={100} required onChange={e => { changed(); setNickname(e.target.value) }} /></div>
+      <div className="field"><Label htmlFor="nickname">Nombre o apodo</Label><Input id="nickname" value={nickname} maxLength={100} required onChange={e => { changed(); setNickname(e.target.value) }} /></div>
       <div className="field"><Label htmlFor="birth-date">Fecha de nacimiento</Label><Input id="birth-date" type="date" value={birthDate} max={today} required onChange={e => { changed(); setBirthDate(e.target.value) }} /></div>
       <ScheduleSelector value={schedule} onChange={v => { changed(); setSchedule(v) }} id="profile-schedule" />
       {profile && <p>Editar el nacimiento recalcula las fechas orientativas; las aplicaciones permanecen intactas y las fechas contradictorias quedarán por revisar.</p>}

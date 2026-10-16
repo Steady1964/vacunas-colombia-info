@@ -51,10 +51,13 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const returnFocus = React.useRef<HTMLElement | null>(null)
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -65,6 +68,22 @@ function DialogContent({
           className
         )}
         {...props}
+        onOpenAutoFocus={(event) => {
+          const active = document.activeElement
+          if (!(event.target instanceof HTMLElement && event.target.contains(active))) {
+            returnFocus.current = active instanceof HTMLElement && active !== document.body ? active : null
+          }
+          onOpenAutoFocus?.(event)
+        }}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event)
+          if (event.defaultPrevented || !returnFocus.current) return
+          // Controlled dialogs do not always have a Radix Trigger.
+          const target = returnFocus.current.isConnected && !returnFocus.current.matches(':disabled')
+            ? returnFocus.current
+            : document.querySelector<HTMLElement>('main[tabindex="-1"]')
+          if (target) { event.preventDefault(); target.focus({ preventScroll: true }) }
+        }}
       >
         {children}
         {showCloseButton && (

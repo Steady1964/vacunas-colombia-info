@@ -28,10 +28,18 @@ La aplicación conserva la base IndexedDB `vacunas-colombia` y transforma el esq
 
 Las aplicaciones heredadas requieren revisión antes de conceder cobertura. Perfiles sin esquema piden una elección consciente; filas incoherentes o sin perfil permanecen como registros pendientes, exportables y corregibles. Un fallo de apertura o migración nunca autoriza borrar los datos automáticamente.
 
+En **Ajustes → Revisar registros conservados** puedes corregir una aplicación o una incidencia sin perder su identificador ni sus datos originales. Un perfil pendiente necesita elegir esquema. Reparar una aplicación huérfana exige elegir y confirmar el niño destino; resolver una fila no elimina las demás incidencias. Las fechas futuras o anteriores al nacimiento heredadas permanecen señaladas, no se convierten automáticamente en cobertura.
+
 ## Copias de seguridad locales
 
 El respaldo JSON contiene información familiar privada **sin cifrar** y debe guardarse con cuidado. La exportación incluye todos los perfiles, aplicaciones, selecciones y registros pendientes de revisión; también puede importarse el formato anterior de la aplicación.
 
-Importar exige validar y previsualizar antes de guardar. Combinar omite IDs idénticos, pero rechaza la operación completa si algún ID contiene datos diferentes. Reemplazar requiere confirmación y ofrece guardar una copia previa. Si otra pestaña modificó los datos después de la previsualización, hay que actualizarla antes de importar.
+En **Ajustes → Importar archivo JSON** la selección solo valida y previsualiza: aún no escribe datos. **Combinar** omite IDs con los mismos valores y rechaza toda la operación si algún ID contiene datos diferentes; conserva las preferencias locales. **Reemplazar** requiere confirmación y ofrece descargar una copia previa. Si otra pestaña modificó los datos después de la previsualización, la importación queda bloqueada: cancela y vuelve a seleccionar el archivo. Cancelar, un formato inválido o un fallo de transacción dejan intacto el conjunto anterior.
 
 Los eventos históricos incoherentes tras editar nacimiento se conservan y se exportan como datos explícitamente por revisar, con su procedencia, sin reescribir el historial en IndexedDB.
+
+## Borrado local y teclado
+
+**Carné → Eliminar** identifica la aplicación por producto y fecha; **Ajustes → Eliminar perfil de…** identifica al niño y elimina sus aplicaciones e incidencias en la misma transacción. Ambos ofrecen copia antes de confirmar. **Eliminar todos los datos** exige dos confirmaciones diferenciadas; conserva los archivos descargados y la caché de la aplicación, que no contiene historiales.
+
+Las confirmaciones de borrado y cambio de esquema enfocan la opción de cancelar y mantienen la tabulación dentro del diálogo. Al cerrar vuelven al control de origen; después de eliminar un control, el foco pasa al contenido principal. Los errores de almacenamiento no crean una familia alternativa ni borran datos para continuar.
