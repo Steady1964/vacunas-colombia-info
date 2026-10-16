@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Next.js generated files and build output
+/.next/
+/out/
+/build/
+next-env.d.ts
+*.tsbuildinfo
+
+# Test coverage
+/coverage/
+
+# Local deployment configuration
+/.vercel/
+
+# Local environment variables (keep templates)
+.env*
+!.env.example
+!.env.sample
+
+# Package manager debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# macOS
+.DS_Store
