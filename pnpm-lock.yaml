@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4.3.3
+        version: 4.3.3
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
@@ -30,9 +33,6 @@ importers:
         specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
         version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
     devDependencies:
-      '@tailwindcss/postcss':
-        specifier: ^4.3.3
-        version: 4.3.3
       '@types/node':
         specifier: ^26.6.5
         version: 26.6.5
