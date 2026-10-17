@@ -22,6 +22,12 @@ Crea el primer perfil con apodo, nacimiento y la referencia indicada por tu vacu
 
 Las correspondencias y fechas se basan en catálogos inmutables de `src/data/catalog/`. La fecha editorial del documento y la fecha en que fue consultado se muestran por separado; una consulta no se presenta como fecha de publicación. Consulta las fuentes, reglas y límites en [docs/catalog-sources.md](docs/catalog-sources.md). La aplicación no calcula rescates ni intervalos clínicos mínimos.
 
+## Carné imprimible y privacidad
+
+**Carné** contiene únicamente aplicaciones físicas del perfil activo, no las fechas orientativas pendientes. Permite invertir el orden y abrir la impresión del navegador para guardar un PDF A4 con apodo, nacimiento, fecha de exportación, producto, dosis o estado por verificar, marca, lote, IPS, acceso y PAIWEB. El documento es un registro familiar no oficial y no reemplaza el carné del prestador ni PAIWEB.
+
+Los datos familiares permanecen en IndexedDB del navegador y no se sincronizan con una cuenta. El respaldo JSON no está cifrado. Borrar datos del navegador, desinstalar la app o cambiar de dispositivo puede eliminar el historial; solicitar almacenamiento persistente reduce algunos borrados automáticos, pero no garantiza permanencia. El hosting puede procesar IP y solicitudes técnicas para servir la web; la aplicación no incorpora publicidad, analítica, push ni SDK de seguimiento.
+
 ## Datos existentes y migración
 
 La aplicación conserva la base IndexedDB `vacunas-colombia` y transforma el esquema anterior mediante una transacción versionada. Preserva IDs, fechas reales, marcas, lote, IPS y notas; no elimina automáticamente posibles duplicados.

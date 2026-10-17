@@ -32,7 +32,7 @@ export function ProfileForm({ commandId, profile, today, onSave, onCancel, onDir
     inFlight.current = true; setBusy(true); setError('')
     try { await onSave(command) } catch (err) { setError(operationError(err)) } finally { inFlight.current = false; setBusy(false) }
   }
-  return <form className="form" onSubmit={e => { e.preventDefault(); void submit() }}>
+  return <form className="form" noValidate onSubmit={e => { e.preventDefault(); void submit() }}>
     <fieldset disabled={busy}><legend>{profile ? 'Editar perfil' : 'Crear perfil'}</legend>
       <div className="field"><Label htmlFor="nickname">Nombre o apodo</Label><Input id="nickname" value={nickname} maxLength={100} required onChange={e => { changed(); setNickname(e.target.value) }} /></div>
       <div className="field"><Label htmlFor="birth-date">Fecha de nacimiento</Label><Input id="birth-date" type="date" value={birthDate} max={today} required onChange={e => { changed(); setBirthDate(e.target.value) }} /></div>
