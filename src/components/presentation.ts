@@ -1,9 +1,5 @@
 import type { ReviewReason } from '@/lib/types'
 
-export const scheduleLabels = {
-  'CO-PAI-PRIMARY-2-4-6': 'Tradicional · 2, 4 y 6 meses',
-  'CO-PAI-PRIMARY-6-12-18-WEEKS-2026': 'Acortado · 6, 12 y 18 semanas',
-} as const
 export const scheduleConfirmation = 'El calendario estimado cambiará; las vacunas que ya registraste permanecerán intactas.'
 export const milestoneLabels: Record<string, string> = {
   birth: 'Nacimiento',
@@ -41,6 +37,6 @@ export function operationError(error: unknown): string {
   if (code === 'before-birth') return 'La aplicación no puede ser anterior al nacimiento de este perfil. Revisa ambas fechas; tus campos se conservan.'
   if (code === 'invalid-date') return 'La fecha no existe. Revisa el día, mes y año; tus campos se conservan.'
   if (code === 'missing-profile') return 'El perfil original ya no está disponible. No se asignó el registro a otro niño. Conserva una copia de los campos antes de cerrar.'
-  if (code === 'catalog-unavailable' || code === 'unknown-catalog') return 'El catálogo de referencia no está disponible. Confirma el cambio de referencia en Ajustes antes de guardar. Tus campos se conservan.'
+  if (code === 'catalog-unavailable' || code === 'unknown-catalog' || code === 'schedule-reference-unavailable') return 'La referencia seleccionada no está disponible para este perfil. Elige Esquema 2026 o Esquema anterior a 2026; tus campos se conservan.'
   return 'No se pudo completar la operación. Revisa los campos y el almacenamiento del navegador. Tus datos e inputs se conservan; puedes reintentar.'
 }

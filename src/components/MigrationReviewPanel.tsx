@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
+import { getCatalog, getScheduleReference } from '@/data/catalog'
 import type { VaccineDB } from '@/lib/db'
 import type { AdministrationCommand, AdministrationInput, CivilDate, FamilySnapshot, MigrationIssue, ProfileCommand, StoredProfile, VaccineAdministration } from '@/lib/types'
 import type { Catalog } from '@/data/catalog/types'
@@ -24,7 +25,10 @@ export function MigrationReviewPanel({ db, snapshot, today, catalog, onEditAdmin
   async function repair(command: ProfileCommand | AdministrationCommand) {
     if (!issue || inFlight.current) throw new Error('missing-migration-issue')
     const issueId = issue.id
-    const context = { today, now: new Date().toISOString(), catalog }
+    const profileReference = 'childId' in command ? undefined : getScheduleReference(command.input.scheduleReferenceId)
+    const contextCatalog = profileReference ? getCatalog(profileReference.catalogVersion) : catalog
+    if (!contextCatalog) throw new Error('unknown-catalog')
+    const context = { today, now: new Date().toISOString(), catalog: contextCatalog }
     inFlight.current = true
     try { await repairMigrationIssue(db, issueId, command, context); close() }
     finally { inFlight.current = false }

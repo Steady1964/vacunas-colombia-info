@@ -1,9 +1,10 @@
 'use client'
 import { useRef, useState } from 'react'
+import { identifyScheduleReference } from '@/data/catalog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { CivilDate, PrimaryScheduleId, ProfileCommand, StoredProfile } from '@/lib/types'
+import type { CivilDate, ProfileCommand, ScheduleReferenceId, StoredProfile } from '@/lib/types'
 import { ScheduleSelector } from './ScheduleSelector'
 import { operationError, scheduleConfirmation } from './presentation'
 
@@ -12,7 +13,10 @@ export function ProfileForm({ commandId, profile, today, onSave, onCancel, onDir
 }) {
   const [nickname, setNickname] = useState(profile?.nickname ?? '')
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '')
-  const [schedule, setSchedule] = useState<PrimaryScheduleId | ''>(profile?.primaryScheduleId ?? '')
+  const initialReferenceId = profile?.primaryScheduleId
+    ? identifyScheduleReference({ primaryScheduleId: profile.primaryScheduleId, referenceCatalogVersion: profile.referenceCatalogVersion })
+    : undefined
+  const [schedule, setSchedule] = useState<ScheduleReferenceId | ''>(initialReferenceId ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [confirm, setConfirm] = useState(false)
@@ -22,8 +26,8 @@ export function ProfileForm({ commandId, profile, today, onSave, onCancel, onDir
   async function submit(confirmed = false) {
     if (inFlight.current) return
     if (!nickname.trim() || !birthDate || !schedule) { setError('Completa apodo, nacimiento y esquema.'); return }
-    if (profile?.primaryScheduleId && profile.primaryScheduleId !== schedule && !confirmed) { setConfirm(true); return }
-    const command = pending.current ?? { id: commandId, mode: profile ? 'edit' as const : 'create' as const, input: { nickname: nickname.trim(), birthDate, primaryScheduleId: schedule } }
+    if (profile && initialReferenceId !== schedule && !confirmed) { setConfirm(true); return }
+    const command = pending.current ?? { id: commandId, mode: profile ? 'edit' as const : 'create' as const, input: { nickname: nickname.trim(), birthDate, scheduleReferenceId: schedule } }
     pending.current = command
     inFlight.current = true; setBusy(true); setError('')
     try { await onSave(command) } catch (err) { setError(operationError(err)) } finally { inFlight.current = false; setBusy(false) }

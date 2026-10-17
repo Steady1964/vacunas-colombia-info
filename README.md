@@ -14,13 +14,13 @@ Las fechas civiles se validan y calculan con meses calendario o días exactos, s
 
 ## Perfiles, calendario y aplicaciones
 
-Crea el primer perfil con apodo, nacimiento y el esquema indicado por tu vacunador; el esquema no viene preseleccionado. En **Ajustes → Agregar otro perfil** puedes crear más niños. El selector superior recuerda el perfil activo y cada niño conserva su esquema y su historial independiente.
+Crea el primer perfil con apodo, nacimiento y la referencia indicada por tu vacunador; no viene preseleccionada. Puedes elegir **Esquema 2026** (serie primaria a 6/12/18 semanas) o **Esquema anterior a 2026** (2/4/6 meses, edición 2 de EPS Sanitas sin fecha editorial visible). En **Ajustes → Agregar otro perfil** puedes crear más niños. El selector superior recuerda el perfil activo y cada niño conserva su referencia y su historial independiente.
 
-**Calendario** presenta fechas civiles, filtros PAI/complementarias y fuentes por requisito. Cambiar entre tradicional y acortado pide confirmación y recalcula únicamente las referencias: no cambia IDs, fechas reales, lotes ni prestadores del historial. Las referencias opcionales se eligen explícitamente por perfil.
+**Calendario** presenta fechas civiles, filtros PAI/complementarias y fuentes por requisito. Cambiar entre Esquema 2026 y Esquema anterior a 2026 pide confirmación y actualiza catálogo y serie primaria en una misma transacción: no cambia IDs, fechas reales, lotes ni prestadores del historial. Una combinación legada de 2/4/6 meses con hitos 2026 permanece legible y editable en perfiles existentes, pero no puede elegirse para perfiles nuevos. Las referencias opcionales se eligen explícitamente por perfil.
 
 **Registrar vacuna aplicada** registra una aplicación física, aunque un producto combinado cubra varios requisitos. Puedes guardar un producto incompleto por revisar, sin cobertura automática, y corregirlo desde **Carné → Editar** conservando su ID y los campos opcionales. Un error de escritura conserva el formulario para reintentar. Editar el nacimiento no reescribe aplicaciones; las que resulten incoherentes se señalan para revisión.
 
-Las correspondencias y fechas se basan en el catálogo versionado de `src/data/catalog/`. Consulta las fuentes, reglas y límites en [docs/catalog-sources.md](docs/catalog-sources.md). La aplicación no calcula rescates ni intervalos clínicos mínimos.
+Las correspondencias y fechas se basan en catálogos inmutables de `src/data/catalog/`. La fecha editorial del documento y la fecha en que fue consultado se muestran por separado; una consulta no se presenta como fecha de publicación. Consulta las fuentes, reglas y límites en [docs/catalog-sources.md](docs/catalog-sources.md). La aplicación no calcula rescates ni intervalos clínicos mínimos.
 
 ## Datos existentes y migración
 

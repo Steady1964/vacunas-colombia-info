@@ -5,6 +5,22 @@ export const REVIEWED_AT = '2026-10-16';
 // Verification is limited to the passages and scopes recorded in docs/catalog-sources.md.
 export const sources: Source[] = [
   {
+    id: 'eps-sanitas-schedule-undated',
+    title: 'EPS Sanitas — Esquema General de Vacunación PAI, edición 2',
+    url: 'https://www.epssanitas.com/usuarios/documents/9441058/991349543/Pieza+web+Esquema+General+de+Vacunacion+Ed+2_EPS.pdf',
+    reviewedAt: REVIEWED_AT,
+    publishedAt: 'unknown',
+    verification: 'verified',
+  },
+  {
+    id: 'saludtotal-schedule-2026',
+    title: 'Salud Total — Esquema de Vacunación Nacional 2026',
+    url: 'https://saludtotal.com.co/wp-content/uploads/2026/03/Esquema-de-Vacunacion-2026-1.pdf',
+    reviewedAt: REVIEWED_AT,
+    publishedAt: 'unknown',
+    verification: 'verified',
+  },
+  {
     id: 'minsalud-childhood-2026',
     title: 'MinSalud — Menores de seis años, tabla de citas y enfermedades',
     url: 'https://vacunacion.minsalud.gov.co/EV/Paginas/ninos-y-ninas-menores-de-6-anos.aspx',

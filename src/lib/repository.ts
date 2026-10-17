@@ -1,4 +1,4 @@
-import { getCatalog } from '../data/catalog'
+import { getScheduleReference, supportsSchedule } from '../data/catalog'
 import { REVISION_KEY, type VaccineDB } from './db'
 import { resolveSelection } from './schedule/resolveCoverage'
 import { administrationInputSchema, idSchema, profileInputSchema, timestampSchema, validatePortablePreference } from './schemas'
@@ -36,15 +36,33 @@ async function writeProfile(db: VaccineDB, command: ProfileCommand, context: Mut
   idSchema.parse(command.id)
   const input = profileInputSchema.parse(command.input)
   if (input.birthDate > context.today) throw new Error('future-date')
+  const reference = getScheduleReference(input.scheduleReferenceId)
+  if (!reference || reference.catalogVersion !== context.catalog.version
+    || !supportsSchedule(context.catalog, reference.primaryScheduleId)) {
+    throw new Error('schedule-reference-unavailable')
+  }
   const existing = await db.profiles.get(command.id)
+  if (!reference.selectable && (command.mode !== 'edit' || !existing
+    || existing.primaryScheduleId !== reference.primaryScheduleId
+    || existing.referenceCatalogVersion !== reference.catalogVersion)) {
+    throw new Error('schedule-reference-unavailable')
+  }
   if (command.mode === 'create' && existing) {
-    if (existing.nickname === input.nickname && existing.birthDate === input.birthDate && existing.primaryScheduleId === input.primaryScheduleId) return existing as ChildProfile
+    if (existing.nickname === input.nickname && existing.birthDate === input.birthDate
+      && existing.primaryScheduleId === reference.primaryScheduleId
+      && existing.referenceCatalogVersion === reference.catalogVersion) return existing as ChildProfile
     throw new Error('conflict')
   }
   if (command.mode === 'edit' && !existing) throw new Error('missing-profile')
   const profile: ChildProfile = {
-    id: command.id, ...input, country: 'CO', referenceCatalogVersion: existing?.referenceCatalogVersion ?? context.catalog.version,
-    createdAt: existing?.createdAt ?? context.now, updatedAt: context.now,
+    id: command.id,
+    nickname: input.nickname,
+    birthDate: input.birthDate,
+    country: 'CO',
+    primaryScheduleId: reference.primaryScheduleId,
+    referenceCatalogVersion: reference.catalogVersion,
+    createdAt: existing?.createdAt ?? context.now,
+    updatedAt: context.now,
     ...(existing?.legacy ? { legacy: existing.legacy } : {}),
   }
   await db.profiles.put(profile)
@@ -97,16 +115,6 @@ export async function saveProfile(db: VaccineDB, command: ProfileCommand, contex
   })
 }
 
-export async function changeCatalogVersion(db: VaccineDB, childId: string, version: string, context: MutationContext): Promise<void> {
-  validateContext(context)
-  if (version !== context.catalog.version || !getCatalog(version)) throw new Error('catalog-unavailable')
-  await db.transaction('rw', db.profiles, db.preferences, async () => {
-    const profile = await db.profiles.get(childId)
-    if (!profile) throw new Error('missing-profile')
-    await db.profiles.put({ ...profile, referenceCatalogVersion: version, updatedAt: context.now })
-    await bumpRevision(db)
-  })
-}
 
 export async function saveAdministration(db: VaccineDB, command: AdministrationCommand, context: MutationContext): Promise<VaccineAdministration> {
   return db.transaction('rw', db.profiles, db.administrations, db.preferences, db.migrationIssues, async () => {

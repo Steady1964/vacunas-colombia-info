@@ -1,4 +1,4 @@
-import type { PrimaryScheduleId } from '../../lib/types';
+import type { CivilDate, PrimaryScheduleId } from '../../lib/types';
 
 export interface Source {
   id: string;
@@ -6,6 +6,7 @@ export interface Source {
   reviewedAt: string;
   verification: 'verified' | 'needs-review';
   title?: string;
+  publishedAt?: CivilDate | 'unknown';
 }
 
 export interface Requirement {
@@ -47,7 +48,7 @@ export interface Catalog {
   reviewedAt: string;
   sources: Source[];
   requirements: Requirement[];
-  primarySchedules: Record<PrimaryScheduleId, Projection[]>;
+  primarySchedules: Partial<Record<PrimaryScheduleId, Projection[]>>;
   sharedProjections: Projection[];
   products: Product[];
   optionalRequirements: Record<string, { requirement: Requirement; projection: Projection }[]>;

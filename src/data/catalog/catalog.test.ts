@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { calculateSchedule } from '../../lib/schedule/calculateSchedule';
 import { resolveSelection } from '../../lib/schedule/resolveCoverage';
 import { makeProfile } from '../../test/fixtures';
-import { CURRENT_CATALOG_VERSION, getCatalog, UNIDENTIFIED_PRODUCT_ID } from './index';
+import {
+  CURRENT_CATALOG_VERSION,
+  HISTORICAL_CATALOG_VERSION,
+  UNIDENTIFIED_PRODUCT_ID,
+  getCatalog,
+  identifyScheduleReference,
+  selectableScheduleReferences,
+} from './index';
 import type { Catalog } from './types';
 
 const catalog = getCatalog(CURRENT_CATALOG_VERSION)!;
@@ -19,6 +26,63 @@ describe('catálogo Colombia con evidencia y límites explícitos', () => {
     for (const version of ['desconocido', '', '__proto__', 'CO-PAI-SHARED-2026-11']) {
       expect(getCatalog(version)).toBeUndefined();
     }
+  });
+
+  it('separa el esquema 2026 del catálogo histórico sin volver seleccionable la combinación legada', () => {
+    const historicalVersion = HISTORICAL_CATALOG_VERSION;
+    const historicalCatalog = getCatalog(historicalVersion);
+    expect(historicalCatalog).toBeDefined();
+    if (!historicalCatalog) return;
+
+    const historical = calculateSchedule(makeProfile({
+      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+      referenceCatalogVersion: historicalVersion,
+    }), historicalCatalog, today, []);
+    const current = calculateSchedule(makeProfile({
+      primaryScheduleId: 'CO-PAI-PRIMARY-6-12-18-WEEKS-2026',
+      referenceCatalogVersion: CURRENT_CATALOG_VERSION,
+    }), catalog, today, []);
+    const historicalDates = Object.fromEntries(historical.map(item => [item.id, item.estimatedDate]));
+    const currentDates = Object.fromEntries(current.map(item => [item.id, item.estimatedDate]));
+
+    expect(historicalDates['penta-1']).toBe('2026-03-31');
+    expect(historicalDates['penta-2']).toBe('2026-05-31');
+    expect(historicalDates['penta-3']).toBe('2026-07-31');
+    expect(historicalDates['yellow-fever']).toBe('2027-07-31');
+    expect(historical.find(item => item.id === 'ipv-1')?.name).toBe('Polio — dosis 1');
+    expect(resolveSelection({
+      productId: 'ipv', doseNumber: 1, milestoneId: 'primary-1',
+    }, historicalCatalog).coveredRequirementIds).toEqual([]);
+    expect(resolveSelection({
+      productId: 'hexavalent-acellular', doseNumber: 1, milestoneId: 'primary-1',
+    }, historicalCatalog).coveredRequirementIds).toEqual(['penta-1']);
+    expect(currentDates['penta-1']).toBe('2026-03-14');
+    expect(currentDates['penta-2']).toBe('2026-04-25');
+    expect(currentDates['penta-3']).toBe('2026-06-06');
+    expect(currentDates['yellow-fever']).toBe('2026-10-31');
+    expect(historicalCatalog.primarySchedules['CO-PAI-PRIMARY-6-12-18-WEEKS-2026']).toBeUndefined();
+    expect(historicalCatalog.sources.find(source => source.id === 'eps-sanitas-schedule-undated')).toMatchObject({
+      publishedAt: 'unknown',
+      reviewedAt: '2026-10-16',
+    });
+    expect(catalog.sources.find(source => source.id === 'saludtotal-schedule-2026')).toMatchObject({
+      publishedAt: 'unknown',
+      reviewedAt: '2026-10-16',
+    });
+
+    expect(identifyScheduleReference(makeProfile())).toBe('CO-PAI-REFERENCE-2026');
+    expect(identifyScheduleReference(makeProfile({
+      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+      referenceCatalogVersion: CURRENT_CATALOG_VERSION,
+    }))).toBe('CO-PAI-REFERENCE-LEGACY-2-4-6-2026');
+    expect(identifyScheduleReference(makeProfile({
+      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+      referenceCatalogVersion: historicalVersion,
+    }))).toBe('CO-PAI-REFERENCE-PRE-2026');
+    expect(selectableScheduleReferences.map(reference => reference.id)).toEqual([
+      'CO-PAI-REFERENCE-2026',
+      'CO-PAI-REFERENCE-PRE-2026',
+    ]);
   });
 
   it.each(modes)('conserva las tres etapas penta/IPV y solo dos primarias PCV/rotavirus en %s', (primaryScheduleId) => {

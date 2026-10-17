@@ -3,11 +3,10 @@ import { Button } from '@/components/ui/button'
 import type { ChildProfile, CivilDate } from '@/lib/types'
 import { ageAt } from '@/lib/civilDate'
 import type { ScheduleSummary } from '@/lib/schedule/summarizeSchedule'
-import { scheduleLabels } from './presentation'
-export function DashboardView({ profile, summary, today, eventCount, onRegister }: { profile: ChildProfile; summary: ScheduleSummary; today: CivilDate; eventCount: number; onRegister: () => void }) {
+export function DashboardView({ profile, referenceLabel, summary, today, eventCount, onRegister }: { profile: ChildProfile; referenceLabel: string; summary: ScheduleSummary; today: CivilDate; eventCount: number; onRegister: () => void }) {
   const age = ageAt(profile.birthDate, today)
   const next = summary.items.filter(item => summary.nextRequirementIds.includes(item.id))
-  return <div className="grid"><section className="card"><h2>Progreso del calendario</h2><p>{age.years} años, {age.months} meses y {age.days} días · {scheduleLabels[profile.primaryScheduleId]}</p>
+  return <div className="grid"><section className="card"><h2>Progreso del calendario</h2><p>{age.years} años, {age.months} meses y {age.days} días · {referenceLabel}</p>
     <strong className="progress-number">{summary.progressPercent === null ? '—' : `${summary.progressPercent}%`}</strong>
     {summary.progressPercent === null ? <p>Sin requisitos programados hasta hoy.</p> : <><progress max={100} value={summary.progressPercent} aria-label="Requisitos cubiertos hasta hoy" /><p>{summary.dueCovered} de {summary.due} requisitos con fecha orientativa hasta hoy. No es un porcentaje de inmunidad.</p></>}
     <div className="stats"><div className="stat"><strong>{summary.applied}</strong><span>Aplicados</span></div><div className="stat"><strong>{summary.upcoming}</strong><span>Próximos (30 días)</span></div><div className="stat"><strong>{summary.pending + summary.past + summary.needsReview}</strong><span>Pendientes / por revisar</span></div></div>

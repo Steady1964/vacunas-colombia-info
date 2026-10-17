@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 import { CalendarDays, HeartPulse, Info, Settings, ShieldCheck, Syringe } from 'lucide-react'
 import { useFamily } from '@/hooks/useFamily'
 import { useToday } from '@/hooks/useToday'
-import { CURRENT_CATALOG_VERSION, getCatalog } from '@/data/catalog'
+import { CURRENT_CATALOG_VERSION, getCatalog, getScheduleReference, identifyScheduleReference, supportsSchedule } from '@/data/catalog'
 import type { Catalog } from '@/data/catalog/types'
-import type { ChildProfile, PrimaryScheduleId, StoredProfile, VaccineAdministration } from '@/lib/types'
-import { changeCatalogVersion, clearFamily, deleteAdministration, deleteProfile, saveAdministration, saveProfile, setPreference } from '@/lib/repository'
+import type { ChildProfile, ScheduleReferenceId, StoredProfile, VaccineAdministration } from '@/lib/types'
+import { clearFamily, deleteAdministration, deleteProfile, saveAdministration, saveProfile, setPreference } from '@/lib/repository'
 import { calculateSchedule } from '@/lib/schedule/calculateSchedule'
 import { resolveCoverage } from '@/lib/schedule/resolveCoverage'
 import { summarizeSchedule } from '@/lib/schedule/summarizeSchedule'
@@ -40,7 +40,7 @@ export function AppClient() {
   const [mutationBusy, setMutationBusy] = useState(false)
   const [error, setError] = useState('')
   const [removal, setRemoval] = useState<Removal | null>(null)
-  const [scheduleChange, setScheduleChange] = useState<{ profile: StoredProfile; schedule: PrimaryScheduleId; returnFocusId: 'calendar-schedule' | 'settings-schedule' } | null>(null)
+  const [scheduleChange, setScheduleChange] = useState<{ profile: StoredProfile; referenceId: ScheduleReferenceId; returnFocusId: 'calendar-schedule' | 'settings-schedule' } | null>(null)
   const [catalogChange, setCatalogChange] = useState<StoredProfile | null>(null)
   const mutationLock = useRef(false)
   const snapshot = family.snapshot
@@ -52,9 +52,12 @@ export function AppClient() {
   const optionalValue = snapshot?.preferences.find(p => p.key === `optional-products:${active?.id}`)?.value
   const optionalIds = Array.isArray(optionalValue) ? optionalValue.filter((v): v is string => typeof v === 'string') : []
   const profile: ChildProfile | undefined = active?.primaryScheduleId ? active as ChildProfile : undefined
-  const scheduled = profile && catalog && today ? calculateSchedule(profile, catalog, today, optionalIds) : null
+  const activeReferenceId = profile ? identifyScheduleReference(profile) : undefined
+  const activeReference = activeReferenceId ? getScheduleReference(activeReferenceId) : undefined
+  const scheduled = profile && catalog && activeReference && supportsSchedule(catalog, profile.primaryScheduleId) && today ? calculateSchedule(profile, catalog, today, optionalIds) : null
   const coverage = profile && catalog && today && scheduled ? resolveCoverage(profile, applications, scheduled, catalog, today) : null
   const summary = scheduled && coverage && today ? summarizeSchedule(scheduled, coverage, today) : null
+  const referenceUnavailable = Boolean(active && (!catalog || (profile && !activeReference)))
   const hasUnsavedChanges = formDirty || Boolean(dialog) || Object.values(otherDirty).some(Boolean) || mutationBusy || Boolean(scheduleChange) || Boolean(catalogChange) || Boolean(removal)
   const writable = family.status === 'ready' && Boolean(family.db) && Boolean(today)
   useEffect(() => {
@@ -85,10 +88,18 @@ export function AppClient() {
   }
   async function confirmSchedule() {
     const change = scheduleChange
-    if (!change || !family.db || !today || !currentCatalog) return
-    const reference = getCatalog(change.profile.referenceCatalogVersion)
-    if (!reference) { setError('Confirma primero el cambio de versión de catálogo.'); return }
-    await mutate(async () => { await saveProfile(family.db!, { id: change.profile.id, mode: 'edit', input: { nickname: change.profile.nickname, birthDate: change.profile.birthDate, primaryScheduleId: change.schedule } }, { today, now: new Date().toISOString(), catalog: reference }); setScheduleChange(null) })
+    if (!change || !family.db || !today) return
+    const selectedReference = getScheduleReference(change.referenceId)
+    const selectedCatalog = selectedReference && getCatalog(selectedReference.catalogVersion)
+    if (!selectedReference || !selectedCatalog) { setError('La referencia seleccionada no está disponible.'); return }
+    await mutate(async () => {
+      await saveProfile(family.db!, {
+        id: change.profile.id,
+        mode: 'edit',
+        input: { nickname: change.profile.nickname, birthDate: change.profile.birthDate, scheduleReferenceId: selectedReference.id },
+      }, { today, now: new Date().toISOString(), catalog: selectedCatalog })
+      setScheduleChange(null)
+    })
   }
   if (!snapshot || !today || !currentCatalog) return <main className="app"><header className="topbar"><div className="brand"><Syringe />Vacunas Colombia</div></header><section className="wrap"><div className="card" role="status"><h1>{family.status === 'error' || family.status === 'blocked' ? 'Almacenamiento no disponible' : 'Cargando tu información local…'}</h1><p>{family.status === 'error' || family.status === 'blocked' ? 'No borres los datos del navegador. Cierra otras pestañas de la app si bloquean la actualización y vuelve a abrirla. No se creó una familia alternativa ni se reiniciaron tus datos.' : 'Abrimos el almacenamiento de este dispositivo sin enviar datos familiares.'}</p>{!currentCatalog && <p>No está disponible el catálogo incluido en esta versión.</p>}</div></section><PwaManager hasUnsavedChanges={hasUnsavedChanges} storageBlocked={family.status === 'blocked'} /></main>
   return <main className="app" tabIndex={-1}><header className="topbar no-print"><div className="brand"><span className="brandmark"><Syringe size={18} /></span>Vacunas Colombia</div>{active && <ProfileSelector profiles={snapshot.profiles} activeId={active.id} disabled={!writable || mutationBusy} onChange={id => void mutate(async () => { await setPreference(family.db!, 'activeProfileId', id) })} />}</header>
@@ -96,12 +107,12 @@ export function AppClient() {
       <section className="hero no-print"><div><div className="eyebrow">Tu carné, en tu dispositivo</div><h1>{active ? `Un paso a la vez, ${active.nickname}.` : 'Organiza las vacunas de tu peque.'}</h1><p className="sub">Fechas orientativas, historial familiar y tranquilidad para cada visita.</p></div>{active && <Button disabled={!writable || !catalog} onClick={register}>Registrar vacuna aplicada</Button>}</section>
       {!active && <section className="card no-print"><h2>Empieza con un perfil</h2><p>Solo necesitamos un nombre o apodo, fecha de nacimiento y el esquema que te indicó tu vacunador. No hay perfiles de ejemplo ni cuentas. La información se guarda en este dispositivo; conserva respaldos.</p><Button disabled={!writable} onClick={createProfile}>Crear primer perfil</Button>{snapshot.migrationIssues.length > 0 && <p>Hay registros heredados conservados. Abre Ajustes para revisarlos o exportarlos.</p>}</section>}
       {active && !active.primaryScheduleId && view !== 'carne' && view !== 'informacion' && view !== 'ajustes' && <section className="card"><h2>Este perfil necesita elegir esquema</h2><p>No inferimos el esquema desde el nacimiento. Elige conscientemente la referencia indicada por tu vacunador antes de generar fechas. Las aplicaciones heredadas se conservan por revisar.</p><Button disabled={!writable} onClick={() => editProfile(active)}>Elegir esquema y revisar perfil</Button></section>}
-      {active && !catalog && view !== 'carne' && view !== 'informacion' && <section className="card"><h2>Catálogo de referencia no disponible</h2><p>Este perfil usa {active.referenceCatalogVersion}. No lo sustituimos silenciosamente. El historial se conserva y puede consultarse en Carné o exportarse en Ajustes.</p><Button disabled={!writable} onClick={() => setCatalogChange(active)}>Revisar cambio a {CURRENT_CATALOG_VERSION}</Button></section>}
-      {view === 'inicio' && profile && summary && <DashboardView profile={profile} summary={summary} today={today} eventCount={applications.length} onRegister={register} />}
-      {view === 'calendario' && profile && catalog && summary && <CalendarView key={profile.id} profile={profile} catalog={catalog} summary={summary} optionalIds={optionalIds} onScheduleChange={schedule => { if (schedule !== profile.primaryScheduleId) setScheduleChange({ profile, schedule, returnFocusId: 'calendar-schedule' }) }} onOptionalChange={ids => setPreference(family.db!, `optional-products:${profile.id}`, ids)} />}
+      {active && referenceUnavailable && view !== 'carne' && view !== 'informacion' && <section className="card"><h2>Referencia del calendario no disponible</h2><p>Este perfil conserva {active.referenceCatalogVersion} y {active.primaryScheduleId ?? 'un esquema pendiente'}. No sustituimos esa combinación silenciosamente. El historial permanece en el Carné y en los respaldos.</p><Button disabled={!writable} onClick={() => setCatalogChange(active)}>Revisar cambio a Esquema 2026</Button></section>}
+      {view === 'inicio' && profile && activeReference && summary && <DashboardView profile={profile} referenceLabel={activeReference.label} summary={summary} today={today} eventCount={applications.length} onRegister={register} />}
+      {view === 'calendario' && profile && activeReferenceId && catalog && summary && <CalendarView key={profile.id} profile={profile} referenceId={activeReferenceId} catalog={catalog} summary={summary} optionalIds={optionalIds} onScheduleChange={referenceId => { if (referenceId !== activeReferenceId) setScheduleChange({ profile, referenceId, returnFocusId: 'calendar-schedule' }) }} onOptionalChange={ids => setPreference(family.db!, `optional-products:${profile.id}`, ids)} />}
       {view === 'carne' && active && <CarnetView key={active.id} profile={active} administrations={applications} today={today} reviewById={coverage?.reviewByAdministrationId} onEdit={editAdministration} onDelete={event => setRemoval({ scope: 'administration', label: `la aplicación de ${event.productName} del ${event.appliedDate}`, childId: event.childId, administrationId: event.id })} />}
       {view === 'informacion' && <InformationView catalog={catalog ?? currentCatalog} />}
-      {family.db && <div hidden={view !== 'ajustes'} className="settings-container no-print"><SettingsView db={family.db} snapshot={snapshot} profile={active} today={today} catalog={catalog ?? currentCatalog} onNewProfile={createProfile} onEditProfile={editProfile} onDeleteProfile={p => setRemoval({ scope: 'profile', label: `el perfil ${p.nickname}`, childId: p.id })} onDeleteAll={() => setRemoval({ scope: 'all', label: 'todos los datos' })} onScheduleChange={schedule => { if (active && schedule !== active.primaryScheduleId) setScheduleChange({ profile: active, schedule, returnFocusId: 'settings-schedule' }) }} onEditAdministration={editAdministration} onDirtyChange={(key, dirty) => setOtherDirty(prev => ({ ...prev, [key]: dirty }))} /></div>}
+      {family.db && <div hidden={view !== 'ajustes'} className="settings-container no-print"><SettingsView db={family.db} snapshot={snapshot} profile={active} scheduleReferenceId={activeReferenceId ?? ''} today={today} catalog={catalog ?? currentCatalog} onNewProfile={createProfile} onEditProfile={editProfile} onDeleteProfile={p => setRemoval({ scope: 'profile', label: `el perfil ${p.nickname}`, childId: p.id })} onDeleteAll={() => setRemoval({ scope: 'all', label: 'todos los datos' })} onScheduleChange={referenceId => { if (active && referenceId !== activeReferenceId) setScheduleChange({ profile: active, referenceId, returnFocusId: 'settings-schedule' }) }} onEditAdministration={editAdministration} onDirtyChange={(key, dirty) => setOtherDirty(prev => ({ ...prev, [key]: dirty }))} /></div>}
       <p className="footer-note no-print">Fechas orientativas. Confirma el esquema con tu vacunador.</p>
       <PwaManager hasUnsavedChanges={hasUnsavedChanges} storageBlocked={family.status === 'blocked'} />
     </div>
@@ -117,11 +128,12 @@ export function AppClient() {
             profile={dialog.type === 'edit-profile' ? dialog.profile : undefined} today={today}
             onCancel={requestCloseForm} onDirtyChange={setFormDirty}
             onSave={async command => {
-              const reference = dialog.type === 'edit-profile' ? getCatalog(dialog.profile.referenceCatalogVersion) : currentCatalog
-              if (!reference) throw new Error('unknown-catalog')
+              const selectedReference = getScheduleReference(command.input.scheduleReferenceId)
+              const selectedCatalog = selectedReference && getCatalog(selectedReference.catalogVersion)
+              if (!selectedReference || !selectedCatalog) throw new Error('unknown-catalog')
               setMutationBusy(true)
               try {
-                const saved = await saveProfile(family.db!, command, { today, now: new Date().toISOString(), catalog: reference })
+                const saved = await saveProfile(family.db!, command, { today, now: new Date().toISOString(), catalog: selectedCatalog })
                 closeForm()
                 if (command.mode === 'create') {
                   setView('inicio')
@@ -154,15 +166,19 @@ export function AppClient() {
       </AlertDialogFooter></AlertDialogContent>
     </AlertDialog>}
     {catalogChange && <AlertDialog open onOpenChange={open => { if (!open && !mutationBusy) setCatalogChange(null) }}>
-      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Cambiar versión de referencia</AlertDialogTitle>
-        <AlertDialogDescription>El perfil cambiará de {catalogChange.referenceCatalogVersion} a {CURRENT_CATALOG_VERSION}. Se recalcularán referencias, sin reescribir las aplicaciones históricas. Las correspondencias no verificables seguirán por revisar.</AlertDialogDescription>
+      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Cambiar a Esquema 2026</AlertDialogTitle>
+        <AlertDialogDescription>El perfil cambiará de la combinación {catalogChange.referenceCatalogVersion} / {catalogChange.primaryScheduleId ?? 'sin esquema'} a Esquema 2026. Se recalcularán las referencias sin reescribir las aplicaciones históricas. Las correspondencias no verificables seguirán por revisar.</AlertDialogDescription>
       </AlertDialogHeader>
       {error && <p role="alert" className="error">{error}</p>}
       <AlertDialogFooter><AlertDialogCancel disabled={mutationBusy}>Cancelar</AlertDialogCancel>
         <Button disabled={mutationBusy || !writable} onClick={() => void mutate(async () => {
-          await changeCatalogVersion(family.db!, catalogChange.id, CURRENT_CATALOG_VERSION, { today, now: new Date().toISOString(), catalog: currentCatalog })
+          await saveProfile(family.db!, {
+            id: catalogChange.id,
+            mode: 'edit',
+            input: { nickname: catalogChange.nickname, birthDate: catalogChange.birthDate, scheduleReferenceId: 'CO-PAI-REFERENCE-2026' },
+          }, { today, now: new Date().toISOString(), catalog: currentCatalog })
           setCatalogChange(null)
-        })}>Confirmar nueva referencia</Button>
+        })}>Confirmar Esquema 2026</Button>
       </AlertDialogFooter></AlertDialogContent>
     </AlertDialog>}
     {removal && family.db && <DataRemovalDialog scope={removal.scope} label={removal.label} snapshot={snapshot} onClose={() => setRemoval(null)} onDelete={async () => { if (removal.scope === 'all') await clearFamily(family.db!); else if (removal.scope === 'profile') await deleteProfile(family.db!, removal.childId!); else await deleteAdministration(family.db!, removal.childId!, removal.administrationId!) }} />}

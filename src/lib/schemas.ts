@@ -10,13 +10,14 @@ export const idSchema = z.string().min(1)
 export const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([z.null(), z.boolean(), z.number().finite(), z.string(), z.array(jsonValueSchema), z.record(z.string(), jsonValueSchema)]))
 export const jsonObjectSchema = z.record(z.string(), jsonValueSchema)
 export const primaryScheduleIdSchema = z.enum(['CO-PAI-PRIMARY-2-4-6', 'CO-PAI-PRIMARY-6-12-18-WEEKS-2026'])
+export const scheduleReferenceIdSchema = z.enum(['CO-PAI-REFERENCE-2026', 'CO-PAI-REFERENCE-PRE-2026', 'CO-PAI-REFERENCE-LEGACY-2-4-6-2026'])
 export const reviewReasonSchema = z.enum(['unknown-schedule', 'unidentified-product', 'unidentified-stage', 'unverified-rule', 'invalid-date', 'future-date', 'before-birth', 'mixed-course', 'missing-profile', 'legacy-unconfirmed'])
 export const legacyMetadataSchema = z.strictObject({ raw: jsonObjectSchema, migratedAt: timestampSchema, generatedTimestamps: z.boolean() })
 const profileFields = {
   id: idSchema, nickname: z.string().min(1), birthDate: civilDateSchema, country: z.literal('CO'),
   referenceCatalogVersion: z.string().min(1), createdAt: timestampSchema, updatedAt: timestampSchema, legacy: legacyMetadataSchema.optional(),
 }
-export const profileInputSchema = z.strictObject({ nickname: z.string().trim().min(1), birthDate: civilDateSchema, primaryScheduleId: primaryScheduleIdSchema })
+export const profileInputSchema = z.strictObject({ nickname: z.string().trim().min(1), birthDate: civilDateSchema, scheduleReferenceId: scheduleReferenceIdSchema })
 export const childProfileSchema = z.strictObject({ ...profileFields, primaryScheduleId: primaryScheduleIdSchema })
 export const pendingProfileSchema = z.strictObject({ ...profileFields, primaryScheduleId: z.null(), migrationStatus: z.literal('needs-schedule-choice') })
 export const storedProfileSchema = z.union([childProfileSchema, pendingProfileSchema])

@@ -1,17 +1,17 @@
 import Dexie, { liveQuery } from 'dexie'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { CURRENT_CATALOG_VERSION, getCatalog } from '../data/catalog'
+import { CURRENT_CATALOG_VERSION, HISTORICAL_CATALOG_VERSION, getCatalog } from '../data/catalog'
 import { ADMIN_A, CHILD_A, CHILD_B, FIXED_NOW, FIXED_TODAY, makeAdministration, makeProfile } from '../test/fixtures'
 import { makeLegacyFamily, seedLegacyDatabase } from '../test/legacyDatabase'
 import { openDatabase, REVISION_KEY, type VaccineDB } from './db'
-import { changeCatalogVersion, clearFamily, deleteAdministration, deleteMigrationIssue, deleteProfile, readFamily, repairMigrationIssue, saveAdministration, saveProfile, setPreference } from './repository'
+import { clearFamily, deleteAdministration, deleteMigrationIssue, deleteProfile, readFamily, repairMigrationIssue, saveAdministration, saveProfile, setPreference } from './repository'
 import type { AdministrationCommand, AdministrationInput, MutationContext, ProfileCommand } from './types'
 
 let sequence = 0
 let db: VaccineDB
 let name: string
 const context: MutationContext = { today: FIXED_TODAY, now: FIXED_NOW, catalog: getCatalog(CURRENT_CATALOG_VERSION)! }
-const profileCommand: ProfileCommand = { id: CHILD_A, mode: 'create', input: { nickname: 'Luna', birthDate: '2026-01-31', primaryScheduleId: 'CO-PAI-PRIMARY-6-12-18-WEEKS-2026' } }
+const profileCommand: ProfileCommand = { id: CHILD_A, mode: 'create', input: { nickname: 'Luna', birthDate: '2026-01-31', scheduleReferenceId: 'CO-PAI-REFERENCE-2026' } }
 const administrationInput: AdministrationInput = { productId: 'unidentified', productName: 'Carné manual', appliedDate: '2026-03-14', accessType: 'unknown', paiwebStatus: 'unknown', brand: 'Marca', lot: 'Lote', provider: 'IPS', notes: 'Nota' }
 const administrationCommand: AdministrationCommand = { id: ADMIN_A, childId: CHILD_A, mode: 'create', input: administrationInput }
 
@@ -89,15 +89,73 @@ describe('profile-scoped atomic writes', () => {
     expect(await readFamily(db)).toEqual(before)
   })
 
-  it('never rewrites physical administrations when birth, scheme or catalog changes', async () => {
+  it('never rewrites physical administrations when the birth date changes', async () => {
     await saveProfile(db, profileCommand, context)
     await saveAdministration(db, administrationCommand, context)
     const before = await db.administrations.toArray()
-    await saveProfile(db, { ...profileCommand, mode: 'edit', input: { ...profileCommand.input, birthDate: '2026-04-01', primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6' } }, context)
-    await changeCatalogVersion(db, CHILD_A, CURRENT_CATALOG_VERSION, context)
+    await saveProfile(db, {
+      ...profileCommand,
+      mode: 'edit',
+      input: { ...profileCommand.input, birthDate: '2026-04-01' },
+    }, context)
     expect(await db.administrations.toArray()).toEqual(before)
-    await expect(changeCatalogVersion(db, CHILD_A, 'not-available', context)).rejects.toThrow('catalog-unavailable')
-    expect(await db.administrations.toArray()).toEqual(before)
+  })
+
+  it('persists catalog and primary series atomically while keeping legacy references read-only', async () => {
+    const currentReferenceCommand: ProfileCommand = {
+      id: CHILD_A,
+      mode: 'create',
+      input: {
+        nickname: 'Luna',
+        birthDate: '2026-01-31',
+        scheduleReferenceId: 'CO-PAI-REFERENCE-2026',
+      },
+    }
+    await saveProfile(db, currentReferenceCommand, context)
+    await saveAdministration(db, administrationCommand, context)
+    const administrationsBefore = JSON.stringify(await db.administrations.toArray())
+    const historicalContext: MutationContext = {
+      ...context,
+      catalog: getCatalog(HISTORICAL_CATALOG_VERSION)!,
+      now: '2026-10-16T16:00:00.000Z',
+    }
+    await saveProfile(db, {
+      ...currentReferenceCommand,
+      mode: 'edit',
+      input: { ...currentReferenceCommand.input, scheduleReferenceId: 'CO-PAI-REFERENCE-PRE-2026' },
+    }, historicalContext)
+
+    const historical = await db.profiles.get(CHILD_A)
+    expect(historical?.primaryScheduleId).toBe('CO-PAI-PRIMARY-2-4-6')
+    expect(historical?.referenceCatalogVersion).toBe(HISTORICAL_CATALOG_VERSION)
+    expect(JSON.stringify(await db.administrations.toArray())).toBe(administrationsBefore)
+
+    await db.profiles.put(makeProfile({
+      id: CHILD_B,
+      nickname: 'Legado',
+      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+      referenceCatalogVersion: CURRENT_CATALOG_VERSION,
+    }))
+    const legacyEdit: ProfileCommand = {
+      id: CHILD_B,
+      mode: 'edit',
+      input: {
+        nickname: 'Legado editado',
+        birthDate: '2026-01-31',
+        scheduleReferenceId: 'CO-PAI-REFERENCE-LEGACY-2-4-6-2026',
+      },
+    }
+    const preservedLegacy = await saveProfile(db, legacyEdit, context)
+    expect(preservedLegacy.primaryScheduleId).toBe('CO-PAI-PRIMARY-2-4-6')
+    expect(preservedLegacy.referenceCatalogVersion).toBe(CURRENT_CATALOG_VERSION)
+
+    const beforeRejectedCreate = await readFamily(db)
+    await expect(saveProfile(db, {
+      ...legacyEdit,
+      id: '33333333-3333-4333-8333-333333333333',
+      mode: 'create',
+    }, context)).rejects.toThrow('schedule-reference-unavailable')
+    expect(await readFamily(db)).toEqual(beforeRejectedCreate)
   })
 
   it('deletes only A and its issues/preferences, and clear keeps the revision monotonic', async () => {
