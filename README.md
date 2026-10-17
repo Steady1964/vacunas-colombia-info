@@ -44,6 +44,16 @@ En **Ajustes → Importar archivo JSON** la selección solo valida y previsualiz
 
 Los eventos históricos incoherentes tras editar nacimiento se conservan y se exportan como datos explícitamente por revisar, con su procedencia, sin reescribir el historial en IndexedDB.
 
+## Instalación, uso offline y actualizaciones
+
+La primera carga necesita conexión. En producción, el service worker guarda únicamente el shell y recursos estáticos de la aplicación; los perfiles y aplicaciones continúan en IndexedDB y no se copian a Cache Storage. Después de que la app indique que está preparada, Inicio, calendario, carné, impresión y respaldos locales pueden usarse sin conexión. Otras rutas muestran `/offline` si la red falla y no estaban precargadas.
+
+La instalación depende del navegador: la app muestra el botón nativo solo cuando recibe `beforeinstallprompt`, o instrucciones para el menú de Android y **Compartir → Agregar a pantalla de inicio** en Safari iOS. Requiere HTTPS fuera de `localhost`. Los íconos versionados se regeneran desde `app/icon.svg` con `pnpm generate:icons`.
+
+Una nueva versión queda en espera. **Actualizar aplicación** se habilita únicamente sin formularios/cambios pendientes y pide confirmación antes de activar y recargar esa pestaña. Recuperar conexión, `controllerchange` en otra pestaña y una actualización cancelada no recargan ni reemplazan datos familiares.
+
+El despliegue conserva el servidor estándar de Next.js/Vercel; no usa `output: 'export'`. `pnpm build` genera `public/sw.js` y `public/swe-worker-*.js`: son artefactos ignorados y Vercel los recrea, mientras `app/sw.ts`, manifiesto e íconos fuente sí pertenecen al repositorio.
+
 ## Borrado local y teclado
 
 **Carné → Eliminar** identifica la aplicación por producto y fecha; **Ajustes → Eliminar perfil de…** identifica al niño y elimina sus aplicaciones e incidencias en la misma transacción. Ambos ofrecen copia antes de confirmar. **Eliminar todos los datos** exige dos confirmaciones diferenciadas; conserva los archivos descargados y la caché de la aplicación, que no contiene historiales.
