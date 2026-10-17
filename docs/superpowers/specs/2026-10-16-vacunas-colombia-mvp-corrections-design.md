@@ -113,16 +113,12 @@ La representación interna de los metadatos y estados excepcionales queda al imp
 
 ### 6.1 Contenido mínimo
 
-- Nacimiento: BCG y hepatitis B neonatal.
-- Serie primaria: pentavalente y polio IPV en tres etapas, con rotavirus y neumococo según la correspondencia aplicable y verificada.
-- Influenza: referencias compartidas a 6 y 7 meses, sujetas a elegibilidad y lineamientos.
-- Fiebre amarilla: referencia compartida a 9 meses.
-- 12 meses: SRP 1, varicela 1, neumococo de refuerzo y hepatitis A.
-- 18 meses: refuerzos DPT/polio y SRP 2.
-- 5 años: refuerzos DPT/polio y varicela; no duplicar SRP 2.
-- Complementarias: búsqueda y captura de hexavalentes, meningococo y rotavirus de dos/tres dosis, sin hacerlas obligatorias para todos los perfiles.
-
-No trasladar todas las vacunas al cambiar de modo. Solo cambian los desplazamientos definidos en la serie primaria; los hitos compartidos conservan su referencia.
+- Ambos catálogos incluyen nacimiento con BCG y hepatitis B neonatal, influenza a 6/7 meses, SRP 1, varicela 1, neumococo de refuerzo y hepatitis A a 12 meses, y los refuerzos documentados a 18 meses y 5 años.
+- **Esquema 2026:** serie primaria a 42/84/126 días civiles (6/12/18 semanas); fiebre amarilla a 9 meses; SRP 2 a 18 meses. Sus reglas clínicas continúan respaldadas por las fuentes MinSalud ya documentadas. El PDF de Salud Total aportado se registra como referencia secundaria de presentación, no reemplaza una fuente primaria cuando difiere de ella.
+- **Esquema anterior a 2026:** catálogo histórico independiente `CO-PAI-EPS-SANITAS-UNDATED-ED2`, basado en «Esquema General de Vacunación PAI - EPS Sanitas», edición 2; la pieza no muestra fecha editorial verificable y `reviewedAt` registra únicamente cuándo se consultó. La serie primaria se programa a 2/4/6 meses calendario y fiebre amarilla a 18 meses. La triple viral indicada a 18 meses se representa como SRP 2. Las recomendaciones adicionales para 2–5 y 5–14 años permanecen como notas condicionales, no como requisitos universales fechados.
+- Cada referencia conserva IDs estables para requisitos equivalentes, pero sus proyecciones y fuentes pertenecen a su catálogo. Cambiar referencia recalcula solo el calendario derivado y nunca reescribe aplicaciones, IDs, fechas reales, marcas, lotes, IPS ni procedencia.
+- Un perfil ya guardado con la combinación 2/4/6 y el catálogo compartido 2026 conserva esa combinación como referencia legada hasta que la persona confirme el cambio al catálogo histórico. No se reinterpreta silenciosamente ni se vuelve seleccionable para perfiles nuevos.
+- Complementarias: búsqueda y captura de hexavalentes, meningococo y rotavirus de dos/tres dosis, sin hacerlas obligatorias para todos los perfiles. Una regla o equivalencia no respaldada por el catálogo seleccionado queda por revisar y no concede cobertura.
 
 Las fuentes oficiales iniciales son las URLs de la sección 4.4 del documento original. La auditoría no verificó su vigencia clínica externa. El implementador debe revisar las reglas concretas, su fecha y aplicabilidad antes de codificarlas como verificadas. Una composición o equivalencia sin respaldo no produce cobertura automática. No afirmar cobertura pública universal de la hexavalente.
 
@@ -134,9 +130,9 @@ Para rotavirus, los dos requisitos de referencia no se convierten en tres para t
 
 - Analizar y validar fechas civiles en el navegador; no construirlas mediante parseo implícito UTC ni serializar con `toISOString().slice(0, 10)`.
 - Meses y años: date-fns con ajuste al último día existente; no 30 días por mes ni 365 días por año.
-- Tradicional: sumar 2, 4 y 6 meses calendario desde nacimiento.
-- Acortado: sumar exactamente 42, 84 y 126 días civiles. Mostrar 6/12/18 semanas y las etiquetas comunicacionales 1,5/3/4,5 meses.
-- Los hitos comunes usan meses/años calendario según sus unidades.
+- Esquema anterior a 2026: sumar 2, 4 y 6 meses calendario desde nacimiento.
+- Esquema 2026: sumar exactamente 42, 84 y 126 días civiles. Mostrar 6/12/18 semanas y las etiquetas comunicacionales 1,5/3/4,5 meses.
+- Los demás hitos usan meses/años calendario y pertenecen al catálogo seleccionado; no se comparten implícitamente entre referencias.
 - Obtener hoy en el navegador, actualizarlo al volver a primer plano y al cruzar medianoche mientras la app esté abierta. No congelar hoy al importar un módulo.
 - Una aplicación tardía no desplaza automáticamente futuras dosis ni crea un esquema de rescate.
 - Rechazar fechas civiles inexistentes y nacimientos futuros. Validar nuevas aplicaciones dentro de nacimiento y hoy, ambos inclusive; un registro heredado incoherente se conserva para revisión.
@@ -145,11 +141,12 @@ Para rotavirus, los dos requisitos de referencia no se convierten en tres para t
 
 | Nacimiento | Referencia | Resultado esperado |
 |---|---|---|
-| 2026-01-31 | Acortado: 42/84/126 días | 2026-03-14 / 2026-04-25 / 2026-06-06 |
-| 2026-01-31 | Tradicional: 2/4/6 meses | 2026-03-31 / 2026-05-31 / 2026-07-31 |
-| 2026-01-31 | Influenza: 6/7 meses | 2026-07-31 / 2026-08-31 |
-| 2026-01-31 | Fiebre amarilla: 9 meses | 2026-10-31 |
-| 2026-01-31 | Refuerzos: 18 meses | 2027-07-31 |
+| 2026-01-31 | Esquema 2026: 42/84/126 días | 2026-03-14 / 2026-04-25 / 2026-06-06 |
+| 2026-01-31 | Esquema anterior a 2026: 2/4/6 meses | 2026-03-31 / 2026-05-31 / 2026-07-31 |
+| 2026-01-31 | Influenza de ambos catálogos: 6/7 meses | 2026-07-31 / 2026-08-31 |
+| 2026-01-31 | Fiebre amarilla, Esquema 2026: 9 meses | 2026-10-31 |
+| 2026-01-31 | Fiebre amarilla, Esquema anterior a 2026: 18 meses | 2027-07-31 |
+| 2026-01-31 | Otros refuerzos de 18 meses | 2027-07-31 |
 | 2024-02-29 | 12 meses / 5 años | 2025-02-28 / 2029-02-28 |
 | 2026-01-31 | Un mes, límite aritmético | 2026-02-28 |
 
@@ -160,8 +157,8 @@ La fecha civil resultante debe ser la misma bajo America/Bogota, una zona con ho
 ### 7.1 Primer uso y perfiles
 
 - Abrir sin ejemplos persistidos; mostrar bienvenida, aviso de almacenamiento local y formulario mínimo.
-- Apodo, nacimiento y esquema requieren entrada consciente; no preseleccionar ni inferir el esquema.
-- Mantener el texto de orientación junto al selector y explicar el acortado como referencia transitoria de 2026, no como orden médica universal.
+- Apodo, nacimiento y referencia de esquema requieren entrada consciente; no preseleccionar ni inferir la referencia.
+- Mostrar **Esquema 2026 · 6, 12 y 18 semanas** y **Esquema anterior a 2026 · 2, 4 y 6 meses**. Explicar fuente, vigencia y que ninguna opción constituye una orden médica universal.
 - Crear varios perfiles desde Ajustes mediante un formulario distinto del registro de vacunas. Cambiar perfil activo y recordar su ID como preferencia local; si se elimina, seleccionar otro existente o volver al inicio vacío.
 - Editar apodo/nacimiento/esquema. Cambiar esquema exige la confirmación literal del documento original; cancelar no persiste nada.
 - El selector del Calendario y el de Ajustes operan sobre el mismo perfil persistido; Inicio refleja el resultado confirmado.
@@ -170,7 +167,7 @@ La fecha civil resultante debe ser la misma bajo America/Bogota, una zona con ho
 ### 7.2 Calendario y dashboard
 
 - Calendario con filtros PAI, Complementarias y Todas; detalle de enfermedad, dosis, cobertura, fuente y vigencia por requisito.
-- Mostrar esquema elegido, versión del catálogo y nota específica para tradicional.
+- Mostrar referencia elegida, versión del catálogo y, para perfiles legados 2/4/6 con catálogo 2026, un estado explícito que exige confirmación antes de adoptar el catálogo histórico.
 - Dashboard con edad en años/meses/días o meses/días, siguiente fecha orientativa y todas las vacunas no cubiertas de esa fecha, contadores y próximas fechas ordenadas.
 - No retirar todo un hito al registrar una sola vacuna: cada requisito conserva su estado independiente.
 - Progreso: `requisitos cubiertos con fecha orientativa <= hoy / requisitos con fecha orientativa <= hoy × 100`. Excluir complementarias no elegidas y requisitos sin fecha confirmada. Un requisito cuenta una vez. Si el denominador es cero, mostrar Sin requisitos programados hasta hoy, no 100 % de protección.
@@ -228,6 +225,8 @@ Conservar la identidad visual ligera existente y español de Colombia. Navegaci�
 
 Controles shadcn/ui o controles accesibles coherentes con el stack, etiquetas asociadas, nombres accesibles, teclado, foco visible, contraste, estados con texto además de color y objetivos táctiles adecuados. Los diálogos devuelven el foco al cerrarse; formularios y errores son utilizables en iPhone, Android y escritorio.
 
+En móvil, la aplicación reserva zonas distintas para cabecera, contenido desplazable y navegación inferior: la navegación no cubre tarjetas, tablas ni acciones. A 480 px o menos, los grupos `.actions` se presentan en una sola columna con botones de ancho completo y altura táctil mínima de 44 px; no se permite que el largo del texto decida de forma accidental si dos acciones quedan en una o dos filas. Impresión restablece el flujo normal y no hereda límites de altura o scroll de la carcasa móvil.
+
 ## 12. Trazabilidad de aceptación
 
 Los siguientes IDs conservan la numeración del documento original. La tabla define evidencia a obtener durante implementación; no son resultados ya aprobados.
@@ -235,11 +234,11 @@ Los siguientes IDs conservan la numeración del documento original. La tabla def
 | ID | Resultado obligatorio | Evidencia de aceptación |
 |---|---|---|
 | A01 | Primer uso vacío con apodo, nacimiento y esquema sin preselección | Navegador con almacenamiento limpio; sin perfiles de ejemplo |
-| A02 | Luna 2026-01-31 acortado | Las tres fechas exactas de la sección 6.3, sin registro de cuenta |
-| A03 | Conmutación tradicional/acortado | Confirmar/cancelar y comprobar fechas, selección persistida y sincronización de vistas |
-| A04 | Conmutación conserva aplicaciones | Comparar ID, fecha real, producto, marca, lote e IPS antes/después; sin eventos extra |
-| A05 | Dos perfiles con esquemas diferentes | Alta real de ambos y reapertura; cada esquema y perfil activo persisten |
-| A06 | Hitos compartidos de 2026 | Fiebre amarilla a 9 meses y SRP 2 a 18; sin SRP 2 duplicada a 5 años; fechas civiles correctas |
+| A02 | Luna 2026-01-31 con Esquema 2026 | Fechas 42/84/126 exactas, etiqueta 2026 y catálogo 2026; sin registro de cuenta |
+| A03 | Conmutación entre Esquema 2026 y Esquema anterior a 2026 | Confirmar/cancelar y comprobar fechas, catálogo seleccionado, persistencia y sincronización de vistas |
+| A04 | Conmutación conserva aplicaciones | Comparar ID, fecha real, producto, marca, lote e IPS antes/después; sin eventos extra ni promociones automáticas de cobertura |
+| A05 | Dos perfiles con referencias diferentes | Alta real de ambos y reapertura; cada esquema, catálogo y perfil activo persisten |
+| A06 | Hitos propios de cada catálogo | Fiebre amarilla a 9 meses en 2026 y a 18 meses en el histórico; SRP 2 a 18; sin requisitos condicionales convertidos en universales |
 | A07 | Hexavalente sin doble administración | Un evento, cobertura válida de requisitos de una única etapa, sin cubrir etapas posteriores |
 | A08 | Rotavirus de tres dosis | Dos eventos no cumplen la tercera; producto de dos dosis no recibe tercera universal |
 | A09 | Aislamiento entre perfiles | Cambiar, editar y eliminar en uno no mezcla ni modifica el historial del otro |
@@ -263,6 +262,9 @@ Aceptación adicional de correcciones y límites:
 - F04: editar nacimiento o actualizar catálogo preserva eventos históricos y no convierte dudas en cobertura automática.
 - F05: eliminar una aplicación o borrar todos los datos respeta confirmaciones, oferta de copia y atomicidad aplicables.
 - P01: cambiar la versión del service worker y del catálogo no borra datos ni provoca una recarga destructiva de formularios.
+- H01: un perfil nuevo solo ofrece las dos referencias aprobadas; el histórico calcula 2/4/6 meses y fiebre amarilla a 18 meses, mientras 2026 calcula 42/84/126 días y fiebre amarilla a 9 meses.
+- H02: un perfil legado 2/4/6 con catálogo 2026 conserva exactamente su calendario y aplicaciones hasta una confirmación explícita; cancelar no cambia ningún campo persistido.
+- U01: en 390 × 844 px la cabecera y navegación permanecen utilizables sin cubrir el área desplazable; todos los grupos de acciones estrechos forman una sola columna de controles de al menos 44 px.
 
 ## 13. Verificación y documentación requeridas
 

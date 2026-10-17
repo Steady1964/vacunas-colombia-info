@@ -22,7 +22,7 @@
   --accent-foreground: #153b38;
   --destructive: #a72e29;
   --border: #d8e3dc;
-  --input: #91aaa1;
+  --input: #6f8a80;
   --ring: #356e61;
   --radius: .75rem;
 }
@@ -120,24 +120,30 @@ th { background: var(--cream); }
 .footer-note { font-size: .8rem; margin-top: 24px; text-align: center; }
 [hidden] { display: none !important; }
 @media (max-width: 700px) {
-  .topbar { padding: 16px; }
+  .app { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100dvh; min-height: 0; overflow: hidden; }
+  .topbar { width: 100%; padding: 16px; }
   .brand { max-width: 155px; line-height: 1.2; }
-  .wrap { padding: 8px 16px 120px; }
+  .wrap { width: 100%; min-height: 0; margin: 0 auto; overflow-y: auto; overscroll-behavior-y: contain; padding: 8px 16px 24px; }
   .hero { align-items: start; flex-direction: column; gap: 12px; margin-top: 22px; }
   .grid, .form-grid { grid-template-columns: 1fr; }
   .card { padding: 21px; border-radius: 18px; }
   .wide { grid-column: auto; }
-  .nav { width: calc(100% - 20px); bottom: max(10px, env(safe-area-inset-bottom)); gap: 0; justify-content: space-around; padding: 6px 2px; }
+  .nav { position: static; left: auto; bottom: auto; transform: none; width: calc(100% - 20px); margin: 8px auto max(10px, env(safe-area-inset-bottom)); gap: 0; justify-content: space-around; padding: 6px 2px; }
   .nav button { flex: 1; flex-direction: column; gap: 3px; padding: 5px 2px; font-size: .65rem; height: 54px; }
   .event { grid-template-columns: 85px 10px 1fr; gap: 10px; }
   .event-date { font-size: .77rem; }
   .optional-product button { white-space: normal; height: auto; min-height: 44px; }
 }
+@media (max-width: 480px) {
+  .actions { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+  .actions button { width: 100%; min-height: 44px; }
+}
 @page { size: A4; margin: 14mm; }
 @media print {
   body { background: white; color: black; font-size: 10pt; }
+  .app { display: block; height: auto; min-height: 0; overflow: visible; }
   .topbar, .hero, .nav, .no-print, [role='dialog'], [role='alertdialog'] { display: none !important; }
-  .wrap { padding: 0; max-width: none; }
+  .wrap { padding: 0; max-width: none; min-height: 0; overflow: visible; }
   .card { box-shadow: none; border: 0; padding: 0; border-radius: 0; }
   .carnet { width: 100%; }
   .carnet .notice { background: white; border: 1px solid #777; font-size: 9pt; padding: 8px; }

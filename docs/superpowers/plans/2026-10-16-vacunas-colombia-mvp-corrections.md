@@ -2,22 +2,21 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** corregir el MVP existente hasta satisfacer la especificación aprobada y los 17 criterios originales, conservando los datos familiares y sin backend de historiales.
+**Goal:** corregir el MVP existente hasta satisfacer la especificación aprobada y los criterios originales más H01/H02/U01, conservando los datos familiares y sin backend de historiales.
 
-**Architecture:** mantener `app/` y trasladar el dominio a `src/`, con catálogos versionados, aritmética civil pura, cobertura por requisito y repositorio Dexie transaccional. Una sola aplicación cliente consume el estado persistido; Serwist genera el shell offline sin cachear datos familiares. Migrar la base existente antes de usar el modelo nuevo y retirar el motor anterior durante el cambio de consumidores.
-
+**Architecture:** mantener `app/` y el dominio en `src/`, con catálogos versionados, aritmética civil pura, cobertura por requisito y repositorio IndexedDB transaccional. El Esquema 2026 y el Esquema anterior a 2026 son referencias completas distintas; el perfil persiste la pareja catálogo/serie y los datos históricos nunca se reinterpretan sin confirmación. En móvil, una carcasa de tres filas reserva espacio para cabecera, contenido desplazable y navegación. Serwist genera el shell offline sin cachear datos familiares.
 **Tech Stack:** Next.js 16.4.2, React 19.3.1, TypeScript 7, Tailwind 4, shadcn/ui, lucide-react, Dexie 4.4.6, date-fns 4.4.0, Vitest 5; añadir Zod 4.6.7, fake-indexeddb 6.2.6 para pruebas y Serwist/@serwist/next 9.5.13 para PWA.
 
 **Spec:** [Especificación aprobada](../specs/2026-10-16-vacunas-colombia-mvp-corrections-design.md). También leer `Vacunas_Colombia_PWA_Vercel_v2.md` y `AGENTS.md`; la primera conserva autoridad sobre todo el MVP.
 
-**Estado:** plan propuesto; no se han implementado sus tareas. Base del repositorio `f37e5c3`, branch `v0/vacunas-colombia-pwa`. No confundir una casilla pendiente con verificación realizada.
+**Estado:** T1–T8 implementadas en `development`; este plan incorpora el cambio aprobado de referencias y layout antes de continuar T11–T13. Las casillas históricas permanecen sin marcar porque no se reconstruye evidencia retroactivamente; el registro de ejecución y los commits son la fuente del estado observado.
 
 ## Global Constraints
 
 - Nombre visible: **Vacunas Colombia**; `short_name: Vacunas CO`; idioma español de Colombia.
-- Esquemas: `CO-PAI-PRIMARY-2-4-6` y `CO-PAI-PRIMARY-6-12-18-WEEKS-2026`; catálogo compartido `CO-PAI-SHARED-2026-10`, sujeto a revisión de fuentes.
-- Base IndexedDB: `vacunas-colombia`. No perder registros, cambiar de base ni exigir borrar datos para migrar.
-- Fechas civiles `YYYY-MM-DD`; tradicional **2/4/6 meses calendario**, acortado **42/84/126 días**. No usar UTC para serializar fechas civiles.
+- Referencias seleccionables: **Esquema 2026** = `CO-PAI-SHARED-2026-10` + `CO-PAI-PRIMARY-6-12-18-WEEKS-2026`; **Esquema anterior a 2026** = `CO-PAI-EPS-SANITAS-UNDATED-ED2` + `CO-PAI-PRIMARY-2-4-6`.
+- Base IndexedDB: `vacunas-colombia`. No perder registros, cambiar de base ni exigir borrar datos para migrar. La combinación ya guardada `CO-PAI-SHARED-2026-10` + `CO-PAI-PRIMARY-2-4-6` sigue resolviendo como referencia legada, pero no se ofrece al crear perfiles.
+- Fechas civiles `YYYY-MM-DD`; histórico **2/4/6 meses calendario**, 2026 **42/84/126 días**. No usar UTC para serializar fechas civiles.
 - Próximas: desde hoy hasta **30 días** inclusive. Progreso: requisitos únicos cubiertos/programados hasta hoy; no porcentaje de inmunidad.
 - Aplicaciones nuevas/ediciones: fecha entre nacimiento y hoy, inclusive. Datos heredados incoherentes se conservan para revisión.
 - Una administración física se guarda una vez; cobertura solo por producto, dosis y etapa verificadas. Ninguna inferencia desde nombres o fechas.
@@ -25,7 +24,7 @@
 - Respaldo JSON **sin cifrar**, con aviso; merge conflictivo aborta completo. Reemplazo exige previsualización, oferta de copia y confirmación.
 - Sin Firebase/MongoDB/Supabase, cuentas, APIs de historial, Server Actions de datos familiares, analítica, anuncios, push, sincronización, OCR ni recomendaciones farmacológicas.
 - No datos familiares en URLs, logs, cookies, tráfico saliente o caché del service worker. El Excel es referencia de desarrollo, no se sirve ni se sube a terceros.
-- Conservar diseño ligero; controles accesibles, etiquetas asociadas, foco/teclado y navegación inferior móvil. No rediseñar todo el producto.
+- Conservar diseño ligero; controles accesibles, etiquetas asociadas, foco/teclado y navegación inferior móvil. En móvil la navegación no se superpone al contenido; a 480 px o menos los grupos de acciones se apilan a ancho completo. No rediseñar todo el producto.
 - Antes de modificar código, leer las guías relevantes de `node_modules/next/dist/docs/`. Antes de retirar/cambiar exports existentes, localizar referencias con LSP y actualizar todos sus consumidores; sin aliases de compatibilidad.
 - Las tareas no autorizan publicación con reglas clínicas no verificadas. Una regla sin fuente queda por revisar y no concede cobertura.
 - No ejecutar commits, instalaciones o cambios de aplicación durante la fase de planificación. Los comandos de este archivo son instrucciones para ejecución posterior.
@@ -36,14 +35,14 @@
 2. **Base antigua con fechas inválidas, huérfanos o esquema desconocido:** conservar la fila original y pedir revisión; no inventar perfil/fecha/esquema ni bloquear otras familias válidas. Pruebas de T4 y reparación de T8.
 3. **Cambios entre previsualización e importación:** si otra pestaña modificó la familia, rechazar la operación como previsualización obsoleta antes de sobrescribir. Prueba de T6.
 4. **App abierta al cruzar medianoche o volver del segundo plano:** recalcular hoy y estados, incluyendo días de 23/25 horas por horario de verano; no mantener fechas congeladas. Prueba de reloj en T1 y recorrido de T7.
-5. **Actualización PWA/IndexedDB con otra pestaña y formulario modificado:** no recargar ni desmontar el formulario automáticamente ni borrar datos; mostrar actualización/bloqueo de almacenamiento y permitir salida consciente. Pruebas de apertura/versionado en T4 y recorrido real T10.
+5. **Actualización PWA/IndexedDB con otra pestaña y formulario modificado:** no recargar ni desmontar el formulario automáticamente ni borrar datos; mostrar actualización/bloqueo de almacenamiento y permitir salida consciente. Pruebas de apertura/versionado en T4 y recorrido real T12.
 
 ## Mapa de archivos y responsabilidad
 
 | Área | Archivos objetivo |
 |---|---|
 | Tipos/validación/reloj | `src/lib/types.ts`, `src/lib/schemas.ts`, `src/lib/civilDate.ts`, `src/hooks/useToday.ts` |
-| Catálogo | `src/data/catalog/{types,sources,index,products,primary-traditional-2-4-6,primary-shortened-6-12-18-weeks-2026,shared-requirements-co-2026-10}.ts` |
+| Catálogo | `src/data/catalog/{types,sources,index,products,primary-traditional-2-4-6,primary-shortened-6-12-18-weeks-2026,shared-requirements-co-2026-10,historical-requirements-co-undated}.ts` |
 | Motor puro | `src/lib/schedule/{calculateSchedule,resolveCoverage,summarizeSchedule}.ts` |
 | Migración y almacenamiento | `src/lib/{migration,db,repository}.ts`, `src/hooks/useFamily.ts` |
 | Respaldo | `src/lib/{backup,backupSchemas}.ts` |
@@ -58,11 +57,11 @@ No crear todos estos archivos vacíos. Cada tarea entrega su comportamiento comp
 
 ## Secuencia y criterios comunes
 
-Un solo plan: migración, cobertura, vistas y PWA comparten contratos y no constituyen productos desplegables independientes. Orden: T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11. No paralelizar modificaciones que cambien los mismos contratos; sí pueden investigarse fuentes o verificarse dispositivos de forma independiente.
+Un solo plan: migración, cobertura, vistas y PWA comparten contratos. Orden restante: T9 → T10 → T11 → T12 → T13. No paralelizar modificaciones que cambien los mismos contratos; sí pueden investigarse fuentes o verificarse dispositivos de forma independiente.
 
 Para pruebas nuevas, comprobar primero el fallo relevante y luego el resultado correcto; un error de importación no sustituye el fallo semántico cuando ya existe una implementación. Ejecutar pruebas de la tarea después de cerrar sus cambios, no mientras otros agentes editan sus dependencias. No añadir pruebas de texto fuente, wiring o mocks que repitan lo mismo que reciben. Los recorridos de navegador son verificaciones reales, no pretextos para añadir otra suite UI. Los ejemplos de aserciones de este plan son instrucciones, no código ya incorporado.
 
-Al terminar cada tarea: actualizar la documentación afectada, ejecutar su comprobación y preparar un commit específico solo cuando se haya autorizado la ejecución. No incluir cambios ajenos; los mensajes sugeridos no autorizan publicar ni hacer push.
+Al terminar cada tarea: actualizar la documentación afectada, ejecutar su comprobación y crear un commit específico con el patrón obligatorio `Task NN : Implementation : description`. No incluir cambios ajenos ni hacer push.
 
 ---
 
@@ -205,7 +204,7 @@ La última fixture contiene además un requisito futuro y uno opcional sin fecha
 - Estado único de diálogo: `null | {type:'create-profile'} | {type:'edit-profile';childId:string} | {type:'create-administration';childId:string;commandId:string} | {type:'edit-administration';childId:string;administrationId:string}`. No reutilizar `showForm` para acciones distintas.
 - Formularios reciben entidad/niño y `onSave` tipados; `AdministrationForm` recibe el comando estable y `today`. Ninguna callback asíncrona consulta el selector activo para decidir ownership.
 - `DashboardView`/`CalendarView` reciben perfil, catálogo y resumen de T3. `ScheduleSelector` emite un ID tipado, no muta preferencias globales. `CarnetView` recibe solo eventos del niño. `SettingsView` funciona desde esta tarea con perfiles y exportación básica; T8 amplía importación/reparación/destrucción.
-- `InformationView` conserva información/fuentes reales al cortar; T9 completa presentación y privacidad. No introducir botones sin handler o componentes vacíos para las tareas siguientes.
+- `InformationView` conserva información/fuentes reales al cortar; T11 completa presentación y privacidad. No introducir botones sin handler o componentes vacíos para las tareas siguientes.
 
 - [ ] **1. Reproducir antes del corte:** en navegador aislado, crear un niño, abrir Agregar otro perfil y observar el formulario incorrecto; revisar fecha tradicional y fallo de guardado ya documentados. Registrar la evidencia sin reinsertar datos en la base real del usuario.
 - [ ] **2. Incorporar shadcn/ui según su documentación vigente:** configurar `components.json` con aliases `@/components`, `@/components/ui`, `@/lib/utils` y Tailwind existente. Usar CLI para añadir `button input label select dialog alert-dialog tabs`; conservar la paleta y CSS existentes, sin aceptar una sustitución completa del diseño. El lockfile registra las dependencias que genere; no añadir una biblioteca UI adicional.
@@ -231,7 +230,42 @@ La última fixture contiene además un requisito futuro y uno opcional sin fecha
 - [ ] **4. Verificar en producción:** A12/A13, M01–M03, F05 y Review Focus 2/3. Crear una base v1 aislada y abrirla por la aplicación para comprobar migración real; exportar, reimportar dos veces, conflicto de ID, cancelación y fallo. Probar cambio de datos en otra pestaña entre preview/confirmación; el estado previo no se sobrescribe. Reabrir y verificar niños no afectados. Comprobar que ninguna lectura de archivo genera upload/fetch de datos familiares.
 - [ ] **5. Ejecutar pruebas de repo/migración/backup tras los cambios; actualizar README con restauración/revisión/borrado; commit sugerido:** `feat: add safe backup import and local data review controls`.
 
-### T9: Carné imprimible, información y privacidad accesibles
+
+### Task 9: Carcasa móvil y jerarquía consistente de acciones
+
+**Files:** modificar `app/globals.css`; actualizar este plan y la evidencia de aceptación de U01. No cambiar componentes ni paleta salvo que la comprobación geométrica demuestre que CSS no puede expresar el contrato.
+
+**Interfaces:**
+- A `max-width: 700px`, `.app` ocupa `100dvh` en tres filas `auto minmax(0,1fr) auto`; `.wrap` es la única zona desplazable y `.nav` ocupa su propia fila, sin `position: fixed`.
+- A `max-width: 480px`, `.actions` usa una columna y sus botones ocupan el ancho disponible con altura mínima de 44 px. Escritorio conserva las filas compactas actuales.
+- `@media print` revierte altura, overflow y grid de la carcasa para no recortar el PDF.
+
+- [ ] **1. Registrar RED en navegador real:** en producción, viewport 390 × 844 y Ajustes con dos perfiles, comprobar que `wrap.bottom > nav.top` y que dos grupos `.actions` equivalentes terminan con diferente número de filas. Conservar captura y métricas; no crear un test de texto CSS.
+- [ ] **2. Implementar la carcasa y acciones estrechas:** modificar únicamente las reglas responsive/print necesarias; conservar cabecera, tarjetas, paleta y navegación de cinco vistas.
+- [ ] **3. Ejecutar GREEN y smoke:** en 390 × 844 comprobar `wrap.bottom <= nav.top`, scroll completo, cinco acciones navegables y todos los grupos estrechos en una columna con controles ≥44 px. Repetir a 700 px y escritorio para detectar regresión; generar un PDF real y comprobar que no queda recortado.
+- [ ] **4. Ejecutar `pnpm test` y `pnpm build`; commit:** `Task 09 : Implementation : correct mobile navigation and action hierarchy`.
+
+### Task 10: Referencias clínicas 2026 e histórica versionadas
+
+**Files:** crear `src/data/catalog/historical-requirements-co-undated.ts`; modificar `src/data/catalog/{types,sources,index,catalog.test}.ts`, `src/lib/{types,schemas,repository,repository.test}.ts`, `src/components/{ProfileForm,ScheduleSelector,DashboardView,CalendarView,SettingsView,AppClient}.tsx`, `src/components/presentation.ts`, `docs/catalog-sources.md`, README y pruebas consumidoras de `ProfileCommand`.
+
+**Interfaces:**
+- Exportar `HISTORICAL_CATALOG_VERSION = 'CO-PAI-EPS-SANITAS-UNDATED-ED2'` y mantener `CURRENT_CATALOG_VERSION = 'CO-PAI-SHARED-2026-10'`. `getCatalog(version)` resuelve ambos y continúa devolviendo `undefined` para desconocidos.
+- Definir `ScheduleReferenceId = 'CO-PAI-REFERENCE-2026' | 'CO-PAI-REFERENCE-PRE-2026' | 'CO-PAI-REFERENCE-LEGACY-2-4-6-2026'` y un registro inmutable que mapea cada referencia a `primaryScheduleId`, `catalogVersion`, etiqueta y `selectable`. Solo las dos primeras se ofrecen al crear; la tercera únicamente representa perfiles ya guardados.
+- `ScheduleReferenceId` vive en `src/lib/types.ts`; el registro y los resolutores viven en `src/data/catalog/index.ts`. `Catalog.primarySchedules` pasa a `Partial<Record<PrimaryScheduleId, Projection[]>>` y todo consumidor comprueba soporte explícito antes de calcular.
+- `ProfileInput` transporta `scheduleReferenceId` en lugar de un `primaryScheduleId` aislado. `saveProfile` resuelve y valida la pareja con el catálogo de contexto, y actualiza `primaryScheduleId` + `referenceCatalogVersion` en una sola transacción. La referencia legada solo puede conservarse al editar el mismo perfil; no se crea ni se adopta.
+- El catálogo histórico usa serie primaria a 2/4/6 meses y mueve `yellow-fever` a `month-18`; conserva SRP 2 a 18 meses. Las notas condicionales de 2–5/5–14 años no crean requisitos universales. El catálogo 2026 conserva 42/84/126 días, fiebre amarilla a 9 meses y las fuentes MinSalud.
+- Extender `Source` con `publishedAt?: CivilDate | 'unknown'`. Añadir las dos URLs aportadas a `sources.ts`: EPS Sanitas edición 2 respalda reglas históricas con `publishedAt: 'unknown'` y `reviewedAt` como fecha de consulta; Salud Total identifica el esquema 2026, queda como referencia secundaria leída y no reemplaza MinSalud donde difiere. Información muestra ambas fechas sin presentar `reviewedAt` como emisión.
+
+- [ ] **1. Escribir RED de catálogo:** casos literales para nacimiento 2026-01-31: histórico produce primarias 03-31/05-31/07-31 y fiebre amarilla 2027-07-31; 2026 produce 03-14/04-25/06-06 y fiebre amarilla 2026-10-31. Verificar que el catálogo histórico rechaza la serie acortada, que la pareja catálogo 2026 + 2/4/6 solo se identifica como legado no seleccionable y que desconocido sigue sin fallback.
+- [ ] **2. Ejecutar RED:** `pnpm test -- src/data/catalog/catalog.test.ts`; debe fallar por catálogo/referencia histórica ausente, no por import o fixture incorrectos.
+- [ ] **3. Implementar ambos catálogos y fuentes:** separar requisitos/proyecciones históricas, registrar versiones inmutables y rechazar combinaciones no soportadas. No copiar del PDF reglas fuera del alcance infantil aprobado.
+- [ ] **4. Escribir RED transaccional:** en `repository.test.ts`, crear y cambiar referencias actualiza catálogo/serie juntos y conserva las administraciones byte por byte; editar apodo de un perfil legado conserva su pareja; intentar crear o adoptar la referencia legada falla sin escritura.
+- [ ] **5. Ejecutar RED y luego implementar el comando de perfil:** actualizar schemas, repositorio, fixtures y todos los consumidores. Ejecutar las pruebas focales hasta GREEN y después toda la suite.
+- [ ] **6. Actualizar UI y documentos:** etiquetas exactas **Esquema 2026** / **Esquema anterior a 2026**, fuente y vigencia visibles, estado legado explícito; actualizar README y `docs/catalog-sources.md` con alcance y diferencias.
+- [ ] **7. Smoke de producción:** crear un perfil por referencia, comprobar fechas e hitos, cancelar/confirmar cambio desde Calendario y Ajustes, recargar y comparar todos los campos de aplicaciones antes/después. Abrir un perfil legado y verificar que no cambia hasta confirmación.
+- [ ] **8. Ejecutar `pnpm test` y `pnpm build`; commit:** `Task 10 : Implementation : separate 2026 and historical vaccination references`.
+### Task 11: Carné imprimible, información y privacidad accesibles
 
 **Files:** crear `src/components/PrivacyNotice.tsx`; modificar `CarnetView.tsx`, `InformationView.tsx`, `SettingsView.tsx`, `app/globals.css`, `app/layout.tsx` y README.
 
@@ -244,9 +278,9 @@ La última fixture contiene además un requisito futuro y uno opcional sin fecha
 - [ ] **2. Implementar carné completo e impresión:** producto, dosis o Por verificar, fecha literal, marca/lote/IPS cuando existan; solo administraciones del perfil. Tabla semántica con encabezados repetibles y saltos legibles, apodo/nacimiento/fecha de exportación. Ocultar acciones, navegación, formularios y hero. Leyenda literal: `Registro familiar no oficial. No reemplaza el carné de vacunación expedido por el prestador ni PAIWEB.`
 - [ ] **3. Completar Información/Privacidad:** PAI frente a particular, combinadas y variación por producto/edad, enlaces oficiales/fecha de revisión, advertencias sobre medidas transitorias y almacenamiento. No trasladar medicamentos o comparaciones comerciales del Excel. Solicitar almacenamiento persistente desde acción consciente (por ejemplo Guardar perfil o Ajustes), manejar false/no soporte sin bloquear.
 - [ ] **4. Verificar A11 y accesibilidad:** guardar un PDF real con registros suficientes para varias páginas; inspeccionar documento/imagen, orden normal/invertido, lotes/IPS, fecha y leyenda, sin pendientes como aplicadas. Navegar todas las vistas con teclado, comprobar foco de diálogos, labels, errores, contraste y ancho de móvil. Probar rechazo/ausencia de `navigator.storage.persist`. Inspeccionar red: sin fuentes externas ni SDKs nuevos.
-- [ ] **5. Actualizar README; commit sugerido:** `feat: complete the printable family card and privacy guidance`.
+- [ ] **5. Actualizar README; commit:** `Task 11 : Implementation : complete printable card privacy and accessibility`.
 
-### T10: PWA compatible, offline verificable e instalación sin recargas destructivas
+### Task 12: PWA compatible, offline verificable e instalación sin recargas destructivas
 
 **Files:** crear `app/sw.ts`, `app/offline/page.tsx`, `src/components/PwaManager.tsx`, `src/lib/pwa.ts`, `public/icons/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`; modificar `public/manifest.webmanifest`, `next.config.ts`, `app/layout.tsx`, `AppClient.tsx`, `.gitignore`, `package.json`, `pnpm-lock.yaml`, README.
 
@@ -262,9 +296,9 @@ La última fixture contiene además un requisito futuro y uno opcional sin fecha
 - [ ] **3. Implementar precache y estados de instalación/actualización:** manifest con nombre/short_name correctos, PNGs válidos en tamaños declarados y apple touch icon. Enlazarlo en metadata de layout sin duplicar manifests. Generar los PNGs localmente a partir de `app/icon.svg`, no depender de un generador remoto ni subir archivos. Página `/offline` en español enlaza Inicio y explica límite de primera carga, sin datos personales.
 - [ ] **4. Demostrar compatibilidad real:** `pnpm build` y `pnpm start --hostname 127.0.0.1 --port 3100`; comprobar `/sw.js` y sus cabeceras, worker activo, manifiesto y todos los recursos precacheados. La metadata npm permite Next >=14 y el ejemplo mantenido usa Next 16, pero eso no sustituye este build/offline de 16.4.2. Si falla, corregir la integración en esta tarea; no recortar offline a una página de aviso ni cambiar la versión de Next a ciegas.
 - [ ] **5. Verificar A14/A17/P01:** después de esperar `navigator.serviceWorker.ready` y control de la página, desconectar red y abrir/recargar `/`; crear/editar perfil, registrar/editar vacuna, calendario, carné, imprimir y exportar/importar. Inspeccionar Cache Storage: solo recursos de app. Volver online no recarga ni pierde campos. Crear otro build con cambio de revisión y misma IndexedDB: worker espera; cancelar actualización conserva el formulario; confirmar limpio activa/reabre y los eventos siguen intactos. Repetir con otra pestaña abierta y un formulario modificado; no auto-recarga ni reset.
-- [ ] **6. Verificar instalación real:** Safari/iOS y Chrome/Android con HTTPS, ícono/nombre/standalone, instrucciones contextualizadas y botón Android solo cuando existe evento. Registrar por separado emulación y dispositivo físico; si no está disponible, dejar A17 pendiente de esa evidencia sin afirmar aceptación total. Actualizar README de estrategia/actualizaciones y commit sugerido: `feat: add verified offline PWA support and installation guidance`.
+- [ ] **6. Verificar instalación real:** Safari/iOS y Chrome/Android con HTTPS, ícono/nombre/standalone, instrucciones contextualizadas y botón Android solo cuando existe evento. Registrar por separado emulación y dispositivo físico; si no está disponible, dejar A17 pendiente de esa evidencia sin afirmar aceptación total. Actualizar README de estrategia/actualizaciones y commit: `Task 12 : Implementation : add safe offline PWA support`.
 
-### T11: Aceptación integral, privacidad de red y documentación de despliegue
+### Task 13: Aceptación integral, privacidad de red y documentación de despliegue
 
 **Files:** modificar `README.md`, `docs/catalog-sources.md` cuando una regla cambie; crear `docs/verification/mvp-acceptance.md`; ajustar únicamente código/tests donde la verificación encuentre un defecto real.
 
@@ -275,7 +309,7 @@ La última fixture contiene además un requisito futuro y uno opcional sin fecha
 - [ ] **3. Inspeccionar red y privacidad mientras se ejercen los flujos:** solo descargas de recursos del origen/hosting; ningún nombre, nacimiento, nota, lote o historial en URL/cuerpo/cookies/logs ni caches del SW. Verificar ausencia de SDKs/endpoints de historial y de importación de la base en código de servidor. HTTPS y cabeceras funcionan en Vercel; no confundir peticiones técnicas del hosting con datos de historiales.
 - [ ] **4. Completar README:** instalación con pnpm/lockfile, scripts y elección webpack por Serwist, pruebas, build, despliegue Next estándar en Vercel, sin variables secretas para usuarios, actualización de catálogo, fuentes/vigencia, límites médicos, migración/filas por revisar, respaldo no cifrado/restauración, pérdida de datos del navegador, instalación/offline y aceptación pendiente por dispositivo si aplica. No versionar `.next`, `node_modules`, backups reales o archivos de smoke temporales.
 - [ ] **5. Documentar resultado y límites:** `docs/verification/mvp-acceptance.md` distingue ejecutado/pasa/falla/no comprobado para cada criterio y fuente clínica. Una regla sin verificación no se publica como válida. Si falta dispositivo o revisión clínica, declarar exactamente ese requisito pendiente; no declarar el MVP terminado.
-- [ ] **6. Revisión final de alcance y cambios propios; commit sugerido:** `docs: record MVP acceptance evidence and Vercel deployment workflow`. Solo solicitar despliegue/publicación cuando todo requisito aplicable tenga evidencia y autorización.
+- [ ] **6. Revisión final de alcance y cambios propios; commit:** `Task 13 : Implementation : record acceptance and deployment evidence`. Solo solicitar despliegue/publicación cuando todo requisito aplicable tenga evidencia y autorización.
 
 ## Matriz de cobertura del plan
 
@@ -285,18 +319,20 @@ La última fixture contiene además un requisito futuro y uno opcional sin fecha
 | A01–A06: perfiles, selección y calendarios | T1–T5, T7 |
 | A07–A08: combinadas y rotavirus | T2, T3, T5, T7 |
 | A09–A10: aislamiento y persistencia | T4, T5, T7 |
-| A11: carné/PDF | T7, T9 |
+| A11: carné/PDF | T7, T11 |
 | A12: respaldo e importación | T4, T6, T8 |
 | A13: eliminación | T5, T8 |
-| A14: offline | T10 |
-| A15: privacidad | T5–T10, T11 |
+| A14: offline | T12 |
+| A15: privacidad | T5–T12, T13 |
 | A16: hidratación/almacenamiento cliente | T4, T5, T7 |
-| A17: instalación | T10, T11 |
+| A17: instalación | T12, T13 |
+| H01/H02: catálogos 2026/histórico y conservación legada | T2, T3, T5, T10 |
+| U01: navegación móvil y acciones sin superposición | T9, T11 |
 | M01–M03: migración/integridad | T4, T6, T8 |
-| F01/F02: fechas/progreso | T1, T3, T7 |
-| F03/F04: guardado/cambios no destructivos | T3, T5, T7 |
-| F05/P01: borrado y actualizaciones | T5, T8, T10 |
-| Accesibilidad, información, fuentes, README | T2, T7, T9, T11 |
+| F01/F02: fechas/progreso | T1, T3, T7, T10 |
+| F03/F04: guardado/cambios no destructivos | T3, T5, T7, T10 |
+| F05/P01: borrado y actualizaciones | T5, T8, T12 |
+| Accesibilidad, información, fuentes, README | T2, T7, T9–T11, T13 |
 
 ## Fundamento técnico consultado durante la planificación
 
@@ -304,13 +340,11 @@ La última fixture contiene además un requisito futuro y uno opcional sin fecha
 - [Paquete publicado @serwist/next 9.5.13](https://registry.npmjs.org/@serwist%2Fnext/9.5.13): peer Next >=14; no certifica por sí mismo compatibilidad de ejecución.
 - [Ejemplo webpack mantenido](https://github.com/serwist/serwist/tree/main/examples/next-basic), su [package.json](https://github.com/serwist/serwist/blob/main/examples/next-basic/package.json), [configuración](https://github.com/serwist/serwist/blob/main/examples/next-basic/next.config.mjs) y [worker](https://github.com/serwist/serwist/blob/main/examples/next-basic/app/sw.ts). No copiar `skipWaiting:true` ni caché amplia del ejemplo: contradicen los contratos aprobados de privacidad/actualización.
 - [Integración webpack y opciones reales](https://github.com/serwist/serwist/blob/main/packages/next/src/index.ts): sustenta `register`, `reloadOnOnline`, `cacheOnNavigation` y selección explícita de webpack.
-- [API del núcleo Serwist](https://github.com/serwist/serwist/blob/main/packages/core/src/Serwist.ts): confirma `registerCapture`, `createHandlerBoundToUrl`, `matchPrecache` y el mensaje `SKIP_WAITING`; el worker de T10 usa estos contratos sin caché dinámica amplia.
+- [API del núcleo Serwist](https://github.com/serwist/serwist/blob/main/packages/core/src/Serwist.ts): confirma `registerCapture`, `createHandlerBoundToUrl`, `matchPrecache` y el mensaje `SKIP_WAITING`; el worker de T12 usa estos contratos sin caché dinámica amplia.
 - Versiones publicadas consultadas de [Zod](https://registry.npmjs.org/zod/4.6.7) y [fake-indexeddb](https://registry.npmjs.org/fake-indexeddb/6.2.6). No se instalaron estos paquetes al escribir el plan.
 
 ## Revisión propia y puerta de ejecución
 
-Revisión documental completada por el autor: cada sección de la spec tiene dueño en la matriz; las 11 tareas tienen archivos, contratos y comprobaciones; las cinco clases de Review Focus tienen prueba/recorrido asignado. Se corrigieron el reloj explícito de importación, el borrado de issues, los contadores disjuntos, la revisión local monótona, el prerender seguro y las APIs reales del worker. No quedan decisiones de producto abiertas distintas de revisar este plan y elegir cómo ejecutarlo. Esta revisión no ejecutó tests/build de la implementación futura ni verificó clínicamente las fuentes.
+Revisión documental actualizada: T9 y T10 cubren U01/H01/H02, definen archivos, contratos, ciclos RED/GREEN y conservación de perfiles legados. T11–T13 mantienen impresión, PWA y aceptación. Las reglas de 2026 continúan usando MinSalud; los dos PDF aportados quedan trazados con su alcance real.
 
-La especificación está aprobada; este plan aún requiere revisión del usuario y elección de ejecución. Recomendación: **subagent-driven**, por los contratos compartidos de cobertura/migración/respaldo y el coste de perder o atribuir datos incorrectamente. Cada tarea debe recibir esta spec, su interfaz y sus dependencias; tareas con los mismos contratos no se editan concurrentemente.
-
-La alternativa es ejecución **nativa** en esta sesión y revisión independiente global al final. No implementar hasta que el usuario confirme el plan y el método. Ninguna modalidad autoriza commits destructivos, push o publicación sin el consentimiento aplicable.
+La ejecución nativa en `development`, un commit por tarea y el patrón de mensajes ya fueron aprobados. Esta enmienda concreta el cambio de producto seleccionado por el usuario, pero requiere su revisión antes de modificar código de producción. Ninguna tarea autoriza push, despliegue o publicación clínica.
