@@ -105,9 +105,30 @@ URL proporcionada por el usuario: [deployment de Vacunas Colombia](https://vacun
 | `/manifest.webmanifest` | HTTP 302 hacia Vercel SSO, `Content-Type: text/plain` | No se recibió el manifiesto ni se pudieron verificar sus íconos desplegados. |
 | Chromium, viewport 390 × 844 | Navegación termina en `vercel.com/login`, título `Login – Vercel` | Se observó la pantalla de acceso, no la aplicación. |
 
-**Estado: bloqueado por acceso autorizado pendiente.** No se ejercieron perfiles, aplicaciones, respaldos, instalación, offline ni privacidad de red de la aplicación en este deployment. Tampoco se identificó el commit desplegado. El cookie técnico `_vercel_sso_nonce` observado pertenece al control de acceso de Vercel; no se utilizó para afirmar nada sobre el almacenamiento familiar.
+**Resultado de este intento: bloqueado por autenticación.** No se ejercieron perfiles, aplicaciones, respaldos, instalación, offline ni privacidad de red de la aplicación en este deployment. Tampoco se identificó el commit desplegado. El cookie técnico `_vercel_sso_nonce` observado pertenece al control de acceso de Vercel; no se utilizó para afirmar nada sobre el almacenamiento familiar.
 
-Para continuar se necesita un enlace compartible autorizado al deployment o una URL accesible de la misma compilación. No se cambiaron protecciones, credenciales ni configuración de Vercel, no se intentó eludir el control de acceso y no se introdujeron datos familiares. No es necesario hacer público todo el proyecto para conceder ese acceso.
+Después de este intento, el usuario solicitó completar la comprobación final local y realizar él mismo la validación en Vercel. No se necesita conceder acceso al asistente para continuar el trabajo local. No se cambiaron protecciones, credenciales ni configuración de Vercel, no se intentó eludir el control de acceso y no se introdujeron datos familiares.
+
+## Comprobación final local solicitada — 18/10/2026
+
+**Resultado: pasa en el entorno local ejercido.** Se construyó y ejecutó producción con `pnpm build` y `pnpm start --hostname 127.0.0.1 --port 3130`, no `next dev`. El origen estaba aislado de los recorridos anteriores y solo recibió datos ficticios. Esta comprobación no equivale a verificar el deployment.
+
+| Comprobación | Evidencia observada |
+|---|---|
+| Suite y build | `pnpm test`: 11 archivos, 91/91 pruebas. `pnpm build`: Next.js 16.4.2/webpack completó generación de rutas y worker. |
+| Respuestas HTTP | `/`, `/sw.js` y `/manifest.webmanifest`: 200. Cabeceras globales `nosniff`, `DENY`, referrer y permisos; worker JavaScript con `no-cache, no-store, must-revalidate`, alcance `/` y CSP propia. |
+| Manifiesto e íconos | Manifiesto enlazado, nombre `Vacunas Colombia`, `short_name: Vacunas CO`, `display: standalone`. Imágenes decodificadas: 192 × 192, 512 × 512 y apple touch icon 180 × 180. Worker activo y página controlada tras primera carga. |
+| Perfiles y referencias | Alta sin esquema preseleccionado. `Luna Local` con nacimiento 2026-01-31 mostró 2026-03-14/04-25/06-06. `Sol Local` con nacimiento 2025-01-31 e histórico mostró 2025-03-31/05-31/07-31 y FA 2026-07-31. Sus carnés permanecieron independientes. |
+| Diseño móvil | Chromium a 390 × 844, captura observada. Sin overflow horizontal global; contenido terminó a 758 px y navegación empezó a 766 px, sin superposición. Acciones del carné apiladas. |
+| Offline real | Se detuvo el servidor y se recargó `/`. Se editó el apodo y el lote de la hexavalente, y se creó otra aplicación manual por revisar, sin conexión. |
+| PDF offline | Carné A4 generado con el servidor detenido; texto extraído confirmó apodo editado, nacimiento, fecha, leyenda no oficial y único evento con dosis/etapa/marca/lote/IPS/nota reales. |
+| Respaldo offline | Exportación local de dos perfiles/un evento y autoimportación: 2 perfiles y 1 evento idénticos, combinación correcta sin duplicación. |
+| Reconexión | Formulario abierto con nota sin guardar: al restaurar servidor/red se mantuvieron el mismo documento, diálogo y campo; después se guardó normalmente. No hubo recarga automática. |
+| Persistencia y fallback | Tras cerrar y reabrir la pestaña con el servidor nuevamente detenido: perfil activo editado, dos perfiles y dos aplicaciones en IndexedDB v30. Ruta no precargada mostró `/offline`; volver a `/` recuperó la app cacheada. |
+| Privacidad | 22 solicitudes HTTP observadas, todas `GET` al origen local, sin cuerpos ni cookies y sin datos familiares en URL. Un precache de 28 recursos, sin contenido de los registros ficticios. Cookies, localStorage y sessionStorage vacíos. Cero errores de navegador. |
+
+Los servidores y pestañas de esta comprobación se cerraron. No se cambiaron archivos de producción ni se incorporaron respaldos/PDF/capturas al repositorio. **La validación del deployment Vercel queda a cargo del usuario**, igual que la evidencia física de instalación que decida aportar; la revisión clínica independiente sigue siendo un requisito separado.
+
 
 ## Fuentes clínicas y vigencia
 
@@ -128,7 +149,7 @@ La trazabilidad detallada, páginas leídas y documentos fallidos están en [`do
 El comportamiento de software aplicable pasa en producción local. **No se declara aceptación integral ni se solicita publicación** mientras falten:
 
 1. instalación y apertura reales mediante HTTPS en Safari/iOS y Chrome/Android físicos (A17);
-2. smoke del despliegue real de Vercel, incluidas cabeceras HTTPS;
+2. smoke del despliegue real de Vercel, incluidas cabeceras HTTPS, a cargo del usuario por su indicación;
 3. revisión clínica independiente de vigencia y alcance antes de presentar las reglas como aprobadas para uso público.
 
 No se versionaron `.next`, workers generados, bases IndexedDB, respaldos descargados, PDF, capturas ni fixtures temporales del recorrido.
