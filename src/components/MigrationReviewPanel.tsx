@@ -210,88 +210,92 @@ export function MigrationReviewPanel({
                 se resolverá al guardar una corrección válida.
               </DialogDescription>
             </DialogHeader>
-            <details>
-              <summary>Datos originales</summary>
-              <pre>{JSON.stringify(issue.raw, null, 2)}</pre>
-            </details>
-            {repairProfile ? (
-              <ProfileForm
-                key={issue.id}
-                commandId={issue.entityId}
-                profile={repairProfile}
-                today={today}
-                onDirtyChange={(value) => {
-                  setDirty(value);
-                  onDirtyChange(true);
-                }}
-                onCancel={requestClose}
-                onSave={repair}
-              />
-            ) : (
-              <>
-                <div className="field">
-                  <label htmlFor="repair-destination">
-                    Perfil destino (elección explícita obligatoria)
-                  </label>
-                  <select
-                    id="repair-destination"
-                    value={destinationId}
-                    disabled={destinationConfirmed}
-                    onChange={(e) => {
-                      setDirty(true);
-                      setDestinationId(e.target.value);
-                    }}
-                  >
-                    <option value="">Selecciona el niño correcto</option>
-                    {snapshot.profiles.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nickname}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <p>
-                  Origen: {issue.childId ?? 'no identificado'}. Destino:{' '}
-                  {destination?.nickname ?? 'sin seleccionar'}.
-                </p>
-                {destination && !destinationCatalog && (
-                  <p role="alert">
-                    La referencia del perfil destino no está disponible. Revisa
-                    su esquema antes de reparar la aplicación.
-                  </p>
-                )}
-                {!destinationConfirmed && (
-                  <Button
-                    disabled={!destination || !destinationCatalog}
-                    onClick={() => setDestinationConfirmed(true)}
-                  >
-                    Confirmar destino y corregir aplicación
-                  </Button>
-                )}
-                {destinationConfirmed && destination && destinationCatalog && (
-                  <AdministrationForm
-                    key={`${issue.id}:${destination.id}`}
-                    commandId={issue.entityId}
-                    child={destination}
-                    initialInput={initialInput}
-                    today={today}
-                    catalog={destinationCatalog}
-                    onDirtyChange={(v) => {
-                      setDirty(v);
-                      onDirtyChange(true);
-                    }}
-                    onCancel={requestClose}
-                    onSave={repair}
-                  />
-                )}
-                {!snapshot.profiles.length && (
+            <div className="dialog-body">
+              <details>
+                <summary>Datos originales</summary>
+                <pre>{JSON.stringify(issue.raw, null, 2)}</pre>
+              </details>
+              {repairProfile ? (
+                <ProfileForm
+                  key={issue.id}
+                  commandId={issue.entityId}
+                  profile={repairProfile}
+                  today={today}
+                  onDirtyChange={(value) => {
+                    setDirty(value);
+                    onDirtyChange(true);
+                  }}
+                  onCancel={requestClose}
+                  onSave={repair}
+                />
+              ) : (
+                <>
+                  <div className="field">
+                    <label htmlFor="repair-destination">
+                      Perfil destino (elección explícita obligatoria)
+                    </label>
+                    <select
+                      id="repair-destination"
+                      value={destinationId}
+                      disabled={destinationConfirmed}
+                      onChange={(e) => {
+                        setDirty(true);
+                        setDestinationId(e.target.value);
+                      }}
+                    >
+                      <option value="">Selecciona el niño correcto</option>
+                      {snapshot.profiles.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.nickname}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <p>
-                    Crea o repara primero un perfil en Ajustes. No inventamos un
-                    niño para asignar esta aplicación.
+                    Origen: {issue.childId ?? 'no identificado'}. Destino:{' '}
+                    {destination?.nickname ?? 'sin seleccionar'}.
                   </p>
-                )}
-              </>
-            )}
+                  {destination && !destinationCatalog && (
+                    <p role="alert">
+                      La referencia del perfil destino no está disponible.
+                      Revisa su esquema antes de reparar la aplicación.
+                    </p>
+                  )}
+                  {!destinationConfirmed && (
+                    <Button
+                      disabled={!destination || !destinationCatalog}
+                      onClick={() => setDestinationConfirmed(true)}
+                    >
+                      Confirmar destino y corregir aplicación
+                    </Button>
+                  )}
+                  {destinationConfirmed &&
+                    destination &&
+                    destinationCatalog && (
+                      <AdministrationForm
+                        key={`${issue.id}:${destination.id}`}
+                        commandId={issue.entityId}
+                        child={destination}
+                        initialInput={initialInput}
+                        today={today}
+                        catalog={destinationCatalog}
+                        onDirtyChange={(v) => {
+                          setDirty(v);
+                          onDirtyChange(true);
+                        }}
+                        onCancel={requestClose}
+                        onSave={repair}
+                      />
+                    )}
+                  {!snapshot.profiles.length && (
+                    <p>
+                      Crea o repara primero un perfil en Ajustes. No inventamos
+                      un niño para asignar esta aplicación.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       )}

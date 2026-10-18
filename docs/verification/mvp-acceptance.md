@@ -169,6 +169,39 @@ Se creó un perfil desde el popup de Ajustes y se exportó un respaldo. La previ
 
 Con el servidor detenido, recargar y volver a Ajustes recuperó el perfil y permitió abrir Copias de seguridad. Cero errores de navegador. `pnpm format:check`, **91/91 pruebas** y `pnpm build` pasaron con Node 24.22.0/pnpm 12.14.0. La revisión independiente no encontró bloqueantes. Sin cambios en reglas clínicas, esquema persistido o contratos de respaldo; sin despliegue en Vercel.
 
+## Task 22 — Dimensiones compartidas y responsive
+
+**Resultado: pasa en Chromium local.** Se corrigió la causa de la captura: la regla propia `.grid` imponía dos columnas al diálogo y el select de esquema era más ancho que su columna. En la medición previa, un popup de 512 px tenía dos columnas de 220 px y un select de 311,5 px. El layout propio se migró completamente a `.content-grid`, sin añadir Bootstrap ni modificar dependencias.
+
+Los diálogos ahora tienen una única columna, límites de viewport y cuerpo desplazable. Formularios de perfil/aplicación/reparación: máximo 40rem; Información: 56.25rem; confirmaciones: 32rem. Con fuente base de 16 px, son 640/900/512 px respectivamente. Los campos combinados solo usan dos columnas si su propio contenedor alcanza 34rem. Los controles de uso real miden al menos 44 px; los textos largos se parten en líneas en lugar de quedar cortados.
+
+Se recorrieron los mismos **17 estados** en los siguientes escenarios:
+
+| Viewport CSS | Variante | Resultado |
+|---|---|---|
+| 320 × 740 | Móvil estrecho | Pasa |
+| 390 × 844 | Móvil | Pasa |
+| 768 × 1024 | Tablet | Pasa |
+| 1052 × 1260 | Tamaño usado para inspeccionar la captura | Pasa |
+| 1280 × 900 | Escritorio | Pasa |
+| 844 × 390 | Ventana horizontal de poca altura | Pasa |
+| 640 × 450, DPR 2 | Geometría equivalente a una ventana de 1280 × 900 al 200 % | Pasa |
+| 1052 × 1260, fuente raíz/cuerpo de 32 px | Texto al 200 % | Pasa |
+
+Los estados abarcan alta/edición de perfil, validación de perfil vacío, confirmación de esquema dentro del formulario, alta/edición de aplicación, Información expandida, cambio de referencia/catálogo, borrado de perfil/aplicación/incidencia, ambos pasos del borrado total y reparación de perfil/aplicación antes y después de confirmar su destino. Los datos de prueba se introdujeron mediante los formularios y el importador reales, en un contexto de navegador propio con perfiles ficticios.
+
+Las comprobaciones geométricas observaron márgenes mínimos de **16 px**, sin desbordamiento horizontal del popup/cuerpo ni controles recortados. Se midieron las opciones de los menús, los controles y sus límites; el encabezado/cierre de los formularios y el pie de confirmación permanecieron accesibles al desplazar el cuerpo. También se corrigió la expansión intrínseca de las columnas móviles y el desbordamiento de un apodo de 91 caracteres sin espacios. La cabecera compacta conserva su elipsis intencional; su menú permite leer el nombre completo.
+
+El foco de cierre se comprobó por teclado en los ocho escenarios, con al menos 8 px de separación del borde antes de contar el borde del popup. El foco nativo se movió a `@layer base` para no imponerse sobre los indicadores de los componentes. Tab permaneció dentro del diálogo; cancelar el aviso de descarte conservó apodo, nacimiento y esquema del borrador. Se observaron capturas de producción de 1052/390 px con el esquema completo y sin título visual duplicado.
+
+En producción local se recorrieron nuevamente los 15 estados base. Un borrador de aplicación conservó dueño, fecha, lote y notas al redimensionar **320 → 768 → 390 px**, con columnas **1 → 2 → 1**, y después se guardó como un único evento. Las mediciones tras redimensionar esperan a que el layout haya terminado de ajustarse. El PDF A4 de una página conservó fecha, dosis, IPS, lote editado, notas y leyenda no oficial, sin navegación ni acciones.
+
+Con el servidor detenido, recargar recuperó el perfil y el evento editado, y permitió abrir los diálogos de edición e Información con las nuevas dimensiones. El recorrido final de producción no registró errores de navegador. En desarrollo se observó una petición RSC cancelada (`ERR_ABORTED`), sin fallo funcional en los recorridos.
+
+`pnpm format:check`, **91/91 pruebas en 11 archivos** y `pnpm build` pasaron con Node 24.22.0/pnpm 12.14.0. La revisión independiente no encontró bloqueantes. No se alteraron contratos clínicos, esquema persistido, IDs ni formato de respaldo; no se versionaron fixtures, PDF o capturas.
+
+**Límite:** el escenario DPR 2 verifica geometría equivalente, no el control de zoom nativo de Chrome. No se comprobó el teclado virtual ni dispositivos físicos Safari/iOS/Android ni un nuevo deployment Vercel. Se dejó activo el servidor de desarrollo del usuario; los servidores propios de comprobación se detuvieron.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

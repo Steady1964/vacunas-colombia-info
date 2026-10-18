@@ -59,6 +59,7 @@ body {
   color: var(--ink);
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 button,
 input,
@@ -80,9 +81,11 @@ a {
   text-underline-offset: 3px;
   overflow-wrap: anywhere;
 }
-:focus-visible {
-  outline: 3px solid #356e61;
-  outline-offset: 3px;
+@layer base {
+  :focus-visible {
+    outline: 3px solid #356e61;
+    outline-offset: 3px;
+  }
 }
 h1,
 h2,
@@ -153,15 +156,7 @@ ul {
   min-width: 0;
 }
 
-.topbar-actions .profile-selector [data-slot='select-trigger'],
-.settings-reference [data-slot='select-trigger'] {
-  width: 100%;
-  min-width: 0;
-  min-height: 44px;
-}
-
-.topbar-actions .profile-selector [data-slot='select-value'],
-.settings-reference [data-slot='select-value'] {
+.topbar-actions .profile-selector [data-slot='select-value'] {
   display: block;
   min-width: 0;
   overflow: hidden;
@@ -196,7 +191,7 @@ ul {
 .footer-note {
   color: var(--muted);
 }
-.grid {
+.content-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
@@ -236,18 +231,23 @@ ul {
 .actions button {
   white-space: normal;
   height: auto;
-  min-height: 40px;
+  min-height: 44px;
 }
 .profile-selector {
   width: min(260px, 45vw);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 5px;
 }
 .field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
   margin: 18px 0;
+}
+.field > label {
+  line-height: 1.4;
 }
 .field p {
   font-size: 0.85rem;
@@ -262,12 +262,26 @@ ul {
   background: white;
   width: 100%;
   min-height: 44px;
+  min-width: 0;
   color: var(--ink);
 }
 .field input {
   min-height: 44px;
 }
+.field textarea {
+  resize: vertical;
+}
+.form {
+  width: 100%;
+  min-width: 0;
+  container: vaccine-form / inline-size;
+}
+.form .field {
+  margin: 0;
+}
 .form fieldset {
+  display: grid;
+  gap: 18px;
   border: 0;
   padding: 0;
   margin: 0;
@@ -279,39 +293,43 @@ ul {
 }
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
 }
+@container vaccine-form (min-width: 34rem) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .form-dialog {
-  max-height: 90dvh;
+  max-width: 40rem;
+}
+
+[data-slot='dialog-title'],
+[data-slot='dialog-description'],
+[data-slot='alert-dialog-title'],
+[data-slot='alert-dialog-description'] {
+  margin: 0;
+}
+
+.dialog-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
-  width: calc(100% - 28px);
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 6px;
 }
 
 .information-dialog {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: calc(100% - 32px);
-  max-width: 900px;
-  max-height: calc(100dvh - 32px);
-  overflow: hidden;
-}
-
-.information-dialog-header {
-  flex-shrink: 0;
-  padding-right: 32px;
-  text-align: left;
+  max-width: 56.25rem;
 }
 
 .information-sections {
   display: grid;
   align-content: start;
   gap: 16px;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 4px;
 }
 
 .settings-sections {
@@ -481,8 +499,8 @@ pre {
 }
 @media screen {
   .wrap
-    > :is(.card, .grid, .settings-container)
-    + :is(.card, .grid, .settings-container) {
+    > :is(.card, .content-grid, .settings-container)
+    + :is(.card, .content-grid, .settings-container) {
     margin-top: 22px;
   }
   .section-heading {
@@ -554,6 +572,7 @@ th {
   .app {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     height: 100dvh;
     min-height: 0;
     overflow: hidden;
@@ -594,9 +613,8 @@ th {
     gap: 12px;
     margin-top: 22px;
   }
-  .grid,
-  .form-grid {
-    grid-template-columns: 1fr;
+  .content-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
   .card {
     padding: 21px;

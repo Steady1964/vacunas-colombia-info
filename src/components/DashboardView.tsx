@@ -26,7 +26,7 @@ export function DashboardView({
   );
 
   return (
-    <div className="grid">
+    <div className="content-grid">
       <section className="card">
         <h2>Progreso del calendario</h2>
         <p>

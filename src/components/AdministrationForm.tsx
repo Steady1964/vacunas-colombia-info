@@ -111,7 +111,7 @@ export function AdministrationForm({
         activo no cambia el dueño de este registro.
       </p>
       <fieldset disabled={busy}>
-        <legend>
+        <legend className="sr-only">
           {administration ? 'Editar aplicación' : 'Registrar aplicación real'}
         </legend>
         <div className="field">

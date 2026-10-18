@@ -28,6 +28,25 @@ Los identificadores siguen la [guía TypeScript de Google](https://google.github
 
 VS Code recomienda **Prettier — Code formatter** (`esbenp.prettier-vscode`) y activa formato al guardar mediante `.vscode/settings.json`; `.editorconfig` comparte la indentación y finales LF con otros editores. No es necesario cambiar ajustes globales del editor.
 
+### Dimensiones y comportamiento responsive
+
+La interfaz conserva Tailwind CSS 4 y componentes shadcn/Radix. Los layouts propios usan clases específicas como `.content-grid`; no se redefine la utilidad `.grid` de Tailwind. Los estilos de foco nativos están en `@layer base` para no anular los indicadores de foco de los componentes.
+
+| Superficie | Límite con fuente base de 16 px |
+|---|---|
+| Perfil, aplicación y reparación | Ancho máximo `40rem` (640 px) |
+| Información | Ancho máximo `56.25rem` (900 px) |
+| Confirmaciones | Ancho máximo `32rem` (512 px) |
+| Todos los diálogos | Ancho/alto limitados al viewport menos `2rem`; al menos 16 px por borde con la fuente base |
+| Inputs, botones predeterminados, selects y opciones | Al menos 44 px de alto; el texto puede aumentar la altura |
+| Cierre de formularios e Información | Área de 44 × 44 px, separada 8 px del borde antes de contar el borde del diálogo |
+
+El encabezado y el formulario nunca forman dos columnas. El cuerpo `.dialog-body` tiene desplazamiento interno, mínimo de altura cero y 6 px de espacio para el foco. En formularios e Información, el encabezado y el cierre quedan fuera de ese desplazamiento; en confirmaciones, las acciones quedan fuera del cuerpo desplazable. Los títulos y descripciones de diálogo tienen margen cero y usan la separación del componente.
+
+Los pares de campos `.form-grid` pasan de una a dos columnas mediante una consulta al contenedor `vaccine-form` de al menos `34rem` (544 px con fuente base), no por el ancho de la pantalla. Los controles respetan el ancho disponible; los esquemas y las opciones largas saltan de línea. Solo el nombre del selector compacto de la cabecera usa puntos suspensivos; su menú muestra el nombre completo y respeta los márgenes del viewport.
+
+Redimensionar cambia únicamente el layout: no desmonta el formulario, descarta el borrador ni guarda automáticamente. Guardar/cancelar, las confirmaciones y los controles de foco mantienen sus contratos anteriores. La matriz observada y los límites de comprobación están en [la evidencia de aceptación](docs/verification/mvp-acceptance.md).
+
 ## Pruebas
 
 `pnpm test` ejecuta Vitest con IndexedDB aislada en memoria. Los tests usan nombres de base propios y no abren ni borran la base familiar del navegador.

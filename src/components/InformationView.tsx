@@ -3,7 +3,7 @@ import { PrivacyNotice } from './PrivacyNotice';
 
 export function InformationView({ catalog }: { catalog: Catalog }) {
   return (
-    <div className="information-sections">
+    <div className="information-sections dialog-body">
       <details className="information-section">
         <summary>Información para familias</summary>
         <div className="information-section-body">

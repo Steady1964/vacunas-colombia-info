@@ -95,7 +95,9 @@ export function ProfileForm({
       }}
     >
       <fieldset disabled={busy}>
-        <legend>{profile ? 'Editar perfil' : 'Crear perfil'}</legend>
+        <legend className="sr-only">
+          {profile ? 'Editar perfil' : 'Crear perfil'}
+        </legend>
         <div className="field">
           <Label htmlFor="nickname">Nombre o apodo</Label>
           <Input
@@ -150,16 +152,18 @@ export function ProfileForm({
             aria-label="Confirmar cambio de esquema"
           >
             <p>{SCHEDULE_CONFIRMATION}</p>
-            <Button type="button" onClick={() => void submit(true)}>
-              Confirmar cambio y guardar
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setConfirm(false)}
-            >
-              Cancelar cambio
-            </Button>
+            <div className="actions">
+              <Button type="button" onClick={() => void submit(true)}>
+                Confirmar cambio y guardar
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfirm(false)}
+              >
+                Cancelar cambio
+              </Button>
+            </div>
           </div>
         )}
         <div className="actions">

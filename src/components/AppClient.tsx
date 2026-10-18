@@ -370,7 +370,7 @@ export function AppClient() {
               </Button>
             </DialogTrigger>
             <DialogContent className="information-dialog">
-              <DialogHeader className="information-dialog-header">
+              <DialogHeader>
                 <DialogTitle>Información y ayuda</DialogTitle>
                 <DialogDescription>
                   Consulta la guía para familias, las fuentes y el cuidado de
@@ -617,80 +617,82 @@ export function AppClient() {
                 campos antes de confirmar.
               </DialogDescription>
             </DialogHeader>
-            {dialog.type === 'create-profile' ||
-            dialog.type === 'edit-profile' ? (
-              <ProfileForm
-                key={dialog.commandId}
-                commandId={dialog.commandId}
-                profile={
-                  dialog.type === 'edit-profile' ? dialog.profile : undefined
-                }
-                today={today}
-                onCancel={requestCloseForm}
-                onDirtyChange={setFormDirty}
-                onSave={async (command) => {
-                  const selectedReference = getScheduleReference(
-                    command.input.scheduleReferenceId,
-                  );
-                  const selectedCatalog =
-                    selectedReference &&
-                    getCatalog(selectedReference.catalogVersion);
-                  if (!selectedReference || !selectedCatalog)
-                    throw new Error('unknown-catalog');
-                  setMutationBusy(true);
-                  try {
-                    const saved = await saveProfile(family.db!, command, {
-                      today,
-                      now: new Date().toISOString(),
-                      catalog: selectedCatalog,
-                    });
-                    closeForm();
-                    if (command.mode === 'create') {
-                      setView('inicio');
-                      void setPreference(
-                        family.db!,
-                        'activeProfileId',
-                        saved.id,
-                      ).catch(() =>
-                        setError(
-                          'El perfil se guardó, pero no se pudo recordar la selección. Selecciónalo en la cabecera.',
-                        ),
-                      );
+            <div className="dialog-body">
+              {dialog.type === 'create-profile' ||
+              dialog.type === 'edit-profile' ? (
+                <ProfileForm
+                  key={dialog.commandId}
+                  commandId={dialog.commandId}
+                  profile={
+                    dialog.type === 'edit-profile' ? dialog.profile : undefined
+                  }
+                  today={today}
+                  onCancel={requestCloseForm}
+                  onDirtyChange={setFormDirty}
+                  onSave={async (command) => {
+                    const selectedReference = getScheduleReference(
+                      command.input.scheduleReferenceId,
+                    );
+                    const selectedCatalog =
+                      selectedReference &&
+                      getCatalog(selectedReference.catalogVersion);
+                    if (!selectedReference || !selectedCatalog)
+                      throw new Error('unknown-catalog');
+                    setMutationBusy(true);
+                    try {
+                      const saved = await saveProfile(family.db!, command, {
+                        today,
+                        now: new Date().toISOString(),
+                        catalog: selectedCatalog,
+                      });
+                      closeForm();
+                      if (command.mode === 'create') {
+                        setView('inicio');
+                        void setPreference(
+                          family.db!,
+                          'activeProfileId',
+                          saved.id,
+                        ).catch(() =>
+                          setError(
+                            'El perfil se guardó, pero no se pudo recordar la selección. Selecciónalo en la cabecera.',
+                          ),
+                        );
+                      }
+                    } finally {
+                      setMutationBusy(false);
                     }
-                  } finally {
-                    setMutationBusy(false);
+                  }}
+                />
+              ) : (
+                <AdministrationForm
+                  key={dialog.commandId}
+                  commandId={dialog.commandId}
+                  child={dialog.child}
+                  administration={
+                    dialog.type === 'edit-administration'
+                      ? dialog.administration
+                      : undefined
                   }
-                }}
-              />
-            ) : (
-              <AdministrationForm
-                key={dialog.commandId}
-                commandId={dialog.commandId}
-                child={dialog.child}
-                administration={
-                  dialog.type === 'edit-administration'
-                    ? dialog.administration
-                    : undefined
-                }
-                today={today}
-                catalog={dialog.catalog}
-                onCancel={requestCloseForm}
-                onDirtyChange={setFormDirty}
-                onSave={async (command) => {
-                  setMutationBusy(true);
-                  try {
-                    await saveAdministration(family.db!, command, {
-                      today,
-                      now: new Date().toISOString(),
-                      catalog: dialog.catalog,
-                    });
-                    closeForm();
-                  } finally {
-                    setMutationBusy(false);
-                  }
-                }}
-              />
-            )}
+                  today={today}
+                  catalog={dialog.catalog}
+                  onCancel={requestCloseForm}
+                  onDirtyChange={setFormDirty}
+                  onSave={async (command) => {
+                    setMutationBusy(true);
+                    try {
+                      await saveAdministration(family.db!, command, {
+                        today,
+                        now: new Date().toISOString(),
+                        catalog: dialog.catalog,
+                      });
+                      closeForm();
+                    } finally {
+                      setMutationBusy(false);
+                    }
+                  }}
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       )}
@@ -712,19 +714,22 @@ export function AppClient() {
               }
             }}
           >
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Confirmar cambio de esquema de {scheduleChange.profile.nickname}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {SCHEDULE_CONFIRMATION}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            {error && (
-              <p role="alert" className="error">
-                {error}
-              </p>
-            )}
+            <div className="dialog-body">
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Confirmar cambio de esquema de{' '}
+                  {scheduleChange.profile.nickname}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {SCHEDULE_CONFIRMATION}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              {error && (
+                <p role="alert" className="error">
+                  {error}
+                </p>
+              )}
+            </div>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={mutationBusy}>
                 Cancelar
@@ -747,22 +752,24 @@ export function AppClient() {
           }}
         >
           <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Cambiar a Esquema 2026</AlertDialogTitle>
-              <AlertDialogDescription>
-                El perfil cambiará de la combinación{' '}
-                {catalogChange.referenceCatalogVersion} /{' '}
-                {catalogChange.primaryScheduleId ?? 'sin esquema'} a Esquema
-                2026. Se recalcularán las referencias sin reescribir las
-                aplicaciones históricas. Las correspondencias no verificables
-                seguirán por revisar.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            {error && (
-              <p role="alert" className="error">
-                {error}
-              </p>
-            )}
+            <div className="dialog-body">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cambiar a Esquema 2026</AlertDialogTitle>
+                <AlertDialogDescription>
+                  El perfil cambiará de la combinación{' '}
+                  {catalogChange.referenceCatalogVersion} /{' '}
+                  {catalogChange.primaryScheduleId ?? 'sin esquema'} a Esquema
+                  2026. Se recalcularán las referencias sin reescribir las
+                  aplicaciones históricas. Las correspondencias no verificables
+                  seguirán por revisar.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              {error && (
+                <p role="alert" className="error">
+                  {error}
+                </p>
+              )}
+            </div>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={mutationBusy}>
                 Cancelar

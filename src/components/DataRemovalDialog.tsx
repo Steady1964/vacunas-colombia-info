@@ -75,39 +75,41 @@ export function DataRemovalDialog({
           }
         }}
       >
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {scope === 'all'
-              ? step === 1
-                ? '¿Eliminar todos los datos familiares?'
-                : 'Segunda confirmación: borrado total irreversible'
-              : `¿Eliminar ${label}?`}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {scope === 'profile'
-              ? 'Se eliminarán este perfil, sus aplicaciones y sus incidencias en una única operación. Los otros perfiles permanecen intactos.'
-              : scope === 'all'
-                ? 'Se eliminarán todos los perfiles, aplicaciones, preferencias e incidencias de este navegador. No se borrarán los archivos de respaldo descargados ni la aplicación offline.'
-                : 'Se eliminará únicamente este registro. No se puede deshacer sin un respaldo.'}{' '}
-            Puedes descargar antes una copia privada sin cifrar.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <Button
-          disabled={busy}
-          variant="outline"
-          onClick={() => {
-            try {
-              downloadBackup(snapshot);
-            } catch {
-              setError(
-                'No se pudo preparar el respaldo. Reintenta antes de borrar.',
-              );
-            }
-          }}
-        >
-          Descargar copia antes de eliminar
-        </Button>
-        {error && <p role="alert">{error}</p>}
+        <div className="dialog-body">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {scope === 'all'
+                ? step === 1
+                  ? '¿Eliminar todos los datos familiares?'
+                  : 'Segunda confirmación: borrado total irreversible'
+                : `¿Eliminar ${label}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {scope === 'profile'
+                ? 'Se eliminarán este perfil, sus aplicaciones y sus incidencias en una única operación. Los otros perfiles permanecen intactos.'
+                : scope === 'all'
+                  ? 'Se eliminarán todos los perfiles, aplicaciones, preferencias e incidencias de este navegador. No se borrarán los archivos de respaldo descargados ni la aplicación offline.'
+                  : 'Se eliminará únicamente este registro. No se puede deshacer sin un respaldo.'}{' '}
+              Puedes descargar antes una copia privada sin cifrar.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Button
+            disabled={busy}
+            variant="outline"
+            onClick={() => {
+              try {
+                downloadBackup(snapshot);
+              } catch {
+                setError(
+                  'No se pudo preparar el respaldo. Reintenta antes de borrar.',
+                );
+              }
+            }}
+          >
+            Descargar copia antes de eliminar
+          </Button>
+          {error && <p role="alert">{error}</p>}
+        </div>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>
             Cancelar y conservar datos
