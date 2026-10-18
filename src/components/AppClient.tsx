@@ -33,7 +33,7 @@ const navigation = [{ id: 'inicio', label: 'Inicio', icon: HeartPulse }, { id: '
 export function AppClient() {
   const family = useFamily()
   const today = useToday()
-  const [view, setView] = useState<View>('inicio')
+  const [requestedView, setView] = useState<View>('inicio')
   const [dialog, setDialog] = useState<FormDialog | null>(null)
   const [formDirty, setFormDirty] = useState(false)
   const [otherDirty, setOtherDirty] = useState<Record<string, boolean>>({})
@@ -46,6 +46,7 @@ export function AppClient() {
   const snapshot = family.snapshot
   const storedActive = snapshot?.preferences.find(p => p.key === 'activeProfileId')?.value
   const active = snapshot?.profiles.find(p => p.id === storedActive) ?? snapshot?.profiles[0]
+  const view = !active && (requestedView === 'calendario' || requestedView === 'carne') ? 'inicio' : requestedView
   const currentCatalog = getCatalog(CURRENT_CATALOG_VERSION)
   const catalog = active ? getCatalog(active.referenceCatalogVersion) : currentCatalog
   const applications = snapshot?.administrations.filter(a => a.childId === active?.id) ?? []
@@ -116,7 +117,7 @@ export function AppClient() {
       <p className="footer-note no-print">Fechas orientativas. Confirma el esquema con tu vacunador.</p>
       <PwaManager hasUnsavedChanges={hasUnsavedChanges} storageBlocked={family.status === 'blocked'} />
     </div>
-    <nav className="nav no-print" aria-label="Navegación principal">{navigation.map(item => <Button key={item.id} variant="ghost" aria-current={view === item.id ? 'page' : undefined} className={view === item.id ? 'active' : ''} onClick={() => setView(item.id)}><item.icon size={20} /><span>{item.label}</span></Button>)}</nav>
+    <nav className="nav no-print" aria-label="Navegación principal">{navigation.map(item => (active || (item.id !== 'calendario' && item.id !== 'carne')) && <Button key={item.id} variant="ghost" aria-current={view === item.id ? 'page' : undefined} className={view === item.id ? 'active' : ''} onClick={() => setView(item.id)}><item.icon size={20} /><span>{item.label}</span></Button>)}</nav>
     {dialog && family.db && <Dialog open onOpenChange={open => { if (!open) requestCloseForm() }}>
       <DialogContent className="form-dialog">
         <DialogHeader>

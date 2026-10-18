@@ -129,6 +129,13 @@ Después de este intento, el usuario solicitó completar la comprobación final 
 
 Los servidores y pestañas de esta comprobación se cerraron. No se cambiaron archivos de producción ni se incorporaron respaldos/PDF/capturas al repositorio. **La validación del deployment Vercel queda a cargo del usuario**, igual que la evidencia física de instalación que decida aportar; la revisión clínica independiente sigue siendo un requisito separado.
 
+## Navegación condicionada al perfil — 18/10/2026
+
+**Resultado: pasa.** En producción local (`127.0.0.1:3131`), sin perfiles se observaron únicamente Inicio, Información y Ajustes; estas últimas dos vistas siguieron utilizables. Crear el primer perfil añadió Calendario y Carné y la recarga conservó los cinco destinos.
+
+Con Carné abierto en una pestaña, eliminar el último perfil desde otra ocultó ambos destinos y dejó Inicio como destino activo, sin recargar. Restaurar el respaldo del perfil recuperó los cinco destinos en ambas pestañas. Se observaron capturas móviles y se midieron superficies de 390 × 844 y 1280 × 900: sin overflow horizontal global ni superposición de navegación, controles de 54 y 48 px respectivamente y cero errores de navegador. `pnpm test` pasó 91/91 y `pnpm build` completó producción. No se modificaron datos reales ni el deployment.
+
+
 
 ## Fuentes clínicas y vigencia
 
