@@ -4,13 +4,19 @@ Agenda y carné familiar local de vacunación infantil para Colombia. No sustitu
 
 ## Desarrollo
 
-Requiere Node.js y pnpm. Instalar las versiones del lockfile con `pnpm install --frozen-lockfile`; ejecutar `pnpm dev` para desarrollo y `pnpm build` / `pnpm start` para producción.
+Requiere Node.js y pnpm. Instalar exactamente el lockfile con `pnpm install --frozen-lockfile`; ejecutar `pnpm dev` para desarrollo, `pnpm test` para la suite y `pnpm build` / `pnpm start` para producción. Los scripts de desarrollo y build fijan webpack porque esta integración de Serwist genera el service worker mediante su plugin de webpack; no se suprime ni se asume compatibilidad con Turbopack.
 
 ## Pruebas
 
 `pnpm test` ejecuta Vitest con IndexedDB aislada en memoria. Los tests usan nombres de base propios y no abren ni borran la base familiar del navegador.
 
 Las fechas civiles se validan y calculan con meses calendario o días exactos, sin serializarlas a UTC. Ejecutar las pruebas de fechas bajo `TZ=America/Bogota`, `TZ=America/New_York` y `TZ=Pacific/Kiritimati` para comprobar límites de mes, bisiestos y horario de verano.
+
+## Build y despliegue en Vercel
+
+Importa el repositorio como proyecto Next.js y conserva los comandos `pnpm install --frozen-lockfile` y `pnpm build`, sin directorio de salida personalizado: se usa el servidor estándar de Next/Vercel, no `output: 'export'`. El historial no necesita variables secretas, base remota, endpoints ni Server Actions. Variables técnicas futuras del hosting no deben contener datos familiares.
+
+Vercel reconstruye `.next` y los workers de `public/` a partir de las fuentes. No subas `.next`, `node_modules`, `.vercel`, archivos `.env`, respaldos JSON, bases IndexedDB exportadas, PDF ni datos de smoke. Después del despliegue comprueba por HTTPS el manifiesto, `/sw.js`, sus cabeceras, la instalación y el recorrido offline antes de publicar.
 
 ## Perfiles, calendario y aplicaciones
 
@@ -19,6 +25,8 @@ Crea el primer perfil con apodo, nacimiento y la referencia indicada por tu vacu
 **Calendario** presenta fechas civiles, filtros PAI/complementarias y fuentes por requisito. Cambiar entre Esquema 2026 y Esquema anterior a 2026 pide confirmación y actualiza catálogo y serie primaria en una misma transacción: no cambia IDs, fechas reales, lotes ni prestadores del historial. Una combinación legada de 2/4/6 meses con hitos 2026 permanece legible y editable en perfiles existentes, pero no puede elegirse para perfiles nuevos. Las referencias opcionales se eligen explícitamente por perfil.
 
 **Registrar vacuna aplicada** registra una aplicación física, aunque un producto combinado cubra varios requisitos. Puedes guardar un producto incompleto por revisar, sin cobertura automática, y corregirlo desde **Carné → Editar** conservando su ID y los campos opcionales. Un error de escritura conserva el formulario para reintentar. Editar el nacimiento no reescribe aplicaciones; las que resulten incoherentes se señalan para revisión.
+
+Corregir lote, IPS o notas de una aplicación verificada conserva su snapshot de cobertura aunque después se haya cambiado de referencia. Cambiar producto, marca, dosis o etapa lo recalcula con el catálogo del perfil; el calendario siempre valida la compatibilidad actual. Al reparar una incidencia, tanto la previsualización como el guardado usan la referencia del niño destino elegido explícitamente.
 
 Las correspondencias y fechas se basan en catálogos inmutables de `src/data/catalog/`. La fecha editorial del documento y la fecha en que fue consultado se muestran por separado; una consulta no se presenta como fecha de publicación. Consulta las fuentes, reglas y límites en [docs/catalog-sources.md](docs/catalog-sources.md). La aplicación no calcula rescates ni intervalos clínicos mínimos.
 
@@ -53,6 +61,12 @@ La instalación depende del navegador: la app muestra el botón nativo solo cuan
 Una nueva versión queda en espera. **Actualizar aplicación** se habilita únicamente sin formularios/cambios pendientes y pide confirmación antes de activar y recargar esa pestaña. Recuperar conexión, `controllerchange` en otra pestaña y una actualización cancelada no recargan ni reemplazan datos familiares.
 
 El despliegue conserva el servidor estándar de Next.js/Vercel; no usa `output: 'export'`. `pnpm build` genera `public/sw.js` y `public/swe-worker-*.js`: son artefactos ignorados y Vercel los recrea, mientras `app/sw.ts`, manifiesto e íconos fuente sí pertenecen al repositorio.
+
+## Actualización del catálogo y estado de aceptación
+
+Una regla nueva exige fuente leída, alcance explícito, ID/versiones inmutables y pruebas a través del motor real. Crea una versión nueva de catálogo o referencia; no reescribas aplicaciones históricas ni conviertas una URL, índice, marca o fecha de consulta en validación clínica. Actualiza `src/data/catalog/`, sus pruebas y [`docs/catalog-sources.md`](docs/catalog-sources.md), incluyendo páginas o secciones leídas, fecha editorial separada de la consulta y cualquier límite `needs-review`.
+
+La evidencia ejecutada y los límites de despliegue están en [`docs/verification/mvp-acceptance.md`](docs/verification/mvp-acceptance.md). Permanece pendiente la instalación física por HTTPS en Safari/iOS y Chrome/Android, el smoke de un despliegue Vercel real y la revisión clínica independiente; por ello esa evidencia no autoriza afirmar aceptación integral ni publicar reglas como aprobadas.
 
 ## Borrado local y teclado
 

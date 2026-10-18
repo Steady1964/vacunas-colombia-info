@@ -70,7 +70,14 @@ for (const product of products) {
     for (const requirementId of rule.requirementIds) {
       if (!historicalPolioRequirementIds[requirementId]) requirementIds.push(requirementId);
     }
-    if (requirementIds.length > 0) coverageRules.push({ ...rule, requirementIds });
+    if (requirementIds.length > 0) {
+      const historicalRule = { ...rule, requirementIds };
+      if (requirementIds.includes('yellow-fever')) {
+        historicalRule.milestoneId = 'month-18';
+        historicalRule.sourceIds = [HISTORICAL_SOURCE_ID];
+      }
+      coverageRules.push(historicalRule);
+    }
   }
   historicalProducts.push({ ...product, coverageRules });
 }

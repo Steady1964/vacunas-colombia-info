@@ -91,7 +91,12 @@ async function writeAdministration(db: VaccineDB, command: AdministrationCommand
     throw new Error('conflict')
   }
   if (command.mode === 'edit' && !existing) throw new Error('missing-administration')
-  const coverage = resolveSelection(input, context.catalog)
+  const selectionUnchanged = existing?.coverageStatus === 'verified'
+    && existing.productId === input.productId && (existing.brand ?? '') === (input.brand ?? '')
+    && existing.doseNumber === input.doseNumber && existing.milestoneId === input.milestoneId
+  const coverage = selectionUnchanged
+    ? { coveredRequirementIds: existing.coveredRequirementIds, coverageStatus: existing.coverageStatus, reviewReasons: existing.reviewReasons }
+    : resolveSelection(input, context.catalog)
   if (profile.primaryScheduleId === null) {
     coverage.coveredRequirementIds = []
     coverage.coverageStatus = 'needs-review'

@@ -1,4 +1,4 @@
-import { getCatalog } from '../data/catalog'
+import { CURRENT_CATALOG_VERSION, HISTORICAL_CATALOG_VERSION, getCatalog } from '../data/catalog'
 import { backupV2Schema, legacyFamilyV1Schema } from './backupSchemas'
 import { parseCivilDate } from './civilDate'
 import { REVISION_KEY, type VaccineDB } from './db'
@@ -7,6 +7,8 @@ import { readRevision, repairActiveProfile } from './repository'
 import { resolveSelection } from './schedule/resolveCoverage'
 import { timestampSchema, vaccineAdministrationSchema, validatePortablePreference } from './schemas'
 import type { BackupV2, FamilySnapshot, ImportContext, ImportPreview, JsonObject, LegacyMetadata, ReviewReason, VaccineAdministration } from './types'
+
+const KNOWN_CATALOG_VERSIONS = [CURRENT_CATALOG_VERSION, HISTORICAL_CATALOG_VERSION] as const
 
 /** Stable recursive key ordering; arrays preserve meaning and captured raw order. */
 function canonical(value: unknown): string {
@@ -124,9 +126,26 @@ export function parseBackup(text: string, context: ImportContext): BackupV2 {
     if (administration.coverageStatus !== 'verified') continue
     const catalog = getCatalog(profile.referenceCatalogVersion)
     const selection = catalog ? resolveSelection(administration, catalog) : undefined
-    if (selection?.coverageStatus === 'verified' && profile.primaryScheduleId !== null) {
-      if (canonical([...selection.coveredRequirementIds].sort()) !== canonical([...administration.coveredRequirementIds].sort())) throw new Error('invalid-coverage')
-      continue
+    const storedCoverage = canonical([...administration.coveredRequirementIds].sort())
+    if (catalog && profile.primaryScheduleId !== null) {
+      if (selection?.coverageStatus === 'verified' && canonical([...selection.coveredRequirementIds].sort()) === storedCoverage) continue
+
+      // An explicit reference change leaves the original application byte-for-byte
+      // intact. Accept an exact snapshot verified by another known catalog; the
+      // schedule engine still decides whether it covers the profile's current rules.
+      let knownSnapshot = false
+      for (const version of KNOWN_CATALOG_VERSIONS) {
+        if (version === profile.referenceCatalogVersion) continue
+        const previousCatalog = getCatalog(version)
+        const previousSelection = previousCatalog ? resolveSelection(administration, previousCatalog) : undefined
+        if (previousSelection?.coverageStatus === 'verified'
+          && canonical([...previousSelection.coveredRequirementIds].sort()) === storedCoverage) {
+          knownSnapshot = true
+          break
+        }
+      }
+      if (knownSnapshot) continue
+      if (selection?.coverageStatus === 'verified') throw new Error('invalid-coverage')
     }
     // Unavailable evidence cannot grant coverage; the complete original survives.
     const reasons: ReviewReason[] = selection?.reviewReasons.length ? selection.reviewReasons : [profile.primaryScheduleId === null ? 'unknown-schedule' : 'unverified-rule']

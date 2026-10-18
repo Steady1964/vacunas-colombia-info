@@ -34,6 +34,7 @@ La combinación `CO-PAI-PRIMARY-2-4-6` + `CO-PAI-SHARED-2026-10` se conserva com
 
 - Esquema 2026 usa 42/84/126 días para la serie primaria; penta/IPV tienen tres primarias y neumococo/rotavirus dos. Influenza permanece a 6/7 meses, FA a 9 y SRP 2 a 18. El PCV de 12 meses es **refuerzo**, no tercera primaria.
 - Esquema anterior a 2026 usa 2/4/6 meses para la serie primaria. Conserva influenza a 6/7, pero ubica FA y SRP 2 a 18 meses según la edición 2 de EPS Sanitas. Sus referencias condicionales por edad no se programan universalmente.
+- La regla de cobertura de FA histórica usa también la etapa `month-18` y la fuente EPS Sanitas, no la etapa `month-9` del catálogo 2026. Requisitos, proyecciones y selección de producto coinciden; los snapshots de eventos ya capturados permanecen conservados.
 - La formulación de polio no está identificada en la fuente histórica. Los nombres son neutrales y las reglas históricas eliminan cobertura automática específica para IPV/VOP; no se inventa una equivalencia.
 - Se conserva `dpt-booster-1` como ID semántico estable, con etiqueta **Primer refuerzo DPT (en pentavalente)** y dosis 4 de la serie a `month-18`. En Esquema 2026, la correspondencia disponible es con `pentavalent-cellular`; no con DPT aislada. `dpt-booster-2` corresponde a dosis 5 / `year-5`. IPV usa dosis 4/5 para los refuerzos; PCV dosis 3 para su refuerzo.
 - Hepatitis B neonatal es un requisito independiente. Una hexavalente o pentavalente posterior no lo cumple automáticamente.
@@ -70,6 +71,8 @@ Las reglas monovalentes y de referencia PAI se limitan al biológico identificad
 El Excel `Esquema de Vacunacion Colombia - PAI, Vacunas Acelulares, Tarifas y Puntos de Atencion.xlsx` permanece exclusivamente como referencia **local de desarrollo**. No se subió a un servidor ni se usa como evidencia clínica; no se copiaron ejemplos familiares, tarifas, IPS, recomendaciones de medicamentos ni comparativas comerciales al catálogo.
 
 Estas versiones separan requisitos, proyecciones y productos; modelan Esquema 2026 y Esquema anterior a 2026 como referencias completas e inmutables; mantienen la combinación legada solo para perfiles existentes; dejan rotavirus privado 3 y meningococo fuera de la programación universal; y registran fuentes, alcance y fallos de lectura sin inventar verificación. Una referencia futura debe tener nueva versión y lectura documental explícita, sin reescribir aplicaciones históricas.
+
+Durante la aceptación se corrigió la etapa de la regla histórica de FA y se verificó su correspondencia contra el calendario real. La edición de lote/IPS/notas no recalcula un snapshot verificado si producto, marca, dosis y etapa siguen iguales; cambiar esos campos identificadores sí resuelve la selección con el catálogo del perfil. El respaldo conserva snapshots exactos verificados por otro catálogo local conocido, sin permitir que otorguen cobertura incompatible en el calendario activo.
 
 ## Pruebas de software
 

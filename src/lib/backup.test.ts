@@ -5,7 +5,7 @@ import { makeLegacyFamily } from '../test/legacyDatabase'
 import { applyImport, parseBackup, previewImport, serializeBackup } from './backup'
 import { openDatabase, REVISION_KEY, type VaccineDB } from './db'
 import { readFamily, saveAdministration, setPreference } from './repository'
-import { CURRENT_CATALOG_VERSION, getCatalog } from '../data/catalog'
+import { CURRENT_CATALOG_VERSION, HISTORICAL_CATALOG_VERSION, getCatalog } from '../data/catalog'
 import type { BackupV2, FamilySnapshot, ImportContext } from './types'
 
 let sequence = 0
@@ -121,6 +121,29 @@ describe('private validated v2 backups', () => {
     expect(incoming.administrations[0]).toMatchObject({ coverageStatus: 'needs-review', coveredRequirementIds: [], reviewReasons: ['unverified-rule'], legacy: { raw: { importedRecord: verified } } })
     const current = { ...empty, profiles: incoming.profiles, administrations: incoming.administrations }
     expect(previewImport(textOf(family), current, { ...context, now: '2026-10-17T15:00:00.000Z' }).conflicts).toEqual([])
+  })
+
+  it('roundtrips a verified application after its profile switches to the historical reference', () => {
+    const family = makeFamily()
+    family.profiles = [makeProfile({
+      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+      referenceCatalogVersion: HISTORICAL_CATALOG_VERSION,
+    })]
+    const verified = makeAdministration({
+      productId: 'hexavalent-acellular',
+      productName: 'Hexavalente acelular (DTPa-HB-IPV-Hib)',
+      brand: 'Hexaxim',
+      doseNumber: 1,
+      milestoneId: 'primary-1',
+      coveredRequirementIds: ['penta-1', 'ipv-1'],
+      coverageStatus: 'verified',
+      reviewReasons: [],
+    })
+    family.administrations = [verified]
+
+    const serialized = serializeBackup(family, FIXED_NOW)
+    expect(parseBackup(serialized, context).administrations).toEqual([verified])
+    expect(previewImport(serialized, family, context).conflicts).toEqual([])
   })
 
   it('exports a birth-change contradiction explicitly for review without mutating stored history or causing repeat conflicts', async () => {

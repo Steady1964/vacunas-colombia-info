@@ -1,0 +1,118 @@
+# Verificación de aceptación del MVP
+
+**Fecha de ejecución:** 17 de octubre de 2026
+
+**Rama:** `development`
+
+**Aplicación:** build de producción de Next.js 16.4.2 servido con `pnpm start`
+
+**Datos:** perfiles ficticios `Luna` y `Sol`; no se usó una base familiar real.
+
+## Cómo leer este documento
+
+- **Pasa (ejecutado):** se ejerció el comportamiento indicado y se observó el resultado obligatorio.
+- **Falla (ejecutado):** se ejerció y el resultado no cumplió. No quedan filas con este estado.
+- **No comprobado:** falta el entorno, dispositivo o autoridad necesarios; no equivale a aprobación.
+
+La suite automatizada demuestra contratos de software, no vigencia ni pertinencia clínica. Los recorridos de navegador se ejecutaron en Chromium 150 administrado, con viewport móvil 390 × 844 y escritorio. Safari/iOS y Chrome/Android se emularon únicamente para instrucciones y user agent; no hubo dispositivo físico. Tampoco se desplegó este branch en Vercel.
+
+## Comprobaciones reproducibles
+
+| Comprobación | Resultado observado |
+|---|---|
+| `pnpm install --frozen-lockfile` | Pasa; lockfile vigente, sin resolución adicional. |
+| `pnpm test` | Pasa; 11 archivos y 91 pruebas después de las regresiones de respaldo, edición y catálogo descritas abajo. |
+| `TZ=America/Bogota pnpm exec vitest run src/lib/civilDate.test.ts` | Pasa; 16/16. |
+| `TZ=America/New_York pnpm exec vitest run src/lib/civilDate.test.ts` | Pasa; 16/16, incluidos días locales de 23 y 25 horas. |
+| `TZ=Pacific/Kiritimati pnpm exec vitest run src/lib/civilDate.test.ts` | Pasa; 16/16. |
+| `pnpm build` | Pasa con Next.js 16.4.2 y webpack; `/`, `/_not-found`, `/icon.svg` y `/offline` se prerenderizaron. Serwist generó `/sw.js`. |
+| Producción local | Pasa en `127.0.0.1`; worker activo/controlador, manifiesto enlazado y cero errores de consola en el smoke final. |
+| Fechas + `calculateSchedule.test.ts` + `summarizeSchedule.test.ts` en cada una de las tres zonas anteriores | Pasa; 3 archivos y 22/22 pruebas en Bogotá, Nueva York y Kiritimati. |
+
+La advertencia de Serwist sobre registro automático es esperada: `register: false` evita un segundo registro y `PwaManager` registra el worker de forma explícita para controlar instalación y actualización. Next también informó un `package-lock.json` externo al repositorio; no forma parte de este proyecto ni del despliegue con `pnpm-lock.yaml`.
+
+## A01–A17
+
+| ID | Estado | Evidencia observada |
+|---|---|---|
+| A01 | **Pasa (ejecutado)** | Origen limpio: bienvenida sin perfiles demo ni cuenta. El formulario exigió apodo, nacimiento y referencia sin preselección antes de crear `Luna`. |
+| A02 | **Pasa (ejecutado)** | `Luna`, nacimiento `2026-01-31`, Esquema 2026: calendario mostró `2026-03-14`, `2026-04-25` y `2026-06-06` para 42/84/126 días, catálogo `CO-PAI-SHARED-2026-10`. |
+| A03 | **Pasa (ejecutado)** | Desde Calendario se eligió Esquema anterior a 2026. Cancelar conservó la pareja 2026; confirmar guardó `CO-PAI-PRIMARY-2-4-6` + `CO-PAI-EPS-SANITAS-UNDATED-ED2`. Fechas: `2026-03-31`, `2026-05-31`, `2026-07-31`. |
+| A04 | **Pasa (ejecutado)** | Antes, después de cancelar y después de confirmar se comparó la administración completa en IndexedDB. ID, fecha `2026-03-14`, producto, marca `Hexaxim`, lote `LOTE-A01`, IPS, notas, timestamps y snapshot de cobertura permanecieron byte por byte iguales; no aparecieron eventos adicionales. |
+| A05 | **Pasa (ejecutado)** | Se creó `Sol` con Esquema 2026 y `Luna` con el histórico. Tras recargar: dos perfiles, sus parejas catálogo/serie correctas y `Sol` activo persistieron. |
+| A06 | **Pasa (ejecutado)** | 2026 mostró fiebre amarilla a 9 meses y SRP segunda dosis a 18 meses. El histórico mostró fiebre amarilla a 18 meses. La dosis cero permaneció como referencia condicional, no requisito universal. |
+| A07 | **Pasa (ejecutado)** | Una aplicación física de hexavalente, dosis 1/`primary-1`, cubrió exactamente pentavalente 1 e IPV 1. Pentavalente 2 permaneció pendiente; el carné contó un solo evento. |
+| A08 | **Pasa (ejecutado)** | Dos aplicaciones RotaTeq cubrieron rotavirus 1 y 2. Al habilitar su referencia opcional, `RotaTeq — tercera dosis del curso particular` permaneció “Por verificar con el vacunador”. Rotarix no recibió tercera dosis universal. |
+| A09 | **Pasa (ejecutado)** | Carné de `Luna`: solo su hexavalente. Carné de `Sol`: solo sus dos RotaTeq. Eliminar `Sol` retiró sus dos eventos y conservó intacto el evento de `Luna`. |
+| A10 | **Pasa (ejecutado)** | Recarga y reapertura conservaron dos perfiles, tres aplicaciones y selección activa en IndexedDB v30. |
+| A11 | **Pasa (ejecutado)** | Un carné ficticio de 24 eventos produjo PDF A4 de 5 páginas. Primera y última página conservaron cabecera, apodo, nacimiento, fecha de exportación, leyenda no oficial, encabezados repetidos y todos los campos reales; no incluyeron navegación, acciones ni proyecciones pendientes. |
+| A12 | **Pasa (ejecutado)** | Exportación v2 de dos perfiles/tres aplicaciones; autoimportación identificó 2 perfiles y 3 eventos idénticos y no duplicó. Un archivo con mismo ID y apodo distinto produjo conflicto, deshabilitó Combinar y Cancelar dejó 2/3 intactos. Reemplazo restauró 2/3 tras borrar un perfil. |
+| A13 | **Pasa (ejecutado)** | Diálogo identificó `Sol`, explicó borrado atómico y ofreció copia. Confirmar dejó solo `Luna` y su hexavalente; después se restauró el respaldo completo. |
+| A14 | **Pasa (ejecutado)** | Con servidor detenido y worker controlador: ruta no precargada mostró `/offline`; `/` abrió shell completo y conservó perfil/calendario/carné. Offline se creó/editó perfil, creó/editó evento, imprimió PDF y exportó/previsualizó/combinó respaldo. |
+| A15 | **Pasa (ejecutado)** | Durante altas, cambios, respaldo y borrado hubo 18 solicitudes HTTP, todas `GET` al origen `127.0.0.1:3123`, sin cuerpo ni cookie. Ninguna URL incluyó apodo, nacimiento, lote, IPS o nota. Cache Storage tuvo 28 recursos estáticos y cero coincidencias de datos ficticios; no hubo local/session storage. |
+| A16 | **Pasa (ejecutado)** | Inicio limpio y con datos, recarga y actualización no produjeron errores de hidratación. IndexedDB denegada/no disponible mostró estado de error sin crear familia alternativa ni resetear; los tests de migración verifican rollback. |
+| A17 | **No comprobado en dispositivo físico** | Manifiesto, PNG 192/512, apple touch icon, nombre y `display: standalone` pasan en Chromium. Se ejerció `beforeinstallprompt` diferido y se observaron instrucciones con UA iOS/Android. Falta instalar/abrir mediante HTTPS en Safari/iOS y Chrome/Android físicos; A17 no está aceptado por completo. |
+
+### Defecto encontrado durante A12
+
+El respaldo exportado después de cambiar el perfil de 2026 al histórico era rechazado al autoimportarlo con `invalid-coverage`: la aplicación física conservaba correctamente su snapshot 2026, pero el importador lo comparaba solo con el catálogo actual del perfil. Se añadió una regresión que falla antes del cambio. El importador ahora acepta el snapshot únicamente cuando coincide exactamente con una regla verificada de otro catálogo local conocido; el motor de calendario sigue decidiendo por separado si ese evento cubre la referencia actual. Un snapshot inventado continúa rechazado o degradado a revisión. La prueba focal y las 24 pruebas de respaldo pasan.
+
+### Correcciones de la revisión independiente
+
+- **Edición administrativa tras cambiar referencia:** la regresión falló porque editar lote/IPS/notas de una hexavalente 2026 bajo el perfil histórico reducía `['penta-1', 'ipv-1']` a `['penta-1']`. El repositorio conserva el snapshot verificado cuando producto, marca, dosis y etapa no cambian; una selección distinta se recalcula. En producción se editó el lote bajo la referencia histórica y luego se volvió a 2026: el snapshot mantuvo ambos requisitos e IPV 1 volvió a mostrarse aplicada.
+- **Reparación con destino de otra referencia:** con `Sol` activo en 2026 y `Luna` histórica como destino, guardar falló y conservó el formulario. Se corrigieron contexto y previsualización para resolver el catálogo del niño destino, no del activo. El smoke posterior reparó ambas direcciones: fiebre amarilla a 18 meses para el destino histórico y hexavalente con penta/IPV 1 para el destino 2026; solo se eliminaron las incidencias resueltas.
+- **Fiebre amarilla histórica:** la regresión falló al registrar la etapa real de su calendario (`month-18`); la regla aún copiaba `month-9` desde 2026. La regla histórica ahora usa `month-18` y la fuente EPS Sanitas. La prueba rechaza la etapa opuesta en cada catálogo y el flujo de reparación guardó `yellow-fever` con cobertura en la etapa histórica correcta.
+
+Estos últimos recorridos usaron otra familia ficticia aislada, con nacimiento `2025-01-31` para permitir una aplicación pasada a 18 meses. No modifican la evidencia de fechas A02/A03 de la familia original.
+
+La variante de marca opcional ausente también falló antes de normalizar `undefined` y cadena vacía como la misma ausencia de identificación; las 15 pruebas de repositorio pasan. La segunda revisión independiente examinó las correcciones y no dejó hallazgos bloqueantes para el commit de Task 13.
+
+## Correcciones M/F/P/H/U
+
+| ID | Estado | Evidencia |
+|---|---|---|
+| M01 | **Pasa (ejecutado)** | Base v1 real de prueba: IDs/campos preservados, huérfanos e incoherencias conservados para revisión; segunda apertura sin duplicación. |
+| M02 | **Pasa (ejecutado)** | Perfil legado sin esquema exige elección; producto no identificado no cubre; ambos estados sobreviven al respaldo. |
+| M03 | **Pasa (ejecutado)** | Pruebas de fallo de migración/importación verifican rollback completo. La UI no propone borrar para recuperarse. |
+| F01 | **Pasa (ejecutado)** | 16 pruebas en cada una de tres zonas: 29/30/31, bisiestos, mes/año, 42/84/126 días y DST 23/25 h. |
+| F02 | **Pasa (ejecutado)** | Resúmenes cuentan requisitos únicos, hito multivacuna, hoy, ventana inclusiva de 30 días y denominador cero. A07 confirmó el flujo real. |
+| F03 | **Pasa (ejecutado)** | Suite verifica idempotencia por command ID, error de escritura con formulario conservado y rechazo de fecha futura; UI mostró error accionable sin guardar. |
+| F04 | **Pasa (ejecutado)** | Editar nacimiento y cambiar catálogo conserva eventos; contradicciones quedan por revisar y no se promueven automáticamente. |
+| F05 | **Pasa (ejecutado)** | Eliminación de evento/perfil/familia exige confirmación y ofrece copia según alcance; transacciones y rollback cubiertos. A13 confirmó perfil + eventos. |
+| P01 | **Pasa (ejecutado)** | Segundo build cambió `sw.js`: worker quedó en espera; cancelar conservó documento/formulario. Confirmar recargó solo la pestaña solicitante; otra pestaña mantuvo su campo sin guardar e IndexedDB intacta. |
+| H01 | **Pasa (ejecutado)** | Alta ofrece solo 2026 e histórico; 42/84/126 días + FA 9 meses frente a 2/4/6 meses + FA 18 meses. |
+| H02 | **Pasa (ejecutado)** | Referencia legada solo aparece en perfil existente, no en alta. Cancelar no cambia la pareja ni eventos; confirmar explícito preserva eventos. |
+| U01 | **Pasa (ejecutado)** | 390 × 844: grid de cabecera/contenido/nav sin superposición, contenido con scroll propio y acciones estrechas en una columna; objetivos medidos en 44 px o más. |
+
+## Red, almacenamiento y superficie de servidor
+
+- No existen `app/**/route.*`, `pages/api`, Server Actions ni imports de Firebase, Supabase, MongoDB, analítica, publicidad o tracking.
+- El único `fetch()` de la aplicación está en el service worker y resuelve navegaciones del mismo origen antes de usar `/offline`.
+- `Cache Storage`: un precache Serwist de 28 URLs del shell; sin `blob:`, `data:`, respaldos ni contenido familiar.
+- Datos familiares: exclusivamente IndexedDB `vacunas-colombia`; cookies, `localStorage` y `sessionStorage` vacíos en el recorrido.
+- `/sw.js`: JavaScript, `no-cache, no-store, must-revalidate`, alcance `/`, CSP del worker. Cabeceras globales: `nosniff`, `DENY`, referrer estricto y permisos de cámara/micrófono/geolocalización desactivados.
+- HTTPS y cabeceras en un despliegue Vercel real permanecen **no comprobados** porque no se publicó este branch.
+
+## Fuentes clínicas y vigencia
+
+| Fuente o conjunto | Estado documental | Límite de aceptación |
+|---|---|---|
+| Salud Total, Esquema 2026 | **Leído y trazado** como fuente secundaria para 42/84/126 días; fecha editorial no visible. | No sustituye MinSalud ni demuestra vigencia futura o elegibilidad individual. |
+| EPS Sanitas, edición 2 | **Leído y trazado** para la referencia histórica 2/4/6; fecha editorial no visible y no se le atribuye 2025. | Es referencia histórica, no declaración de vigencia 2026 ni universal. Polio queda neutral. |
+| MinSalud 2026 y afiche julio 2026 | **Pasajes indicados en `docs/catalog-sources.md` leídos** para hitos, formulaciones y límites. | No hubo auditoría exhaustiva de toda la normativa ni de campañas posteriores. |
+| Fichas de productos | **Pasajes identificados y versionados** para composición/cursos acotados. | No verifican INVIMA actual, disponibilidad, financiación PAI, intercambiabilidad o indicación individual. |
+| URLs marcadas `needs-review` | **No verificadas**; permanecen explícitas y no conceden cobertura. | No publicar como regla válida. |
+| Excel aportado | **Referencia de desarrollo**, no fuente clínica ni artefacto servido. | Tarifas, IPS, comparativas y ejemplos familiares no se incorporaron al catálogo. |
+| Revisión por profesional clínico independiente | **No comprobado**. | La aplicación y este documento no certifican validez clínica ni autorizan publicación de las reglas. |
+
+La trazabilidad detallada, páginas leídas y documentos fallidos están en [`docs/catalog-sources.md`](../catalog-sources.md).
+
+## Resultado y límites para despliegue
+
+El comportamiento de software aplicable pasa en producción local. **No se declara aceptación integral ni se solicita publicación** mientras falten:
+
+1. instalación y apertura reales mediante HTTPS en Safari/iOS y Chrome/Android físicos (A17);
+2. smoke del despliegue real de Vercel, incluidas cabeceras HTTPS;
+3. revisión clínica independiente de vigencia y alcance antes de presentar las reglas como aprobadas para uso público.
+
+No se versionaron `.next`, workers generados, bases IndexedDB, respaldos descargados, PDF, capturas ni fixtures temporales del recorrido.

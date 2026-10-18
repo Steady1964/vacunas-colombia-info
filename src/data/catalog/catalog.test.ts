@@ -85,6 +85,28 @@ describe('catálogo Colombia con evidencia y límites explícitos', () => {
     ]);
   });
 
+  it('reconoce fiebre amarilla únicamente en la etapa propia de cada referencia', () => {
+    const historicalCatalog = getCatalog(HISTORICAL_CATALOG_VERSION)!;
+    const historicalProfile = makeProfile({
+      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+      referenceCatalogVersion: HISTORICAL_CATALOG_VERSION,
+    });
+    const historicalRequirement = calculateSchedule(historicalProfile, historicalCatalog, today, [])
+      .find(requirement => requirement.id === 'yellow-fever')!;
+    expect(resolveSelection({
+      productId: 'yellow-fever', doseNumber: 1, milestoneId: historicalRequirement.milestoneId,
+    }, historicalCatalog).coveredRequirementIds).toEqual(['yellow-fever']);
+    expect(resolveSelection({
+      productId: 'yellow-fever', doseNumber: 1, milestoneId: 'month-9',
+    }, historicalCatalog).coveredRequirementIds).toEqual([]);
+    expect(resolveSelection({
+      productId: 'yellow-fever', doseNumber: 1, milestoneId: 'month-9',
+    }, catalog).coveredRequirementIds).toEqual(['yellow-fever']);
+    expect(resolveSelection({
+      productId: 'yellow-fever', doseNumber: 1, milestoneId: 'month-18',
+    }, catalog).coveredRequirementIds).toEqual([]);
+  });
+
   it.each(modes)('conserva las tres etapas penta/IPV y solo dos primarias PCV/rotavirus en %s', (primaryScheduleId) => {
     const schedule = calculateSchedule(makeProfile({ primaryScheduleId }), catalog, today, []);
     for (const component of ['penta', 'ipv']) {

@@ -26,7 +26,9 @@ export function MigrationReviewPanel({ db, snapshot, today, catalog, onEditAdmin
     if (!issue || inFlight.current) throw new Error('missing-migration-issue')
     const issueId = issue.id
     const profileReference = 'childId' in command ? undefined : getScheduleReference(command.input.scheduleReferenceId)
-    const contextCatalog = profileReference ? getCatalog(profileReference.catalogVersion) : catalog
+    const contextCatalog = 'childId' in command
+      ? getCatalog(snapshot.profiles.find(profile => profile.id === command.childId)?.referenceCatalogVersion ?? '')
+      : profileReference ? getCatalog(profileReference.catalogVersion) : undefined
     if (!contextCatalog) throw new Error('unknown-catalog')
     const context = { today, now: new Date().toISOString(), catalog: contextCatalog }
     inFlight.current = true
@@ -34,6 +36,7 @@ export function MigrationReviewPanel({ db, snapshot, today, catalog, onEditAdmin
     finally { inFlight.current = false }
   }
   const destination = snapshot.profiles.find(p => p.id === destinationId)
+  const destinationCatalog = destination ? getCatalog(destination.referenceCatalogVersion) : undefined
   const reviewEvents = snapshot.administrations.filter(a => a.coverageStatus === 'needs-review' || a.reviewReasons.length)
   const repairProfile: StoredProfile | undefined = issue?.kind === 'profile' ? { id: issue.entityId, nickname: text(issue, 'nickname', 'name'), birthDate: text(issue, 'birthDate'), country: 'CO', primaryScheduleId: null, migrationStatus: 'needs-schedule-choice', referenceCatalogVersion: catalog.version, createdAt: issue.migratedAt, updatedAt: issue.migratedAt } : undefined
   const initialInput: Partial<AdministrationInput> | undefined = issue?.kind === 'administration' ? { productName: text(issue, 'productName', 'vaccine'), appliedDate: text(issue, 'appliedDate', 'date'), brand: text(issue, 'brand'), lot: text(issue, 'lot'), provider: text(issue, 'provider', 'point'), notes: text(issue, 'notes') } : undefined
@@ -53,10 +56,11 @@ export function MigrationReviewPanel({ db, snapshot, today, catalog, onEditAdmin
             </select>
           </div>
           <p>Origen: {issue.childId ?? 'no identificado'}. Destino: {destination?.nickname ?? 'sin seleccionar'}.</p>
-          {!destinationConfirmed && <Button disabled={!destination} onClick={() => setDestinationConfirmed(true)}>Confirmar destino y corregir aplicación</Button>}
-          {destinationConfirmed && destination &&
+          {destination && !destinationCatalog && <p role="alert">La referencia del perfil destino no está disponible. Revisa su esquema antes de reparar la aplicación.</p>}
+          {!destinationConfirmed && <Button disabled={!destination || !destinationCatalog} onClick={() => setDestinationConfirmed(true)}>Confirmar destino y corregir aplicación</Button>}
+          {destinationConfirmed && destination && destinationCatalog &&
             <AdministrationForm key={`${issue.id}:${destination.id}`} commandId={issue.entityId} child={destination}
-              initialInput={initialInput} today={today} catalog={catalog}
+              initialInput={initialInput} today={today} catalog={destinationCatalog}
               onDirtyChange={v => { setDirty(v); onDirtyChange(true) }} onCancel={requestClose} onSave={repair} />}
           {!snapshot.profiles.length && <p>Crea o repara primero un perfil en Ajustes. No inventamos un niño para asignar esta aplicación.</p>}
         </>}

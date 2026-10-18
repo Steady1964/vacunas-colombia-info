@@ -46,6 +46,34 @@ describe('profile-scoped atomic writes', () => {
     expect(await db.administrations.count()).toBe(1)
   })
 
+  it.each([undefined, 'Hexaxim'])('preserves verified coverage on metadata edits after a reference change with brand %s', async (brand) => {
+    await saveProfile(db, profileCommand, context)
+    const input: AdministrationInput = {
+      ...administrationInput, productId: 'hexavalent-acellular', brand,
+      doseNumber: 1, milestoneId: 'primary-1',
+    }
+    await saveAdministration(db, { ...administrationCommand, input }, context)
+    const historicalContext = { ...context, catalog: getCatalog(HISTORICAL_CATALOG_VERSION)! }
+    await saveProfile(db, {
+      ...profileCommand, mode: 'edit',
+      input: { ...profileCommand.input, scheduleReferenceId: 'CO-PAI-REFERENCE-PRE-2026' },
+    }, historicalContext)
+    const edited = await saveAdministration(db, {
+      ...administrationCommand, mode: 'edit',
+      input: { ...input, brand: brand ?? '', lot: 'Lote corregido', provider: 'Otra IPS', notes: 'Nota corregida' },
+    }, historicalContext)
+    expect(edited.coveredRequirementIds).toEqual(['penta-1', 'ipv-1'])
+    expect(edited.coverageStatus).toBe('verified')
+    expect(edited.reviewReasons).toEqual([])
+    expect(edited.lot).toBe('Lote corregido')
+
+    const changed = await saveAdministration(db, {
+      ...administrationCommand, mode: 'edit',
+      input: { ...input, doseNumber: 2, milestoneId: 'primary-2' },
+    }, historicalContext)
+    expect(changed.coveredRequirementIds).toEqual(['penta-2'])
+  })
+
   it('keeps contradictory product and brand editable without granting coverage', async () => {
     await saveProfile(db, profileCommand, context)
     const event = await saveAdministration(db, { ...administrationCommand, input: { ...administrationInput, productId: 'hexavalent-acellular', brand: 'Rotarix', doseNumber: 1, milestoneId: 'primary-1' } }, context)
