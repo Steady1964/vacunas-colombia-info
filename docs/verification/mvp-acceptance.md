@@ -14,7 +14,7 @@
 - **Falla (ejecutado):** se ejerció y el resultado no cumplió. No quedan filas con este estado.
 - **No comprobado:** falta el entorno, dispositivo o autoridad necesarios; no equivale a aprobación.
 
-La suite automatizada demuestra contratos de software, no vigencia ni pertinencia clínica. Los recorridos de navegador se ejecutaron en Chromium 150 administrado, con viewport móvil 390 × 844 y escritorio. Safari/iOS y Chrome/Android se emularon únicamente para instrucciones y user agent; no hubo dispositivo físico. Tampoco se desplegó este branch en Vercel.
+La suite automatizada demuestra contratos de software, no vigencia ni pertinencia clínica. Los recorridos locales de navegador se ejecutaron en Chromium 150 administrado, con viewport móvil 390 × 844 y escritorio. Safari/iOS y Chrome/Android se emularon únicamente para instrucciones y user agent; no hubo dispositivo físico. La comprobación posterior del deployment facilitado por el usuario se registra por separado abajo y no modifica los resultados locales.
 
 ## Comprobaciones reproducibles
 
@@ -91,7 +91,23 @@ La variante de marca opcional ausente también falló antes de normalizar `undef
 - `Cache Storage`: un precache Serwist de 28 URLs del shell; sin `blob:`, `data:`, respaldos ni contenido familiar.
 - Datos familiares: exclusivamente IndexedDB `vacunas-colombia`; cookies, `localStorage` y `sessionStorage` vacíos en el recorrido.
 - `/sw.js`: JavaScript, `no-cache, no-store, must-revalidate`, alcance `/`, CSP del worker. Cabeceras globales: `nosniff`, `DENY`, referrer estricto y permisos de cámara/micrófono/geolocalización desactivados.
-- HTTPS y cabeceras en un despliegue Vercel real permanecen **no comprobados** porque no se publicó este branch.
+- El acceso HTTPS al deployment real se comprobó el 18/10/2026, pero Vercel Authentication impidió cargar la aplicación. Las cabeceras de la aplicación, su PWA y sus flujos desplegados permanecen **no comprobados**; las cabeceras de autenticación de Vercel no las sustituyen.
+
+## Comprobación del deployment Vercel — 18/10/2026
+
+URL proporcionada por el usuario: [deployment de Vacunas Colombia](https://vacunas-colombia-info-8l73fpn0v-steady1964s-projects.vercel.app).
+
+| Comprobación ejecutada | Resultado observado | Alcance |
+|---|---|---|
+| HTTPS con `curl`, sin omitir validación TLS | Respuesta HTTP/2 y `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` | El endpoint de Vercel responde por HTTPS; no demuestra que la aplicación esté accesible. |
+| `/` | HTTP 302 hacia `https://vercel.com/sso-api` | Acceso a la aplicación bloqueado por autenticación. |
+| `/sw.js` | HTTP 302 hacia Vercel SSO, `Content-Type: text/plain` | No se recibió JavaScript ni se verificaron las cabeceras del worker. |
+| `/manifest.webmanifest` | HTTP 302 hacia Vercel SSO, `Content-Type: text/plain` | No se recibió el manifiesto ni se pudieron verificar sus íconos desplegados. |
+| Chromium, viewport 390 × 844 | Navegación termina en `vercel.com/login`, título `Login – Vercel` | Se observó la pantalla de acceso, no la aplicación. |
+
+**Estado: bloqueado por acceso autorizado pendiente.** No se ejercieron perfiles, aplicaciones, respaldos, instalación, offline ni privacidad de red de la aplicación en este deployment. Tampoco se identificó el commit desplegado. El cookie técnico `_vercel_sso_nonce` observado pertenece al control de acceso de Vercel; no se utilizó para afirmar nada sobre el almacenamiento familiar.
+
+Para continuar se necesita un enlace compartible autorizado al deployment o una URL accesible de la misma compilación. No se cambiaron protecciones, credenciales ni configuración de Vercel, no se intentó eludir el control de acceso y no se introdujeron datos familiares. No es necesario hacer público todo el proyecto para conceder ese acceso.
 
 ## Fuentes clínicas y vigencia
 
