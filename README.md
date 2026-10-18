@@ -4,7 +4,21 @@ Agenda y carné familiar local de vacunación infantil para Colombia. No sustitu
 
 ## Desarrollo
 
-Requiere Node.js y pnpm. Instalar exactamente el lockfile con `pnpm install --frozen-lockfile`; ejecutar `pnpm dev` para desarrollo, `pnpm test` para la suite y `pnpm build` / `pnpm start` para producción. Los scripts de desarrollo y build fijan webpack porque esta integración de Serwist genera el service worker mediante su plugin de webpack; no se suprime ni se asume compatibilidad con Turbopack.
+Entorno verificado: **Node.js 24 LTS** (24.15.0 o posterior), **Corepack 0.36.0** y **pnpm 12.14.0**, fijado con su integridad en `package.json`. Con Node 24 activo:
+
+```bash
+npm install --global corepack@0.36.0
+corepack enable pnpm
+corepack install --global pnpm@12.14.0
+pnpm --version
+pnpm install --frozen-lockfile
+```
+
+Corepack 0.33.0 busca `bin/pnpm.cjs`, pero pnpm 12 usa `bin/pnpm.mjs`. Actualiza Corepack antes de instalar pnpm 12; si esa versión ya estaba cacheada con Corepack antiguo, mueve su carpeta de caché a un respaldo y vuelve a ejecutar `corepack install --global pnpm@12.14.0`. No hace falta borrar toda la caché ni modificar el lockfile a mano.
+
+Al migrar desde un pnpm anterior, si falla la eliminación de `node_modules/.pnpm` con `ERR_PNPM_PACKAGE_MANAGER_REMOVE_MODULES_DIR`, detén los procesos que usen las dependencias, mueve `node_modules` a un respaldo fuera del proyecto y repite `pnpm install --frozen-lockfile`. No borres el lockfile ni los datos del navegador.
+
+Ejecutar `pnpm dev` para desarrollo, `pnpm test` para la suite y `pnpm build` / `pnpm start` para producción. Los scripts de desarrollo y build fijan webpack porque esta integración de Serwist genera el service worker mediante su plugin de webpack; no se suprime ni se asume compatibilidad con Turbopack.
 
 ## Estilo de código y VS Code
 
