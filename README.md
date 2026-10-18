@@ -30,7 +30,9 @@ Vercel reconstruye `.next` y los workers de `public/` a partir de las fuentes. N
 
 Crea el primer perfil con apodo, nacimiento y la referencia indicada por tu vacunador; no viene preseleccionada. Puedes elegir **Esquema 2026** (serie primaria a 6/12/18 semanas) o **Esquema anterior a 2026** (2/4/6 meses, edición 2 de EPS Sanitas sin fecha editorial visible). En **Ajustes → Agregar otro perfil** puedes crear más niños. El selector superior recuerda el perfil activo y cada niño conserva su referencia y su historial independiente.
 
-Sin perfiles, la navegación muestra solo **Inicio**, **Información** y **Ajustes**. **Calendario** y **Carné** aparecen al crear o restaurar un perfil y se ocultan al eliminar el último; si otra pestaña lo elimina mientras consultabas una de esas vistas, se muestra Inicio.
+Sin perfiles, la navegación muestra solo **Inicio** y **Ajustes**. **Calendario** y **Carné** aparecen al crear o restaurar un perfil y se ocultan al eliminar el último; si otra pestaña lo elimina mientras consultabas una de esas vistas, se muestra Inicio.
+
+**Información y ayuda** es un botón de la cabecera, no un tab. Abre un popup sin cambiar la vista actual, con secciones desplegables de información para familias, catálogo/fuentes, productos y privacidad. Las cuatro secciones empiezan cerradas; sus títulos permiten elegir qué leer. El popup tiene desplazamiento interno, se cierra con Escape y devuelve el foco al botón.
 
 **Calendario** presenta fechas civiles, filtros PAI/complementarias y fuentes por requisito. Cambiar entre Esquema 2026 y Esquema anterior a 2026 pide confirmación y actualiza catálogo y serie primaria en una misma transacción: no cambia IDs, fechas reales, lotes ni prestadores del historial. Una combinación legada de 2/4/6 meses con hitos 2026 permanece legible y editable en perfiles existentes, pero no puede elegirse para perfiles nuevos. Las referencias opcionales se eligen explícitamente por perfil.
 

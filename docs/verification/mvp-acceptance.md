@@ -147,8 +147,17 @@ En escritorio (1280 × 900) y móvil (390 × 844), Información y Ajustes sin pe
 
 Con el servidor detenido se recargó la app y se recuperaron el perfil y su evento offline. Cero errores de navegador. No se incorporaron artefactos ni datos ficticios al repositorio; la validación en Vercel continúa a cargo del usuario.
 
+## Task 19 — Información como ayuda contextual
 
+**Resultado: pasa en producción local.** Esta estructura sustituye el tab Información descrito en las comprobaciones anteriores. Sin perfiles quedan Inicio y Ajustes; al crear el primero aparecen Calendario y Carné. Eliminar el último desde otra pestaña ocultó ambos destinos y devolvió a Inicio la pestaña que mostraba Carné. El contenido de Inicio no se rediseñó.
 
+Información y ayuda se abre desde un botón de la cabecera, sin navegar ni desmontar la vista actual. Se conservaron los textos clínicos, catálogos, productos y privacidad en cuatro secciones nativas desplegables, inicialmente cerradas y separadas por 16 px. Se verificaron apertura/cierre por teclado, foco contenido dentro del popup, cierre con Escape y retorno al botón después de finalizar la salida del diálogo. Abrir/cerrar la ayuda conservó Carné y Ajustes como vistas de origen.
+
+Chromium a **320 × 740**, **390 × 844** y **1280 × 900**: sin overflow horizontal del popup ni de la página, cuerpo de ancho completo, desplazamiento interno al expandir las cuatro secciones y cierre siempre visible. El selector con un apodo largo no invadió el botón de ayuda y ambos controles conservaron al menos 44 px de alto. Se observaron capturas móviles y de escritorio; no se incorporaron al repositorio.
+
+Con el servidor detenido se recargó la app cacheada, se abrió la ayuda y se desplegó Catálogo y fuentes con sus 18 enlaces. No se afirma que los documentos externos estén precargados. Cero errores de navegador en las superficies comprobadas.
+
+`pnpm format:check`, las **91/91 pruebas** y `pnpm build` pasaron. La revisión independiente no encontró defectos bloqueantes, incluidos los ajustes de ancho del selector y alineación del popup. No se cambiaron reglas clínicas, almacenamiento ni contratos de respaldo. La validación en Vercel sigue a cargo del usuario.
 
 ## Fuentes clínicas y vigencia
 

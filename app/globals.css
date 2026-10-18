@@ -139,6 +139,38 @@ ul {
   background: var(--ink);
   color: #fff;
 }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+
+.topbar-actions .profile-selector {
+  width: min(260px, 35vw);
+  min-width: 0;
+}
+
+.topbar-actions .profile-selector [data-slot='select-trigger'] {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+}
+
+.topbar-actions .profile-selector [data-slot='select-value'] {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.information-button {
+  flex-shrink: 0;
+  min-height: 44px;
+}
 .wrap {
   max-width: 1120px;
   margin: auto;
@@ -252,6 +284,63 @@ ul {
   max-height: 90dvh;
   overflow-y: auto;
   width: calc(100% - 28px);
+}
+
+.information-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: calc(100% - 32px);
+  max-width: 900px;
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+}
+
+.information-dialog-header {
+  flex-shrink: 0;
+  padding-right: 32px;
+  text-align: left;
+}
+
+.information-sections {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+}
+
+.information-section {
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.information-section > summary {
+  min-height: 56px;
+  padding: 16px;
+  border-radius: 14px;
+  font-weight: 750;
+}
+
+.information-section[open] > summary {
+  border-bottom: 1px solid var(--line);
+  border-radius: 14px 14px 0 0;
+  background: var(--cream);
+}
+
+.information-section-body {
+  padding: 16px;
+}
+
+.information-section-body > .card {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
 }
 .stats {
   display: grid;
@@ -449,10 +538,24 @@ th {
   .topbar {
     width: 100%;
     padding: 16px;
+    gap: 12px;
   }
   .brand {
     max-width: 155px;
     line-height: 1.2;
+  }
+  .topbar-actions {
+    flex: 1;
+  }
+  .topbar-actions .profile-selector {
+    flex: 1;
+  }
+  .information-button {
+    width: 44px;
+    padding: 0;
+  }
+  .information-button-label {
+    display: none;
   }
   .wrap {
     width: 100%;

@@ -43,6 +43,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -65,7 +66,7 @@ import { DataRemovalDialog, type RemovalScope } from './DataRemovalDialog';
 import { PwaManager } from './PwaManager';
 import { operationError, SCHEDULE_CONFIRMATION } from './presentation';
 
-type View = 'inicio' | 'calendario' | 'carne' | 'informacion' | 'ajustes';
+type View = 'inicio' | 'calendario' | 'carne' | 'ajustes';
 
 type FormDialog =
   | { type: 'create-profile'; commandId: string }
@@ -95,7 +96,6 @@ const NAVIGATION_ITEMS = [
   { id: 'inicio', label: 'Inicio', icon: HeartPulse },
   { id: 'calendario', label: 'Calendario', icon: CalendarDays },
   { id: 'carne', label: 'Carné', icon: ShieldCheck },
-  { id: 'informacion', label: 'Información', icon: Info },
   { id: 'ajustes', label: 'Ajustes', icon: Settings },
 ] as const;
 
@@ -342,18 +342,46 @@ export function AppClient() {
           </span>
           Vacunas Colombia
         </div>
-        {active && (
-          <ProfileSelector
-            profiles={snapshot.profiles}
-            activeId={active.id}
-            disabled={!writable || mutationBusy}
-            onChange={(id) =>
-              void mutate(async () => {
-                await setPreference(family.db!, 'activeProfileId', id);
-              })
-            }
-          />
-        )}
+        <div className="topbar-actions">
+          {active && (
+            <ProfileSelector
+              profiles={snapshot.profiles}
+              activeId={active.id}
+              disabled={!writable || mutationBusy}
+              onChange={(id) =>
+                void mutate(async () => {
+                  await setPreference(family.db!, 'activeProfileId', id);
+                })
+              }
+            />
+          )}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                id="information-trigger"
+                type="button"
+                variant="outline"
+                className="information-button"
+                aria-label="Información y ayuda"
+                title="Información y ayuda"
+              >
+                <Info size={20} aria-hidden="true" />
+                <span className="information-button-label">Información</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="information-dialog">
+              <DialogHeader className="information-dialog-header">
+                <DialogTitle>Información y ayuda</DialogTitle>
+                <DialogDescription>
+                  Consulta la guía para familias, las fuentes y el cuidado de
+                  tus datos. Las fechas son orientativas y no sustituyen al
+                  vacunador.
+                </DialogDescription>
+              </DialogHeader>
+              <InformationView catalog={catalog ?? currentCatalog} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </header>
       <div className="wrap">
         {family.status !== 'ready' && (
@@ -414,7 +442,6 @@ export function AppClient() {
         {active &&
           !active.primaryScheduleId &&
           view !== 'carne' &&
-          view !== 'informacion' &&
           view !== 'ajustes' && (
             <section className="card">
               <h2>Este perfil necesita elegir esquema</h2>
@@ -429,26 +456,23 @@ export function AppClient() {
               </Button>
             </section>
           )}
-        {active &&
-          referenceUnavailable &&
-          view !== 'carne' &&
-          view !== 'informacion' && (
-            <section className="card">
-              <h2>Referencia del calendario no disponible</h2>
-              <p>
-                Este perfil conserva {active.referenceCatalogVersion} y{' '}
-                {active.primaryScheduleId ?? 'un esquema pendiente'}. No
-                sustituimos esa combinación silenciosamente. El historial
-                permanece en el Carné y en los respaldos.
-              </p>
-              <Button
-                disabled={!writable}
-                onClick={() => setCatalogChange(active)}
-              >
-                Revisar cambio a Esquema 2026
-              </Button>
-            </section>
-          )}
+        {active && referenceUnavailable && view !== 'carne' && (
+          <section className="card">
+            <h2>Referencia del calendario no disponible</h2>
+            <p>
+              Este perfil conserva {active.referenceCatalogVersion} y{' '}
+              {active.primaryScheduleId ?? 'un esquema pendiente'}. No
+              sustituimos esa combinación silenciosamente. El historial
+              permanece en el Carné y en los respaldos.
+            </p>
+            <Button
+              disabled={!writable}
+              onClick={() => setCatalogChange(active)}
+            >
+              Revisar cambio a Esquema 2026
+            </Button>
+          </section>
+        )}
         {view === 'inicio' && profile && activeReference && summary && (
           <DashboardView
             profile={profile}
@@ -505,9 +529,6 @@ export function AppClient() {
               })
             }
           />
-        )}
-        {view === 'informacion' && (
-          <InformationView catalog={catalog ?? currentCatalog} />
         )}
         {family.db && (
           <div
