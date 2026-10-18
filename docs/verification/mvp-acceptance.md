@@ -135,6 +135,19 @@ Los servidores y pestañas de esta comprobación se cerraron. No se cambiaron ar
 
 Con Carné abierto en una pestaña, eliminar el último perfil desde otra ocultó ambos destinos y dejó Inicio como destino activo, sin recargar. Restaurar el respaldo del perfil recuperó los cinco destinos en ambas pestañas. Se observaron capturas móviles y se midieron superficies de 390 × 844 y 1280 × 900: sin overflow horizontal global ni superposición de navegación, controles de 54 y 48 px respectivamente y cero errores de navegador. `pnpm test` pasó 91/91 y `pnpm build` completó producción. No se modificaron datos reales ni el deployment.
 
+## Formato, nombres y separación de bloques — 18/10/2026
+
+**Resultado: pasa.** El código propio se formateó con Prettier 3.9.10 (2 espacios, comillas simples, punto y coma, ancho objetivo 80) y se añadieron configuración compartida de VS Code/EditorConfig y scripts `format`/`format:check`. Se separaron declaraciones, efectos, handlers y grupos de JSX con líneas en blanco. Los cambios locales de indentación existentes se conservaron dentro del formato uniforme.
+
+Los renombrados se aplicaron con el servidor TypeScript, consultando referencias antes de cambiar exports: `VaccineDb`, constantes globales inmutables y nombres locales de pruebas. No cambiaron nombres/versión de IndexedDB, campos persistidos, IDs clínicos, valores de catálogos ni contratos de respaldo. Se conservaron exports obligatorios de Next.js y nombres de APIs externas.
+
+`pnpm format:check`, `pnpm install --frozen-lockfile`, las 91/91 pruebas y `pnpm build` pasaron. La revisión independiente no encontró defectos bloqueantes. En producción local se creó un perfil y una hexavalente, se conservaron las fechas 42/84/126 días y se exportó/importó el respaldo sin duplicación.
+
+En escritorio (1280 × 900) y móvil (390 × 844), Información y Ajustes sin perfil dejaron **22 px** entre la tarjeta introductoria y el siguiente bloque; las columnas de Información conservaron 22 px. Las capturas observadas no mostraron overflow horizontal ni superposición de navegación móvil. El encabezado del carné dejó 22 px de margen inferior en pantalla y 0 px en impresión: el PDF A4 verificado conservó el evento y su leyenda sin navegación ni acciones. Las reglas nuevas se limitan a `@media screen`, sin cambiar el flujo de impresión.
+
+Con el servidor detenido se recargó la app y se recuperaron el perfil y su evento offline. Cero errores de navegador. No se incorporaron artefactos ni datos ficticios al repositorio; la validación en Vercel continúa a cargo del usuario.
+
+
 
 
 ## Fuentes clínicas y vigencia

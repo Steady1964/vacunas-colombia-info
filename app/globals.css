@@ -367,6 +367,16 @@ pre {
   justify-content: space-between;
   gap: 20px;
 }
+@media screen {
+  .wrap
+    > :is(.card, .grid, .settings-container)
+    + :is(.card, .grid, .settings-container) {
+    margin-top: 22px;
+  }
+  .section-heading {
+    margin-bottom: 22px;
+  }
+}
 .table-scroll {
   overflow-x: auto;
 }
