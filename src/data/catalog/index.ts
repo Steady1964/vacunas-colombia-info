@@ -1,4 +1,8 @@
-import type { ChildProfile, PrimaryScheduleId, ScheduleReferenceId } from '../../lib/types';
+import type {
+  ChildProfile,
+  PrimaryScheduleId,
+  ScheduleReferenceId,
+} from '../../lib/types';
 import {
   historicalPrimaryProjections,
   historicalPrimaryRequirements,
@@ -6,14 +10,32 @@ import {
   historicalSharedProjections,
   historicalSharedRequirements,
 } from './historical-requirements-co-undated';
-import { primaryRequirements, traditionalProjections, TRADITIONAL_SCHEDULE_ID } from './primary-traditional-2-4-6';
-import { shortenedProjections, SHORTENED_SCHEDULE_ID } from './primary-shortened-6-12-18-weeks-2026';
+import {
+  primaryRequirements,
+  traditionalProjections,
+  TRADITIONAL_SCHEDULE_ID,
+} from './primary-traditional-2-4-6';
+import {
+  shortenedProjections,
+  SHORTENED_SCHEDULE_ID,
+} from './primary-shortened-6-12-18-weeks-2026';
 import { products } from './products';
-import { optionalRequirements, sharedProjections, sharedRequirements } from './shared-requirements-co-2026-10';
+import {
+  optionalRequirements,
+  sharedProjections,
+  sharedRequirements,
+} from './shared-requirements-co-2026-10';
 import { REVIEWED_AT, sources } from './sources';
 import type { Catalog } from './types';
 
-export type { Catalog, CoverageRule, Product, Projection, Requirement, Source } from './types';
+export type {
+  Catalog,
+  CoverageRule,
+  Product,
+  Projection,
+  Requirement,
+  Source,
+} from './types';
 
 export const CURRENT_CATALOG_VERSION = 'CO-PAI-SHARED-2026-10';
 export const HISTORICAL_CATALOG_VERSION = 'CO-PAI-EPS-SANITAS-UNDATED-ED2';
@@ -45,7 +67,10 @@ const historicalCatalog: Catalog = {
   version: HISTORICAL_CATALOG_VERSION,
   reviewedAt: REVIEWED_AT,
   sources,
-  requirements: [...historicalPrimaryRequirements, ...historicalSharedRequirements],
+  requirements: [
+    ...historicalPrimaryRequirements,
+    ...historicalSharedRequirements,
+  ],
   primarySchedules: {
     [TRADITIONAL_SCHEDULE_ID]: historicalPrimaryProjections,
   },
@@ -54,29 +79,34 @@ const historicalCatalog: Catalog = {
   optionalRequirements,
 };
 
-const currentReference: ScheduleReference = Object.freeze({
+const CURRENT_REFERENCE: ScheduleReference = Object.freeze({
   id: 'CO-PAI-REFERENCE-2026',
   primaryScheduleId: SHORTENED_SCHEDULE_ID,
   catalogVersion: CURRENT_CATALOG_VERSION,
   label: 'Esquema 2026 · 6, 12 y 18 semanas',
   selectable: true,
 });
-const historicalReference: ScheduleReference = Object.freeze({
+const HISTORICAL_REFERENCE: ScheduleReference = Object.freeze({
   id: 'CO-PAI-REFERENCE-PRE-2026',
   primaryScheduleId: TRADITIONAL_SCHEDULE_ID,
   catalogVersion: HISTORICAL_CATALOG_VERSION,
   label: 'Esquema anterior a 2026 · 2, 4 y 6 meses',
   selectable: true,
 });
-const legacyReference: ScheduleReference = Object.freeze({
+const LEGACY_REFERENCE: ScheduleReference = Object.freeze({
   id: 'CO-PAI-REFERENCE-LEGACY-2-4-6-2026',
   primaryScheduleId: TRADITIONAL_SCHEDULE_ID,
   catalogVersion: CURRENT_CATALOG_VERSION,
   label: 'Referencia legada · 2, 4 y 6 meses con hitos 2026',
   selectable: false,
 });
-const allScheduleReferences: readonly ScheduleReference[] = Object.freeze([currentReference, historicalReference, legacyReference]);
-export const selectableScheduleReferences: readonly ScheduleReference[] = Object.freeze([currentReference, historicalReference]);
+const ALL_SCHEDULE_REFERENCES: readonly ScheduleReference[] = Object.freeze([
+  CURRENT_REFERENCE,
+  HISTORICAL_REFERENCE,
+  LEGACY_REFERENCE,
+]);
+export const SELECTABLE_SCHEDULE_REFERENCES: readonly ScheduleReference[] =
+  Object.freeze([CURRENT_REFERENCE, HISTORICAL_REFERENCE]);
 
 export function getCatalog(version: string): Catalog | undefined {
   if (version === CURRENT_CATALOG_VERSION) return currentCatalog;
@@ -84,23 +114,31 @@ export function getCatalog(version: string): Catalog | undefined {
   return undefined;
 }
 
-export function getScheduleReference(id: string): ScheduleReference | undefined {
-  if (id === currentReference.id) return currentReference;
-  if (id === historicalReference.id) return historicalReference;
-  if (id === legacyReference.id) return legacyReference;
+export function getScheduleReference(
+  id: string,
+): ScheduleReference | undefined {
+  if (id === CURRENT_REFERENCE.id) return CURRENT_REFERENCE;
+  if (id === HISTORICAL_REFERENCE.id) return HISTORICAL_REFERENCE;
+  if (id === LEGACY_REFERENCE.id) return LEGACY_REFERENCE;
   return undefined;
 }
 
 export function identifyScheduleReference(
   profile: Pick<ChildProfile, 'primaryScheduleId' | 'referenceCatalogVersion'>,
 ): ScheduleReferenceId | undefined {
-  for (const reference of allScheduleReferences) {
-    if (reference.primaryScheduleId === profile.primaryScheduleId
-      && reference.catalogVersion === profile.referenceCatalogVersion) return reference.id;
+  for (const reference of ALL_SCHEDULE_REFERENCES) {
+    if (
+      reference.primaryScheduleId === profile.primaryScheduleId &&
+      reference.catalogVersion === profile.referenceCatalogVersion
+    )
+      return reference.id;
   }
   return undefined;
 }
 
-export function supportsSchedule(catalog: Catalog, schedule: PrimaryScheduleId): boolean {
+export function supportsSchedule(
+  catalog: Catalog,
+  schedule: PrimaryScheduleId,
+): boolean {
   return Boolean(catalog.primarySchedules[schedule]);
 }

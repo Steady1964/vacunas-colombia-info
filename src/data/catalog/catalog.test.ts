@@ -8,14 +8,14 @@ import {
   UNIDENTIFIED_PRODUCT_ID,
   getCatalog,
   identifyScheduleReference,
-  selectableScheduleReferences,
+  SELECTABLE_SCHEDULE_REFERENCES,
 } from './index';
 import type { Catalog } from './types';
 
 const catalog = getCatalog(CURRENT_CATALOG_VERSION)!;
-const today = '2026-10-16';
+const FIXED_TODAY = '2026-10-16';
 
-const modes = [
+const PRIMARY_SCHEDULE_IDS = [
   'CO-PAI-PRIMARY-2-4-6',
   'CO-PAI-PRIMARY-6-12-18-WEEKS-2026',
 ] as const;
@@ -23,7 +23,12 @@ const modes = [
 describe('catálogo Colombia con evidencia y límites explícitos', () => {
   it('no sustituye una versión no disponible por la actual', () => {
     expect(catalog.version).toBe(CURRENT_CATALOG_VERSION);
-    for (const version of ['desconocido', '', '__proto__', 'CO-PAI-SHARED-2026-11']) {
+    for (const version of [
+      'desconocido',
+      '',
+      '__proto__',
+      'CO-PAI-SHARED-2026-11',
+    ]) {
       expect(getCatalog(version)).toBeUndefined();
     }
   });
@@ -34,55 +39,104 @@ describe('catálogo Colombia con evidencia y límites explícitos', () => {
     expect(historicalCatalog).toBeDefined();
     if (!historicalCatalog) return;
 
-    const historical = calculateSchedule(makeProfile({
-      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
-      referenceCatalogVersion: historicalVersion,
-    }), historicalCatalog, today, []);
-    const current = calculateSchedule(makeProfile({
-      primaryScheduleId: 'CO-PAI-PRIMARY-6-12-18-WEEKS-2026',
-      referenceCatalogVersion: CURRENT_CATALOG_VERSION,
-    }), catalog, today, []);
-    const historicalDates = Object.fromEntries(historical.map(item => [item.id, item.estimatedDate]));
-    const currentDates = Object.fromEntries(current.map(item => [item.id, item.estimatedDate]));
+    const historical = calculateSchedule(
+      makeProfile({
+        primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+        referenceCatalogVersion: historicalVersion,
+      }),
+      historicalCatalog,
+      FIXED_TODAY,
+      [],
+    );
+    const current = calculateSchedule(
+      makeProfile({
+        primaryScheduleId: 'CO-PAI-PRIMARY-6-12-18-WEEKS-2026',
+        referenceCatalogVersion: CURRENT_CATALOG_VERSION,
+      }),
+      catalog,
+      FIXED_TODAY,
+      [],
+    );
+    const historicalDates = Object.fromEntries(
+      historical.map((item) => [item.id, item.estimatedDate]),
+    );
+    const currentDates = Object.fromEntries(
+      current.map((item) => [item.id, item.estimatedDate]),
+    );
 
     expect(historicalDates['penta-1']).toBe('2026-03-31');
     expect(historicalDates['penta-2']).toBe('2026-05-31');
     expect(historicalDates['penta-3']).toBe('2026-07-31');
     expect(historicalDates['yellow-fever']).toBe('2027-07-31');
-    expect(historical.find(item => item.id === 'ipv-1')?.name).toBe('Polio — dosis 1');
-    expect(resolveSelection({
-      productId: 'ipv', doseNumber: 1, milestoneId: 'primary-1',
-    }, historicalCatalog).coveredRequirementIds).toEqual([]);
-    expect(resolveSelection({
-      productId: 'hexavalent-acellular', doseNumber: 1, milestoneId: 'primary-1',
-    }, historicalCatalog).coveredRequirementIds).toEqual(['penta-1']);
+    expect(historical.find((item) => item.id === 'ipv-1')?.name).toBe(
+      'Polio — dosis 1',
+    );
+    expect(
+      resolveSelection(
+        {
+          productId: 'ipv',
+          doseNumber: 1,
+          milestoneId: 'primary-1',
+        },
+        historicalCatalog,
+      ).coveredRequirementIds,
+    ).toEqual([]);
+    expect(
+      resolveSelection(
+        {
+          productId: 'hexavalent-acellular',
+          doseNumber: 1,
+          milestoneId: 'primary-1',
+        },
+        historicalCatalog,
+      ).coveredRequirementIds,
+    ).toEqual(['penta-1']);
     expect(currentDates['penta-1']).toBe('2026-03-14');
     expect(currentDates['penta-2']).toBe('2026-04-25');
     expect(currentDates['penta-3']).toBe('2026-06-06');
     expect(currentDates['yellow-fever']).toBe('2026-10-31');
-    expect(historicalCatalog.primarySchedules['CO-PAI-PRIMARY-6-12-18-WEEKS-2026']).toBeUndefined();
-    expect(historicalCatalog.sources.find(source => source.id === 'eps-sanitas-schedule-undated')).toMatchObject({
+    expect(
+      historicalCatalog.primarySchedules['CO-PAI-PRIMARY-6-12-18-WEEKS-2026'],
+    ).toBeUndefined();
+    expect(
+      historicalCatalog.sources.find(
+        (source) => source.id === 'eps-sanitas-schedule-undated',
+      ),
+    ).toMatchObject({
       publishedAt: 'unknown',
       reviewedAt: '2026-10-16',
     });
-    expect(catalog.sources.find(source => source.id === 'saludtotal-schedule-2026')).toMatchObject({
+    expect(
+      catalog.sources.find(
+        (source) => source.id === 'saludtotal-schedule-2026',
+      ),
+    ).toMatchObject({
       publishedAt: 'unknown',
       reviewedAt: '2026-10-16',
     });
 
-    expect(identifyScheduleReference(makeProfile())).toBe('CO-PAI-REFERENCE-2026');
-    expect(identifyScheduleReference(makeProfile({
-      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
-      referenceCatalogVersion: CURRENT_CATALOG_VERSION,
-    }))).toBe('CO-PAI-REFERENCE-LEGACY-2-4-6-2026');
-    expect(identifyScheduleReference(makeProfile({
-      primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
-      referenceCatalogVersion: historicalVersion,
-    }))).toBe('CO-PAI-REFERENCE-PRE-2026');
-    expect(selectableScheduleReferences.map(reference => reference.id)).toEqual([
+    expect(identifyScheduleReference(makeProfile())).toBe(
       'CO-PAI-REFERENCE-2026',
-      'CO-PAI-REFERENCE-PRE-2026',
-    ]);
+    );
+    expect(
+      identifyScheduleReference(
+        makeProfile({
+          primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+          referenceCatalogVersion: CURRENT_CATALOG_VERSION,
+        }),
+      ),
+    ).toBe('CO-PAI-REFERENCE-LEGACY-2-4-6-2026');
+    expect(
+      identifyScheduleReference(
+        makeProfile({
+          primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
+          referenceCatalogVersion: historicalVersion,
+        }),
+      ),
+    ).toBe('CO-PAI-REFERENCE-PRE-2026');
+    expect(
+      SELECTABLE_SCHEDULE_REFERENCES.map((reference) => reference.id),
+    ).toEqual(['CO-PAI-REFERENCE-2026', 'CO-PAI-REFERENCE-PRE-2026']);
   });
 
   it('reconoce fiebre amarilla únicamente en la etapa propia de cada referencia', () => {
@@ -91,43 +145,97 @@ describe('catálogo Colombia con evidencia y límites explícitos', () => {
       primaryScheduleId: 'CO-PAI-PRIMARY-2-4-6',
       referenceCatalogVersion: HISTORICAL_CATALOG_VERSION,
     });
-    const historicalRequirement = calculateSchedule(historicalProfile, historicalCatalog, today, [])
-      .find(requirement => requirement.id === 'yellow-fever')!;
-    expect(resolveSelection({
-      productId: 'yellow-fever', doseNumber: 1, milestoneId: historicalRequirement.milestoneId,
-    }, historicalCatalog).coveredRequirementIds).toEqual(['yellow-fever']);
-    expect(resolveSelection({
-      productId: 'yellow-fever', doseNumber: 1, milestoneId: 'month-9',
-    }, historicalCatalog).coveredRequirementIds).toEqual([]);
-    expect(resolveSelection({
-      productId: 'yellow-fever', doseNumber: 1, milestoneId: 'month-9',
-    }, catalog).coveredRequirementIds).toEqual(['yellow-fever']);
-    expect(resolveSelection({
-      productId: 'yellow-fever', doseNumber: 1, milestoneId: 'month-18',
-    }, catalog).coveredRequirementIds).toEqual([]);
+    const historicalRequirement = calculateSchedule(
+      historicalProfile,
+      historicalCatalog,
+      FIXED_TODAY,
+      [],
+    ).find((requirement) => requirement.id === 'yellow-fever')!;
+    expect(
+      resolveSelection(
+        {
+          productId: 'yellow-fever',
+          doseNumber: 1,
+          milestoneId: historicalRequirement.milestoneId,
+        },
+        historicalCatalog,
+      ).coveredRequirementIds,
+    ).toEqual(['yellow-fever']);
+    expect(
+      resolveSelection(
+        {
+          productId: 'yellow-fever',
+          doseNumber: 1,
+          milestoneId: 'month-9',
+        },
+        historicalCatalog,
+      ).coveredRequirementIds,
+    ).toEqual([]);
+    expect(
+      resolveSelection(
+        {
+          productId: 'yellow-fever',
+          doseNumber: 1,
+          milestoneId: 'month-9',
+        },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual(['yellow-fever']);
+    expect(
+      resolveSelection(
+        {
+          productId: 'yellow-fever',
+          doseNumber: 1,
+          milestoneId: 'month-18',
+        },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual([]);
   });
 
-  it.each(modes)('conserva las tres etapas penta/IPV y solo dos primarias PCV/rotavirus en %s', (primaryScheduleId) => {
-    const schedule = calculateSchedule(makeProfile({ primaryScheduleId }), catalog, today, []);
-    for (const component of ['penta', 'ipv']) {
-      for (const doseNumber of [1, 2, 3]) {
-        const requirement = schedule.find((item) => item.id === `${component}-${doseNumber}`);
-        expect(requirement?.milestoneId).toBe(`primary-${doseNumber}`);
-        expect(requirement?.estimatedDate).not.toBeNull();
+  it.each(PRIMARY_SCHEDULE_IDS)(
+    'conserva las tres etapas penta/IPV y solo dos primarias PCV/rotavirus en %s',
+    (primaryScheduleId) => {
+      const schedule = calculateSchedule(
+        makeProfile({ primaryScheduleId }),
+        catalog,
+        FIXED_TODAY,
+        [],
+      );
+      for (const component of ['penta', 'ipv']) {
+        for (const doseNumber of [1, 2, 3]) {
+          const requirement = schedule.find(
+            (item) => item.id === `${component}-${doseNumber}`,
+          );
+          expect(requirement?.milestoneId).toBe(`primary-${doseNumber}`);
+          expect(requirement?.estimatedDate).not.toBeNull();
+        }
       }
-    }
-    expect(schedule.filter((item) => /^pcv-\d$/.test(item.id))).toHaveLength(2);
-    expect(schedule.filter((item) => /^rota-\d$/.test(item.id))).toHaveLength(2);
-    expect(schedule.some((item) => item.id === 'pcv-booster')).toBe(true);
-    expect(schedule.some((item) => item.id === 'rota-private-3')).toBe(false);
-    expect(schedule.some((item) => item.id === 'measles-zero')).toBe(false);
-  });
+      expect(schedule.filter((item) => /^pcv-\d$/.test(item.id))).toHaveLength(
+        2,
+      );
+      expect(schedule.filter((item) => /^rota-\d$/.test(item.id))).toHaveLength(
+        2,
+      );
+      expect(schedule.some((item) => item.id === 'pcv-booster')).toBe(true);
+      expect(schedule.some((item) => item.id === 'rota-private-3')).toBe(false);
+      expect(schedule.some((item) => item.id === 'measles-zero')).toBe(false);
+    },
+  );
 
   it('cambia solo el ritmo primario y mantiene hitos compartidos reales en ambos modos', () => {
-    const [traditional, shortened] = modes.map((primaryScheduleId) =>
-      calculateSchedule(makeProfile({ primaryScheduleId }), catalog, today, []));
+    const [traditional, shortened] = PRIMARY_SCHEDULE_IDS.map(
+      (primaryScheduleId) =>
+        calculateSchedule(
+          makeProfile({ primaryScheduleId }),
+          catalog,
+          FIXED_TODAY,
+          [],
+        ),
+    );
     const dates = [traditional, shortened].map((schedule) =>
-      Object.fromEntries(schedule.map((item) => [item.id, item.estimatedDate])));
+      Object.fromEntries(schedule.map((item) => [item.id, item.estimatedDate])),
+    );
     expect(dates[0]['penta-3']).toBe('2026-07-31');
     expect(dates[1]['penta-3']).toBe('2026-06-06');
     for (const reference of dates) {
@@ -139,49 +247,143 @@ describe('catálogo Colombia con evidencia y límites explícitos', () => {
     }
     for (const schedule of [traditional, shortened]) {
       expect(schedule.filter((item) => item.id === 'srp-2')).toHaveLength(1);
-      expect(schedule.some((item) => item.milestoneId === 'year-5' && item.disease.includes('Sarampión'))).toBe(false);
+      expect(
+        schedule.some(
+          (item) =>
+            item.milestoneId === 'year-5' && item.disease.includes('Sarampión'),
+        ),
+      ).toBe(false);
     }
   });
 
   it('distingue un curso de tres dosis de una tercera dosis universal', () => {
     const profile = makeProfile();
-    const selected = calculateSchedule(profile, catalog, today, ['rotateq']);
-    expect(selected.find((item) => item.id === 'rota-private-3')?.estimatedDate).toBeNull();
-    expect(calculateSchedule(profile, catalog, today, ['rotarix']).some((item) => item.id === 'rota-private-3')).toBe(false);
-    const firstTwo = [1, 2].flatMap((doseNumber) => resolveSelection({
-      productId: 'rotateq', doseNumber, milestoneId: `primary-${doseNumber}`,
-    }, catalog).coveredRequirementIds);
+    const selected = calculateSchedule(profile, catalog, FIXED_TODAY, [
+      'rotateq',
+    ]);
+    expect(
+      selected.find((item) => item.id === 'rota-private-3')?.estimatedDate,
+    ).toBeNull();
+    expect(
+      calculateSchedule(profile, catalog, FIXED_TODAY, ['rotarix']).some(
+        (item) => item.id === 'rota-private-3',
+      ),
+    ).toBe(false);
+    const firstTwo = [1, 2].flatMap(
+      (doseNumber) =>
+        resolveSelection(
+          {
+            productId: 'rotateq',
+            doseNumber,
+            milestoneId: `primary-${doseNumber}`,
+          },
+          catalog,
+        ).coveredRequirementIds,
+    );
     expect(firstTwo).not.toContain('rota-private-3');
-    expect(resolveSelection({ productId: 'rotateq', doseNumber: 3, milestoneId: 'primary-3' }, catalog).coveredRequirementIds).toEqual(['rota-private-3']);
-    expect(resolveSelection({ productId: 'rotarix', doseNumber: 3, milestoneId: 'primary-3' }, catalog).coveredRequirementIds).toEqual([]);
+    expect(
+      resolveSelection(
+        { productId: 'rotateq', doseNumber: 3, milestoneId: 'primary-3' },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual(['rota-private-3']);
+    expect(
+      resolveSelection(
+        { productId: 'rotarix', doseNumber: 3, milestoneId: 'primary-3' },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual([]);
   });
 
   it('limita la hexavalente a componentes y etapa confirmados, sin hepatitis B neonatal o refuerzos inferidos', () => {
     for (const doseNumber of [1, 2, 3]) {
-      const selection = resolveSelection({ productId: 'hexavalent-acellular', doseNumber, milestoneId: `primary-${doseNumber}` }, catalog);
+      const selection = resolveSelection(
+        {
+          productId: 'hexavalent-acellular',
+          doseNumber,
+          milestoneId: `primary-${doseNumber}`,
+        },
+        catalog,
+      );
       expect(selection.coverageStatus).toBe('verified');
-      expect(new Set(selection.coveredRequirementIds)).toEqual(new Set([`penta-${doseNumber}`, `ipv-${doseNumber}`]));
+      expect(new Set(selection.coveredRequirementIds)).toEqual(
+        new Set([`penta-${doseNumber}`, `ipv-${doseNumber}`]),
+      );
       expect(selection.coveredRequirementIds).not.toContain('hep-b-birth');
     }
-    expect(resolveSelection({ productId: 'hexavalent-acellular', doseNumber: 1, milestoneId: 'primary-2' }, catalog).coveredRequirementIds).toEqual([]);
-    expect(resolveSelection({ productId: 'hexavalent-acellular', doseNumber: 4, milestoneId: 'month-18' }, catalog).coveredRequirementIds).toEqual([]);
-    expect(resolveSelection({ productId: 'Hexaxim', doseNumber: 1, milestoneId: 'primary-1' }, catalog).coveredRequirementIds).toEqual([]);
+    expect(
+      resolveSelection(
+        {
+          productId: 'hexavalent-acellular',
+          doseNumber: 1,
+          milestoneId: 'primary-2',
+        },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual([]);
+    expect(
+      resolveSelection(
+        {
+          productId: 'hexavalent-acellular',
+          doseNumber: 4,
+          milestoneId: 'month-18',
+        },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual([]);
+    expect(
+      resolveSelection(
+        { productId: 'Hexaxim', doseNumber: 1, milestoneId: 'primary-1' },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual([]);
   });
 
   it('el refuerzo a 18 meses usa pentavalente y no asume DPT aislada', () => {
-    expect(resolveSelection({ productId: 'pentavalent-cellular', doseNumber: 4, milestoneId: 'month-18' }, catalog).coveredRequirementIds).toEqual(['dpt-booster-1']);
-    expect(resolveSelection({ productId: 'dpt', doseNumber: 4, milestoneId: 'month-18' }, catalog).coveredRequirementIds).toEqual([]);
-    expect(resolveSelection({ productId: 'dpt', doseNumber: 5, milestoneId: 'year-5' }, catalog).coveredRequirementIds).toEqual(['dpt-booster-2']);
+    expect(
+      resolveSelection(
+        {
+          productId: 'pentavalent-cellular',
+          doseNumber: 4,
+          milestoneId: 'month-18',
+        },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual(['dpt-booster-1']);
+    expect(
+      resolveSelection(
+        { productId: 'dpt', doseNumber: 4, milestoneId: 'month-18' },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual([]);
+    expect(
+      resolveSelection(
+        { productId: 'dpt', doseNumber: 5, milestoneId: 'year-5' },
+        catalog,
+      ).coveredRequirementIds,
+    ).toEqual(['dpt-booster-2']);
   });
 
   it('una sola fuente de regla por revisar o ausente impide conceder cobertura', () => {
-    const selection = { productId: 'hexavalent-acellular', doseNumber: 1, milestoneId: 'primary-1' };
+    const selection = {
+      productId: 'hexavalent-acellular',
+      doseNumber: 1,
+      milestoneId: 'primary-1',
+    };
     const needsReview: Catalog = {
       ...catalog,
-      sources: catalog.sources.map((source) => source.id === 'sanofi-hexaxim'
-        ? { ...source, verification: 'needs-review' } : source),
+      sources: catalog.sources.map((source) =>
+        source.id === 'sanofi-hexaxim'
+          ? { ...source, verification: 'needs-review' }
+          : source,
+      ),
     };
-    const missing: Catalog = { ...catalog, sources: catalog.sources.filter((source) => source.id !== 'sanofi-hexaxim') };
+    const missing: Catalog = {
+      ...catalog,
+      sources: catalog.sources.filter(
+        (source) => source.id !== 'sanofi-hexaxim',
+      ),
+    };
     for (const reference of [needsReview, missing]) {
       const result = resolveSelection(selection, reference);
       expect(result.coverageStatus).toBe('needs-review');
@@ -190,45 +392,86 @@ describe('catálogo Colombia con evidencia y límites explícitos', () => {
   });
 
   it('mantiene opcionales no verificadas visibles sin inventar fechas o cobertura', () => {
-    const optional = calculateSchedule(makeProfile(), catalog, today, ['meningococcal-acwy', 'meningococcal-b', 'measles-zero']);
-    for (const productId of ['meningococcal-acwy', 'meningococcal-b', 'measles-zero']) {
+    const optional = calculateSchedule(makeProfile(), catalog, FIXED_TODAY, [
+      'meningococcal-acwy',
+      'meningococcal-b',
+      'measles-zero',
+    ]);
+    for (const productId of [
+      'meningococcal-acwy',
+      'meningococcal-b',
+      'measles-zero',
+    ]) {
       const entries = catalog.optionalRequirements[productId];
       expect(entries.length).toBeGreaterThan(0);
       for (const { requirement } of entries) {
-        expect(optional.find((item) => item.id === requirement.id)?.estimatedDate).toBeNull();
-        expect(resolveSelection({ productId, doseNumber: requirement.doseNumber, milestoneId: requirement.milestoneId }, catalog).coveredRequirementIds).toEqual([]);
+        expect(
+          optional.find((item) => item.id === requirement.id)?.estimatedDate,
+        ).toBeNull();
+        expect(
+          resolveSelection(
+            {
+              productId,
+              doseNumber: requirement.doseNumber,
+              milestoneId: requirement.milestoneId,
+            },
+            catalog,
+          ).coveredRequirementIds,
+        ).toEqual([]);
       }
     }
-    expect(catalog.optionalRequirements['measles-zero'][0].requirement.access).toBe('conditional');
+    expect(
+      catalog.optionalRequirements['measles-zero'][0].requirement.access,
+    ).toBe('conditional');
   });
 
   it('captura un producto no identificado sin asignarle composición ni correspondencias', () => {
-    const unidentified = catalog.products.find((product) => product.id === UNIDENTIFIED_PRODUCT_ID)!;
+    const unidentified = catalog.products.find(
+      (product) => product.id === UNIDENTIFIED_PRODUCT_ID,
+    )!;
     expect(unidentified.components).toEqual([]);
     expect(unidentified.coverageRules).toEqual([]);
-    expect(resolveSelection({ productId: unidentified.id, doseNumber: 1, milestoneId: 'birth' }, catalog).coverageStatus).toBe('needs-review');
+    expect(
+      resolveSelection(
+        { productId: unidentified.id, doseNumber: 1, milestoneId: 'birth' },
+        catalog,
+      ).coverageStatus,
+    ).toBe('needs-review');
   });
 
   it('todas las proyecciones y reglas referencian entidades existentes, fuentes y etapas coherentes', () => {
-    const allRequirements = [...catalog.requirements, ...Object.values(catalog.optionalRequirements).flatMap((entries) => entries.map((entry) => entry.requirement))];
+    const allRequirements = [
+      ...catalog.requirements,
+      ...Object.values(catalog.optionalRequirements).flatMap((entries) =>
+        entries.map((entry) => entry.requirement),
+      ),
+    ];
     const ids = new Set(allRequirements.map((item) => item.id));
     expect(ids.size).toBe(allRequirements.length);
     const sourceIds = new Set(catalog.sources.map((source) => source.id));
     for (const requirement of allRequirements) {
       expect(requirement.sourceIds.length).toBeGreaterThan(0);
-      for (const sourceId of requirement.sourceIds) expect(sourceIds.has(sourceId)).toBe(true);
+      for (const sourceId of requirement.sourceIds)
+        expect(sourceIds.has(sourceId)).toBe(true);
     }
-    for (const projection of [...Object.values(catalog.primarySchedules).flat(), ...catalog.sharedProjections]) {
+    for (const projection of [
+      ...Object.values(catalog.primarySchedules).flat(),
+      ...catalog.sharedProjections,
+    ]) {
       expect(ids.has(projection.requirementId)).toBe(true);
       expect(projection.offset).toBeDefined();
     }
     for (const product of catalog.products) {
-      for (const sourceId of product.sourceIds) expect(sourceIds.has(sourceId)).toBe(true);
+      for (const sourceId of product.sourceIds)
+        expect(sourceIds.has(sourceId)).toBe(true);
       for (const rule of product.coverageRules) {
         expect(rule.sourceIds.length).toBeGreaterThan(0);
-        for (const sourceId of rule.sourceIds) expect(sourceIds.has(sourceId)).toBe(true);
+        for (const sourceId of rule.sourceIds)
+          expect(sourceIds.has(sourceId)).toBe(true);
         for (const requirementId of rule.requirementIds) {
-          const requirement = allRequirements.find((item) => item.id === requirementId)!;
+          const requirement = allRequirements.find(
+            (item) => item.id === requirementId,
+          )!;
           expect(requirement).toBeDefined();
           expect(rule.milestoneId).toBe(requirement.milestoneId);
           expect(rule.doseNumber).toBe(requirement.doseNumber);

@@ -1,0 +1,21 @@
+{
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": "*.webmanifest",
+      "options": { "parser": "json" }
+    },
+    {
+      "files": "*.svg",
+      "options": { "parser": "html" }
+    }
+  ],
+  "printWidth": 80,
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "useTabs": false
+}

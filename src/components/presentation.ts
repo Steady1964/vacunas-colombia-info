@@ -1,6 +1,8 @@
-import type { ReviewReason } from '@/lib/types'
+import type { ReviewReason } from '@/lib/types';
 
-export const scheduleConfirmation = 'El calendario estimado cambiará; las vacunas que ya registraste permanecerán intactas.'
+export const SCHEDULE_CONFIRMATION =
+  'El calendario estimado cambiará; las vacunas que ya registraste permanecerán intactas.';
+
 export const milestoneLabels: Record<string, string> = {
   birth: 'Nacimiento',
   'primary-1': 'Serie primaria · primera etapa',
@@ -12,7 +14,8 @@ export const milestoneLabels: Record<string, string> = {
   'month-12': 'Referencia de 12 meses',
   'month-18': 'Referencia de 18 meses',
   'year-5': 'Referencia de 5 años',
-}
+};
+
 export const reviewLabels: Record<ReviewReason, string> = {
   'unknown-schedule': 'Esquema sin identificar',
   'unidentified-product': 'Producto sin identificar',
@@ -24,19 +27,35 @@ export const reviewLabels: Record<ReviewReason, string> = {
   'mixed-course': 'Curso con productos diferentes: confirmar con el vacunador',
   'missing-profile': 'Perfil de origen no disponible',
   'legacy-unconfirmed': 'Registro heredado sin confirmar',
-}
-export const statusLabels = {
-  applied: 'Aplicada', upcoming: 'Próxima', pending: 'Pendiente',
-  past: 'Fecha pasada / por confirmar', 'needs-review': 'Por verificar con el vacunador',
-} as const
+};
+
+export const STATUS_LABELS = {
+  applied: 'Aplicada',
+  upcoming: 'Próxima',
+  pending: 'Pendiente',
+  past: 'Fecha pasada / por confirmar',
+  'needs-review': 'Por verificar con el vacunador',
+} as const;
+
 export function operationError(error: unknown): string {
-  const code = error instanceof Error ? error.message : ''
-  if (code.includes('stale-preview')) return 'Los datos cambiaron desde la previsualización. Cancela y vuelve a seleccionar el archivo antes de importar.'
-  if (code.includes('conflict')) return 'Hay un conflicto con los datos guardados. No se realizó la operación; revisa el registro o prepara una nueva previsualización.'
-  if (code === 'future-date') return 'La fecha no puede ser posterior a hoy. Corrígela y vuelve a guardar; tus campos se conservan.'
-  if (code === 'before-birth') return 'La aplicación no puede ser anterior al nacimiento de este perfil. Revisa ambas fechas; tus campos se conservan.'
-  if (code === 'invalid-date') return 'La fecha no existe. Revisa el día, mes y año; tus campos se conservan.'
-  if (code === 'missing-profile') return 'El perfil original ya no está disponible. No se asignó el registro a otro niño. Conserva una copia de los campos antes de cerrar.'
-  if (code === 'catalog-unavailable' || code === 'unknown-catalog' || code === 'schedule-reference-unavailable') return 'La referencia seleccionada no está disponible para este perfil. Elige Esquema 2026 o Esquema anterior a 2026; tus campos se conservan.'
-  return 'No se pudo completar la operación. Revisa los campos y el almacenamiento del navegador. Tus datos e inputs se conservan; puedes reintentar.'
+  const code = error instanceof Error ? error.message : '';
+  if (code.includes('stale-preview'))
+    return 'Los datos cambiaron desde la previsualización. Cancela y vuelve a seleccionar el archivo antes de importar.';
+  if (code.includes('conflict'))
+    return 'Hay un conflicto con los datos guardados. No se realizó la operación; revisa el registro o prepara una nueva previsualización.';
+  if (code === 'future-date')
+    return 'La fecha no puede ser posterior a hoy. Corrígela y vuelve a guardar; tus campos se conservan.';
+  if (code === 'before-birth')
+    return 'La aplicación no puede ser anterior al nacimiento de este perfil. Revisa ambas fechas; tus campos se conservan.';
+  if (code === 'invalid-date')
+    return 'La fecha no existe. Revisa el día, mes y año; tus campos se conservan.';
+  if (code === 'missing-profile')
+    return 'El perfil original ya no está disponible. No se asignó el registro a otro niño. Conserva una copia de los campos antes de cerrar.';
+  if (
+    code === 'catalog-unavailable' ||
+    code === 'unknown-catalog' ||
+    code === 'schedule-reference-unavailable'
+  )
+    return 'La referencia seleccionada no está disponible para este perfil. Elige Esquema 2026 o Esquema anterior a 2026; tus campos se conservan.';
+  return 'No se pudo completar la operación. Revisa los campos y el almacenamiento del navegador. Tus datos e inputs se conservan; puedes reintentar.';
 }

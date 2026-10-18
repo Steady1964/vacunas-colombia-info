@@ -1,1 +1,42 @@
-{"name":"vacunas-colombia","version":"1.0.0","private":true,"scripts":{"dev":"next dev --webpack","build":"next build --webpack","start":"next start","test":"vitest run","generate:icons":"node scripts/generate-icons.mjs"},"dependencies":{"@serwist/next":"9.5.13","@tailwindcss/postcss":"^4.3.3","class-variance-authority":"^0.7.1","cn":"^0.5.0","date-fns":"^4.4.0","dexie":"^4.4.6","lucide-react":"^1.58.0","next":"^16.4.2","radix-ui":"^1.8.1","react":"^19.3.1","react-dom":"^19.3.1","serwist":"9.5.13","xlsx":"https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz","zod":"4.6.7"},"devDependencies":{"@types/node":"^26.6.5","@types/react":"^19.3.0","@types/react-dom":"^19.3.0","fake-indexeddb":"6.2.6","postcss":"^8.5.30","sharp":"0.35.5","tailwindcss":"^4.3.3","typescript":"^7.0.2","vitest":"^5.0.5"}}
+{
+  "name": "vacunas-colombia",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "test": "vitest run",
+    "generate:icons": "node scripts/generate-icons.mjs",
+    "format": "prettier --write app src scripts \"*.{ts,mts,mjs,json}\" \"public/*.webmanifest\" \".vscode/*.json\" \".prettierrc.json\"",
+    "format:check": "prettier --check app src scripts \"*.{ts,mts,mjs,json}\" \"public/*.webmanifest\" \".vscode/*.json\" \".prettierrc.json\""
+  },
+  "dependencies": {
+    "@serwist/next": "9.5.13",
+    "@tailwindcss/postcss": "^4.3.3",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.5.0",
+    "date-fns": "^4.4.0",
+    "dexie": "^4.4.6",
+    "lucide-react": "^1.58.0",
+    "next": "^16.4.2",
+    "radix-ui": "^1.8.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "serwist": "9.5.13",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "fake-indexeddb": "6.2.6",
+    "postcss": "^8.5.30",
+    "prettier": "3.9.10",
+    "sharp": "0.35.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

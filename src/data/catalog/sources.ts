@@ -29,7 +29,8 @@ export const sources: Source[] = [
   },
   {
     id: 'minsalud-technical-index',
-    title: 'MinSalud — Índice de lineamientos técnicos (no es una regla de dosis)',
+    title:
+      'MinSalud — Índice de lineamientos técnicos (no es una regla de dosis)',
     url: 'https://vacunacion.minsalud.gov.co/RT/Paginas/lineamientos-tecnicos.aspx',
     reviewedAt: REVIEWED_AT,
     verification: 'verified',
@@ -43,7 +44,8 @@ export const sources: Source[] = [
   },
   {
     id: 'minsalud-hexavalent-2025',
-    title: 'MinSalud — Hexavalente, septiembre 2025, versión 1, pp. 10–16: componentes, población y etapas',
+    title:
+      'MinSalud — Hexavalente, septiembre 2025, versión 1, pp. 10–16: componentes, población y etapas',
     url: 'https://www.minsalud.gov.co/sites/rid/Lists/BibliotecaDigital/RIDE/VS/PP/PAI/lineamientos-tecnicos-aplicacion-vacuna-hexavalente.pdf',
     reviewedAt: REVIEWED_AT,
     verification: 'verified',
@@ -57,7 +59,8 @@ export const sources: Source[] = [
   },
   {
     id: 'minsalud-poster-july-2026',
-    title: 'MinSalud — Esquema de vacunación, actualización julio 2026, pp. 1–2',
+    title:
+      'MinSalud — Esquema de vacunación, actualización julio 2026, pp. 1–2',
     url: 'https://www.minsalud.gov.co/sites/rid/Lists/BibliotecaDigital/RIDE/VS/PP/ET/afiche-esquema-vacunacion-col-2026.pdf',
     reviewedAt: REVIEWED_AT,
     verification: 'verified',
@@ -71,7 +74,8 @@ export const sources: Source[] = [
   },
   {
     id: 'gsk-rotarix',
-    title: 'GSK — Rotarix, información de prescripción EE. UU., revisión septiembre 2026, §§ 1, 2.1, 11',
+    title:
+      'GSK — Rotarix, información de prescripción EE. UU., revisión septiembre 2026, §§ 1, 2.1, 11',
     url: 'https://gskpro.com/content/dam/global/hcpportal/en_US/Prescribing_Information/Rotarix/pdf/ROTARIX-PI-PIL.PDF',
     reviewedAt: REVIEWED_AT,
     verification: 'verified',
@@ -92,42 +96,48 @@ export const sources: Source[] = [
   },
   {
     id: 'ema-infanrix-hexa',
-    title: 'EMA — Infanrix hexa, ficha oficial del titular GSK, §§ 2, 4.1–4.2, pp. 2–4',
+    title:
+      'EMA — Infanrix hexa, ficha oficial del titular GSK, §§ 2, 4.1–4.2, pp. 2–4',
     url: 'https://www.ema.europa.eu/en/documents/product-information/infanrix-hexa-epar-product-information_en.pdf',
     reviewedAt: REVIEWED_AT,
     verification: 'verified',
   },
   {
     id: 'ema-nimenrix',
-    title: 'EMA — Nimenrix, composición y curso dependiente de edad, §§ 2, 4.1–4.2',
+    title:
+      'EMA — Nimenrix, composición y curso dependiente de edad, §§ 2, 4.1–4.2',
     url: 'https://www.ema.europa.eu/en/documents/product-information/nimenrix-epar-product-information_en.pdf',
     reviewedAt: REVIEWED_AT,
     verification: 'verified',
   },
   {
     id: 'ema-bexsero',
-    title: 'EMA — Bexsero, composición y cursos dependientes de edad, §§ 2, 4.1–4.2',
+    title:
+      'EMA — Bexsero, composición y cursos dependientes de edad, §§ 2, 4.1–4.2',
     url: 'https://www.ema.europa.eu/en/documents/product-information/bexsero-epar-product-information_en.pdf',
     reviewedAt: REVIEWED_AT,
     verification: 'verified',
   },
   {
     id: 'gsk-infanrix-hexa-direct-review',
-    title: 'Por revisar — ficha directa GSK Infanrix hexa no extraíble; se usa ficha oficial EMA para composición',
+    title:
+      'Por revisar — ficha directa GSK Infanrix hexa no extraíble; se usa ficha oficial EMA para composición',
     url: 'https://gskpro.com/content/dam/global/hcpportal/en_SG/Therapyareas/Vaccines/pdf/infanrix-hexa-pi-ipi17-si-approved-31-may-2023.pdf',
     reviewedAt: REVIEWED_AT,
     verification: 'needs-review',
   },
   {
     id: 'sanofi-hexaxim-india-review',
-    title: 'Por revisar — ficha Sanofi India no disponible (HTTP 404); se usa ficha Sanofi Singapur',
+    title:
+      'Por revisar — ficha Sanofi India no disponible (HTTP 404); se usa ficha Sanofi Singapur',
     url: 'https://www.sanofi.com/assets/countries/india/docs/science-and-innovation/for-healthcare-professionals/product-information/vaccines/hexaxim-iIndia-pi-nov-2022-ccds-v8-v10.pdf',
     reviewedAt: REVIEWED_AT,
     verification: 'needs-review',
   },
   {
     id: 'private-course-co-review',
-    title: 'Por revisar — programación individual y correspondencias de meningococo en Colombia no confirmadas por este índice',
+    title:
+      'Por revisar — programación individual y correspondencias de meningococo en Colombia no confirmadas por este índice',
     url: 'https://vacunacion.minsalud.gov.co/RT/Paginas/lineamientos-tecnicos.aspx',
     reviewedAt: REVIEWED_AT,
     verification: 'needs-review',

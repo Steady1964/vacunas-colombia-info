@@ -51,5 +51,8 @@ export interface Catalog {
   primarySchedules: Partial<Record<PrimaryScheduleId, Projection[]>>;
   sharedProjections: Projection[];
   products: Product[];
-  optionalRequirements: Record<string, { requirement: Requirement; projection: Projection }[]>;
+  optionalRequirements: Record<
+    string,
+    { requirement: Requirement; projection: Projection }[]
+  >;
 }

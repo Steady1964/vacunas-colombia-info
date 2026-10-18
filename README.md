@@ -6,6 +6,14 @@ Agenda y carné familiar local de vacunación infantil para Colombia. No sustitu
 
 Requiere Node.js y pnpm. Instalar exactamente el lockfile con `pnpm install --frozen-lockfile`; ejecutar `pnpm dev` para desarrollo, `pnpm test` para la suite y `pnpm build` / `pnpm start` para producción. Los scripts de desarrollo y build fijan webpack porque esta integración de Serwist genera el service worker mediante su plugin de webpack; no se suprime ni se asume compatibilidad con Turbopack.
 
+## Estilo de código y VS Code
+
+`pnpm format` formatea el código propio de `app/`, `src/`, `scripts/` y la configuración raíz; `pnpm format:check` comprueba que siga el mismo formato. Prettier está fijado en el lockfile: 2 espacios, comillas simples, punto y coma y ancho objetivo de 80 caracteres. Los artefactos generados, dependencias, Excel y documentos de referencia quedan excluidos.
+
+Los identificadores siguen la [guía TypeScript de Google](https://google.github.io/styleguide/tsguide.html#identifiers): `UpperCamelCase` para tipos, clases y componentes; `lowerCamelCase` para variables y funciones; `CONSTANT_CASE` para constantes globales inmutables. Se conservan nombres exigidos por Next.js, APIs externas, campos persistidos e identificadores clínicos. Las declaraciones, efectos, handlers y bloques de interfaz se separan con líneas en blanco según su responsabilidad.
+
+VS Code recomienda **Prettier — Code formatter** (`esbenp.prettier-vscode`) y activa formato al guardar mediante `.vscode/settings.json`; `.editorconfig` comparte la indentación y finales LF con otros editores. No es necesario cambiar ajustes globales del editor.
+
 ## Pruebas
 
 `pnpm test` ejecuta Vitest con IndexedDB aislada en memoria. Los tests usan nombres de base propios y no abren ni borran la base familiar del navegador.
