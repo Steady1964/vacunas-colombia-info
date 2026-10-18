@@ -42,11 +42,13 @@ Vercel reconstruye `.next` y los workers de `public/` a partir de las fuentes. N
 
 ## Perfiles, calendario y aplicaciones
 
-Crea el primer perfil con apodo, nacimiento y la referencia indicada por tu vacunador; no viene preseleccionada. Puedes elegir **Esquema 2026** (serie primaria a 6/12/18 semanas) o **Esquema anterior a 2026** (2/4/6 meses, edición 2 de EPS Sanitas sin fecha editorial visible). En **Ajustes → Agregar otro perfil** puedes crear más niños. El selector superior recuerda el perfil activo y cada niño conserva su referencia y su historial independiente.
+Crea el primer perfil con apodo, nacimiento y la referencia indicada por tu vacunador; no viene preseleccionada. Puedes elegir **Esquema 2026** (serie primaria a 6/12/18 semanas) o **Esquema anterior a 2026** (2/4/6 meses, edición 2 de EPS Sanitas sin fecha editorial visible). En **Ajustes → Perfiles de la familia → Agregar otro perfil** puedes crear más niños. El selector superior recuerda el perfil activo y cada niño conserva su referencia y su historial independiente.
 
 Sin perfiles, la navegación muestra solo **Inicio** y **Ajustes**. **Calendario** y **Carné** aparecen al crear o restaurar un perfil y se ocultan al eliminar el último; si otra pestaña lo elimina mientras consultabas una de esas vistas, se muestra Inicio.
 
 **Información y ayuda** es un botón de la cabecera, no un tab. Abre un popup sin cambiar la vista actual, con secciones desplegables de información para familias, catálogo/fuentes, productos y privacidad. Las cuatro secciones empiezan cerradas; sus títulos permiten elegir qué leer. El popup tiene desplazamiento interno, se cierra con Escape y devuelve el foco al botón.
+
+**Ajustes** organiza perfiles/referencia, copias de seguridad, revisión de registros, almacenamiento/borrado y privacidad en secciones desplegables de una columna, separadas por 22 px. Perfiles empieza abierto; revisión también se abre si hay incidencias conservadas. Crear o editar un perfil sigue abriendo su popup. Cerrar una sección o cambiar de vista no desmonta sus formularios ni descarta una previsualización de respaldo. La invitación general a crear el primer perfil se muestra solo en Inicio, sin duplicarse en Ajustes.
 
 **Calendario** presenta fechas civiles, filtros PAI/complementarias y fuentes por requisito. Cambiar entre Esquema 2026 y Esquema anterior a 2026 pide confirmación y actualiza catálogo y serie primaria en una misma transacción: no cambia IDs, fechas reales, lotes ni prestadores del historial. Una combinación legada de 2/4/6 meses con hitos 2026 permanece legible y editable en perfiles existentes, pero no puede elegirse para perfiles nuevos. Las referencias opcionales se eligen explícitamente por perfil.
 
@@ -74,7 +76,7 @@ En **Ajustes → Revisar registros conservados** puedes corregir una aplicación
 
 El respaldo JSON contiene información familiar privada **sin cifrar** y debe guardarse con cuidado. La exportación incluye todos los perfiles, aplicaciones, selecciones y registros pendientes de revisión; también puede importarse el formato anterior de la aplicación.
 
-En **Ajustes → Importar archivo JSON** la selección solo valida y previsualiza: aún no escribe datos. **Combinar** omite IDs con los mismos valores y rechaza toda la operación si algún ID contiene datos diferentes; conserva las preferencias locales. **Reemplazar** requiere confirmación y ofrece descargar una copia previa. Si otra pestaña modificó los datos después de la previsualización, la importación queda bloqueada: cancela y vuelve a seleccionar el archivo. Cancelar, un formato inválido o un fallo de transacción dejan intacto el conjunto anterior.
+En **Ajustes → Copias de seguridad → Importar archivo JSON** la selección solo valida y previsualiza: aún no escribe datos. **Combinar** omite IDs con los mismos valores y rechaza toda la operación si algún ID contiene datos diferentes; conserva las preferencias locales. **Reemplazar** requiere confirmación y ofrece descargar una copia previa. Si otra pestaña modificó los datos después de la previsualización, la importación queda bloqueada: cancela y vuelve a seleccionar el archivo. Cancelar, un formato inválido o un fallo de transacción dejan intacto el conjunto anterior.
 
 Los eventos históricos incoherentes tras editar nacimiento se conservan y se exportan como datos explícitamente por revisar, con su procedencia, sin reescribir el historial en IndexedDB.
 
@@ -96,6 +98,6 @@ La evidencia ejecutada y los límites de despliegue están en [`docs/verificatio
 
 ## Borrado local y teclado
 
-**Carné → Eliminar** identifica la aplicación por producto y fecha; **Ajustes → Eliminar perfil de…** identifica al niño y elimina sus aplicaciones e incidencias en la misma transacción. Ambos ofrecen copia antes de confirmar. **Eliminar todos los datos** exige dos confirmaciones diferenciadas; conserva los archivos descargados y la caché de la aplicación, que no contiene historiales.
+**Carné → Eliminar** identifica la aplicación por producto y fecha; **Ajustes → Perfiles de la familia → Eliminar perfil de…** identifica al niño y elimina sus aplicaciones e incidencias en la misma transacción. Ambos ofrecen copia antes de confirmar. **Ajustes → Almacenamiento y borrado → Eliminar todos los datos** exige dos confirmaciones diferenciadas; conserva los archivos descargados y la caché de la aplicación, que no contiene historiales.
 
 Las confirmaciones de borrado y cambio de esquema enfocan la opción de cancelar y mantienen la tabulación dentro del diálogo. Al cerrar vuelven al control de origen; después de eliminar un control, el foco pasa al contenido principal. Los errores de almacenamiento no crean una familia alternativa ni borran datos para continuar.

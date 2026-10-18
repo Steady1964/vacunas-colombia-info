@@ -159,6 +159,16 @@ Con el servidor detenido se recargó la app cacheada, se abrió la ayuda y se de
 
 `pnpm format:check`, las **91/91 pruebas** y `pnpm build` pasaron. La revisión independiente no encontró defectos bloqueantes, incluidos los ajustes de ancho del selector y alineación del popup. No se cambiaron reglas clínicas, almacenamiento ni contratos de respaldo. La validación en Vercel sigue a cargo del usuario.
 
+## Task 21 — Ajustes compactos y sin duplicación
+
+**Resultado: pasa en producción local.** La captura reportada correspondía a Ajustes, cuya cuadrícula de tarjetas seguía intacta después de trasladar Información al popup. Ajustes ahora agrupa perfiles/referencia, copias de seguridad, revisión, almacenamiento/borrado y privacidad en cinco secciones nativas desplegables de una columna. Perfiles empieza abierto; las otras secciones empiezan cerradas cuando no hay incidencias. La invitación general a crear un perfil permanece en Inicio y ya no se repite sobre Ajustes.
+
+Chromium en **320 × 740**, **390 × 844** y **1280 × 900**: se midieron **22 px entre las cinco secciones**, sin overflow horizontal global. Tras crear/restaurar un perfil, el selector de referencia permaneció dentro de su sección, con 44 px de alto incluso a 320 px. Se observaron capturas móviles y de escritorio con los apartados expandidos y plegados.
+
+Se creó un perfil desde el popup de Ajustes y se exportó un respaldo. La previsualización y el archivo seleccionado sobrevivieron a plegar/desplegar Copias de seguridad y navegar a Inicio y volver. La autoimportación conservó un único perfil; otra sesión vacía restauró el mismo respaldo y habilitó Calendario y Carné. Cancelar el cambio de referencia conservó Esquema 2026 y devolvió el foco al selector. Información mantuvo su popup de cuatro secciones y retorno del foco, sin reabrir Perfiles.
+
+Con el servidor detenido, recargar y volver a Ajustes recuperó el perfil y permitió abrir Copias de seguridad. Cero errores de navegador. `pnpm format:check`, **91/91 pruebas** y `pnpm build` pasaron con Node 24.22.0/pnpm 12.14.0. La revisión independiente no encontró bloqueantes. Sin cambios en reglas clínicas, esquema persistido o contratos de respaldo; sin despliegue en Vercel.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

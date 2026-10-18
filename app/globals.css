@@ -153,13 +153,15 @@ ul {
   min-width: 0;
 }
 
-.topbar-actions .profile-selector [data-slot='select-trigger'] {
+.topbar-actions .profile-selector [data-slot='select-trigger'],
+.settings-reference [data-slot='select-trigger'] {
   width: 100%;
   min-width: 0;
   min-height: 44px;
 }
 
-.topbar-actions .profile-selector [data-slot='select-value'] {
+.topbar-actions .profile-selector [data-slot='select-value'],
+.settings-reference [data-slot='select-value'] {
   display: block;
   min-width: 0;
   overflow: hidden;
@@ -312,7 +314,24 @@ ul {
   padding: 4px;
 }
 
-.information-section {
+.settings-sections {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+
+.settings-reference {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-section-body > .review-row {
+  margin-bottom: 16px;
+}
+
+.information-section,
+.settings-section {
   min-width: 0;
   padding: 0;
   border: 1px solid var(--line);
@@ -320,24 +339,28 @@ ul {
   background: var(--card);
 }
 
-.information-section > summary {
+.information-section > summary,
+.settings-section > summary {
   min-height: 56px;
   padding: 16px;
   border-radius: 14px;
   font-weight: 750;
 }
 
-.information-section[open] > summary {
+.information-section[open] > summary,
+.settings-section[open] > summary {
   border-bottom: 1px solid var(--line);
   border-radius: 14px 14px 0 0;
   background: var(--cream);
 }
 
-.information-section-body {
+.information-section-body,
+.settings-section-body {
   padding: 16px;
 }
 
-.information-section-body > .card {
+.information-section-body > .card,
+.settings-section-body > .card {
   padding: 0;
   border: 0;
   box-shadow: none;

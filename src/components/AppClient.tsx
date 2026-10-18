@@ -419,7 +419,7 @@ export function AppClient() {
             </Button>
           )}
         </section>
-        {!active && (
+        {!active && view === 'inicio' && (
           <section className="card no-print">
             <h2>Empieza con un perfil</h2>
             <p>
