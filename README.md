@@ -65,6 +65,8 @@ Crea el primer perfil con apodo, nacimiento y la referencia indicada por tu vacu
 
 Sin perfiles, la navegación muestra solo **Inicio** y **Ajustes**. **Calendario** y **Carné** aparecen al crear o restaurar un perfil y se ocultan al eliminar el último; si otra pestaña lo elimina mientras consultabas una de esas vistas, se muestra Inicio.
 
+**Inicio** concentra el único botón **Registrar vacuna aplicada**; no se repite en Calendario, Carné ni Ajustes. La edad actual y el esquema seleccionado se muestran en bloques etiquetados distintos, sin concatenarlos. El registro pertenece a cada perfil, no representa un historial médico de toda la familia.
+
 **Información y ayuda** es un botón de la cabecera, no un tab. Abre un popup sin cambiar la vista actual, con secciones desplegables de información para familias, catálogo/fuentes, productos y privacidad. Las cuatro secciones empiezan cerradas; sus títulos permiten elegir qué leer. El popup tiene desplazamiento interno, se cierra con Escape y devuelve el foco al botón.
 
 **Ajustes** organiza perfiles/referencia, copias de seguridad, revisión de registros, almacenamiento/borrado y privacidad en secciones desplegables de una columna, separadas por 22 px. Perfiles empieza abierto; revisión también se abre si hay incidencias conservadas. Crear o editar un perfil sigue abriendo su popup. Cerrar una sección o cambiar de vista no desmonta sus formularios ni descarta una previsualización de respaldo. La invitación general a crear el primer perfil se muestra solo en Inicio, sin duplicarse en Ajustes.

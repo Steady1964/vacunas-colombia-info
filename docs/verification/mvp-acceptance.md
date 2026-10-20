@@ -202,6 +202,21 @@ Con el servidor detenido, recargar recuperó el perfil y el evento editado, y pe
 
 **Límite:** el escenario DPR 2 verifica geometría equivalente, no el control de zoom nativo de Chrome. No se comprobó el teclado virtual ni dispositivos físicos Safari/iOS/Android ni un nuevo deployment Vercel. Se dejó activo el servidor de desarrollo del usuario; los servidores propios de comprobación se detuvieron.
 
+## Task 23 — Inicio y contexto del perfil
+
+**Resultado: pasa en Chromium local.** El botón **Registrar vacuna aplicada** queda únicamente en la cabecera de Inicio, sin duplicarlo en las tarjetas. Se conserva la entrada para perfiles con catálogo disponible cuya referencia necesite revisión; la acción ya no acompaña toda la navegación.
+
+| Vista recorrida | Botones de registro observados |
+|---|---|
+| Inicio | 1 |
+| Calendario | 0 |
+| Carné | 0 |
+| Ajustes | 0 |
+
+Edad actual y esquema seleccionado usan bloques etiquetados independientes, separados por **18 px**. En **320, 390 y 1280 px** no hubo overflow horizontal; el botón de registro midió **44 px** de alto. El encabezado describe un registro de vacunas por perfil guardado en el dispositivo, sin atribuirle un historial médico familiar.
+
+El recorrido de producción guardó una aplicación física de hexavalente desde Inicio y la recuperó en Carné, sin un segundo botón de registro. La revisión independiente no encontró regresiones. Las comprobaciones integradas de estas tareas y sus límites se registran en las secciones siguientes.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

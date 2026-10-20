@@ -383,6 +383,29 @@ ul {
   border: 0;
   box-shadow: none;
 }
+.profile-context {
+  display: grid;
+  gap: 18px;
+  margin: 0 0 24px;
+}
+
+.profile-context > div {
+  min-width: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--line);
+}
+
+.profile-context dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.profile-context dd {
+  margin: 4px 0 0;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

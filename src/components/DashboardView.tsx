@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import type { ChildProfile, CivilDate } from '@/lib/types';
 import { ageAt } from '@/lib/civilDate';
 import type { ScheduleSummary } from '@/lib/schedule/summarizeSchedule';
@@ -11,14 +10,12 @@ export function DashboardView({
   summary,
   today,
   eventCount,
-  onRegister,
 }: {
   profile: ChildProfile;
   referenceLabel: string;
   summary: ScheduleSummary;
   today: CivilDate;
   eventCount: number;
-  onRegister: () => void;
 }) {
   const age = ageAt(profile.birthDate, today);
   const next = summary.items.filter((item) =>
@@ -29,10 +26,20 @@ export function DashboardView({
     <div className="content-grid">
       <section className="card">
         <h2>Progreso del calendario</h2>
-        <p>
-          {age.years} años, {age.months} meses y {age.days} días ·{' '}
-          {referenceLabel}
-        </p>
+        <dl className="profile-context">
+          <div>
+            <dt>Edad actual</dt>
+            <dd>
+              {age.years} {age.years === 1 ? 'año' : 'años'}, {age.months}{' '}
+              {age.months === 1 ? 'mes' : 'meses'} y {age.days}{' '}
+              {age.days === 1 ? 'día' : 'días'}
+            </dd>
+          </div>
+          <div>
+            <dt>Esquema seleccionado</dt>
+            <dd>{referenceLabel}</dd>
+          </div>
+        </dl>
         <strong className="progress-number">
           {summary.progressPercent === null
             ? '—'
@@ -90,7 +97,6 @@ export function DashboardView({
         ) : (
           <p>Consulta al vacunador para confirmar la programación.</p>
         )}
-        <Button onClick={onRegister}>Registrar vacuna aplicada</Button>
       </section>
       <section className="card wide">
         <h2>Próximas vacunas</h2>

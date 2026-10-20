@@ -409,11 +409,11 @@ export function AppClient() {
                 : 'Organiza las vacunas de tu peque.'}
             </h1>
             <p className="sub">
-              Fechas orientativas, historial familiar y tranquilidad para cada
-              visita.
+              Fechas orientativas y un registro de vacunas para cada perfil,
+              guardado en este dispositivo.
             </p>
           </div>
-          {active && (
+          {active && view === 'inicio' && (
             <Button disabled={!writable || !catalog} onClick={register}>
               Registrar vacuna aplicada
             </Button>
@@ -480,7 +480,6 @@ export function AppClient() {
             summary={summary}
             today={today}
             eventCount={applications.length}
-            onRegister={register}
           />
         )}
         {view === 'calendario' &&
