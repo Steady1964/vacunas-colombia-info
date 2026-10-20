@@ -73,7 +73,11 @@ Sin perfiles, la navegación muestra solo **Inicio** y **Ajustes**. **Calendario
 
 **Calendario** presenta fechas civiles, filtros PAI/complementarias y fuentes por requisito. Cambiar entre Esquema 2026 y Esquema anterior a 2026 pide confirmación y actualiza catálogo y serie primaria en una misma transacción: no cambia IDs, fechas reales, lotes ni prestadores del historial. Una combinación legada de 2/4/6 meses con hitos 2026 permanece legible y editable en perfiles existentes, pero no puede elegirse para perfiles nuevos. Las referencias opcionales se eligen explícitamente por perfil.
 
+**Mostrar referencia de este producto** despliega información junto al botón, aunque el filtro de la línea de tiempo la excluya. Incluye las correspondencias disponibles, fuentes y fechas documentadas; los cursos sin edad o fecha verificada permanecen explícitamente por confirmar. Consultar un producto ya representado en PAI no crea dosis adicionales.
+
 **Registrar vacuna aplicada** registra una aplicación física, aunque un producto combinado cubra varios requisitos. Puedes guardar un producto incompleto por revisar, sin cobertura automática, y corregirlo desde **Carné → Editar** conservando su ID y los campos opcionales. Un error de escritura conserva el formulario para reintentar. Editar el nacimiento no reescribe aplicaciones; las que resulten incoherentes se señalan para revisión.
+
+La entrada de nombre de vacuna o marca **filtra** la lista **Producto o biológico**: escribir no equivale a seleccionar ni guardar. **Etapa confirmada** ofrece edades y dosis de las proyecciones del esquema y producto elegidos, no la unión de todos los productos. Una etapa histórica fuera de esa referencia se conserva y se señala para revisión; cambiar explícitamente de producto exige volver a elegir dosis y etapa.
 
 Corregir lote, IPS o notas de una aplicación verificada conserva su snapshot de cobertura aunque después se haya cambiado de referencia. Cambiar producto, marca, dosis o etapa lo recalcula con el catálogo del perfil; el calendario siempre valida la compatibilidad actual. Al reparar una incidencia, tanto la previsualización como el guardado usan la referencia del niño destino elegido explícitamente.
 

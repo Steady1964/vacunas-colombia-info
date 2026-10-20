@@ -1,29 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import type {
-  ChildProfile,
-  PrimaryScheduleId,
-  ScheduleReferenceId,
-} from '@/lib/types';
+import type { ChildProfile, ScheduleReferenceId } from '@/lib/types';
 import type { Catalog } from '@/data/catalog/types';
 import type { ScheduleSummary } from '@/lib/schedule/summarizeSchedule';
+import {
+  getProductReferences,
+  getScheduleReferences,
+  referenceAgeLabel,
+} from '@/lib/schedule/referencePresentation';
 import { Button } from '@/components/ui/button';
 import { ScheduleSelector } from './ScheduleSelector';
-import { milestoneLabels, STATUS_LABELS } from './presentation';
-
-const primaryAges: Record<PrimaryScheduleId, Record<string, string>> = {
-  'CO-PAI-PRIMARY-2-4-6': {
-    'primary-1': '2 meses',
-    'primary-2': '4 meses',
-    'primary-3': '6 meses',
-  },
-  'CO-PAI-PRIMARY-6-12-18-WEEKS-2026': {
-    'primary-1': '6 semanas (1,5 meses)',
-    'primary-2': '12 semanas (3 meses)',
-    'primary-3': '18 semanas (4,5 meses)',
-  },
-};
+import { STATUS_LABELS } from './presentation';
 
 export function CalendarView({
   profile,
@@ -45,16 +33,39 @@ export function CalendarView({
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState('');
+  const referenceByRequirementId = new Map(
+    [
+      ...getScheduleReferences(profile, catalog),
+      ...Object.values(catalog.optionalRequirements).flat(),
+    ].map((reference) => [reference.requirement.id, reference]),
+  );
+  const optionalProductIds = [
+    ...new Set([...Object.keys(catalog.optionalRequirements), ...optionalIds]),
+  ];
+
+  function ageLabel(requirementId: string) {
+    const reference = referenceByRequirementId.get(requirementId);
+    return reference
+      ? referenceAgeLabel(reference, catalog)
+      : 'Edad por confirmar';
+  }
 
   async function toggle(id: string) {
     if (busy) return;
     setBusy(true);
     setError('');
+    setNotice('');
     try {
       await onOptionalChange(
         optionalIds.includes(id)
           ? optionalIds.filter((x) => x !== id)
           : [...optionalIds, id],
+      );
+      setNotice(
+        optionalIds.includes(id)
+          ? 'Referencia ocultada.'
+          : 'Referencia mostrada debajo de su botón, independientemente del filtro de la línea de tiempo.',
       );
     } catch {
       setError(
@@ -98,11 +109,7 @@ export function CalendarView({
           .map((r) => (
             <article className="event" key={r.id}>
               <div className="event-date">
-                <strong>
-                  {primaryAges[profile.primaryScheduleId][r.milestoneId] ??
-                    milestoneLabels[r.milestoneId] ??
-                    'Etapa por confirmar'}
-                </strong>
+                <strong>{ageLabel(r.id)}</strong>
                 <br />
                 <time dateTime={r.estimatedDate ?? undefined}>
                   {r.estimatedDate ?? 'Fecha por confirmar'}
@@ -118,9 +125,7 @@ export function CalendarView({
                   <summary>Enfermedad, acceso y fuentes</summary>
                   <p>
                     Previene: {r.disease}. Dosis {r.doseNumber}. Etapa:{' '}
-                    {milestoneLabels[r.milestoneId] ??
-                      'Por verificar con el vacunador'}
-                    .
+                    {ageLabel(r.id)}.
                   </p>
                   <p>
                     {r.access === 'pai'
@@ -130,37 +135,7 @@ export function CalendarView({
                         : 'Acceso condicional: confirmar elegibilidad con el vacunador.'}
                   </p>
                   {r.note && <p>{r.note}</p>}
-                  <ul>
-                    {r.sourceIds.map((id) => {
-                      const source = catalog.sources.find((s) => s.id === id);
-                      return (
-                        <li key={id}>
-                          {source ? (
-                            <>
-                              <a
-                                href={source.url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {source.title ?? source.id}
-                              </a>{' '}
-                              · fecha editorial:{' '}
-                              {source.publishedAt &&
-                              source.publishedAt !== 'unknown'
-                                ? source.publishedAt
-                                : 'no visible en el documento'}{' '}
-                              · consulta/revisión: {source.reviewedAt} ·{' '}
-                              {source.verification === 'verified'
-                                ? 'Verificada para las reglas documentadas'
-                                : 'Por revisar; no concede equivalencia automática'}
-                            </>
-                          ) : (
-                            'Fuente no disponible: por revisar'
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <SourceReferences ids={r.sourceIds} catalog={catalog} />
                 </details>
               </div>
             </article>
@@ -173,22 +148,126 @@ export function CalendarView({
           seleccionan a partir de marcas heredadas ni se convierten en
           obligaciones universales.
         </p>
-        {Object.keys(catalog.optionalRequirements).map((id) => (
-          <div className="optional-product" key={id}>
-            <strong>
-              {catalog.products.find((p) => p.id === id)?.name ?? id}
-            </strong>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void toggle(id)}
-            >
-              {optionalIds.includes(id)
-                ? 'Ocultar referencia de este producto'
-                : 'Mostrar referencia de este producto'}
-            </Button>
-          </div>
-        ))}
+        {optionalProductIds.map((id) => {
+          const product = catalog.products.find((entry) => entry.id === id);
+          const references = getProductReferences(profile, catalog, id);
+          const selected = optionalIds.includes(id);
+          const panelId = `optional-reference-${id}`;
+          const headingId = `optional-product-${id}`;
+          const datedReferences = references.some(({ requirement }) =>
+            summary.items.some(
+              (item) => item.id === requirement.id && item.estimatedDate,
+            ),
+          );
+          return (
+            <div className="optional-product" key={id}>
+              <strong id={headingId}>{product?.name ?? id}</strong>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy}
+                aria-expanded={selected}
+                aria-controls={panelId}
+                onClick={() => void toggle(id)}
+              >
+                {selected
+                  ? 'Ocultar referencia de este producto'
+                  : 'Mostrar referencia de este producto'}
+              </Button>
+              {selected && (
+                <div id={panelId} role="region" aria-labelledby={headingId}>
+                  <p>
+                    Consulta del producto seleccionado, visible aunque el filtro
+                    de la línea de tiempo excluya sus requisitos. No confirma
+                    indicación, acceso PAI ni intercambiabilidad.
+                  </p>
+                  {product ? (
+                    <>
+                      {product.brands.length > 0 && (
+                        <p>
+                          Marcas de referencia: {product.brands.join(', ')}.
+                        </p>
+                      )}
+                      {product.note && <p>{product.note}</p>}
+                    </>
+                  ) : (
+                    <p>
+                      Producto no disponible en este catálogo. Se conserva tu
+                      selección, sin sustituirlo por otro producto.
+                    </p>
+                  )}
+                  {(catalog.optionalRequirements[id]?.length ?? 0) === 0 && (
+                    <p>
+                      No hay etapas complementarias independientes documentadas
+                      para este producto en el catálogo.
+                      {references.length > 0 &&
+                        ' Las correspondencias con la referencia del perfil se muestran a continuación; no crean dosis adicionales.'}
+                    </p>
+                  )}
+                  {!datedReferences && (
+                    <p className="notice">
+                      No hay fechas individuales documentadas disponibles para
+                      este producto en la referencia actual. No se calculan
+                      edades ni fechas por analogía con otro curso. Confirma la
+                      programación con el vacunador.
+                    </p>
+                  )}
+                  {references.length > 0 && (
+                    <ul>
+                      {references.map((reference) => {
+                        const { requirement } = reference;
+                        const scheduled = summary.items.find(
+                          (item) => item.id === requirement.id,
+                        );
+                        return (
+                          <li key={requirement.id}>
+                            <strong>{requirement.name}</strong>
+                            <p>
+                              {referenceAgeLabel(reference, catalog)} · Dosis{' '}
+                              {requirement.doseNumber} ·{' '}
+                              {scheduled?.estimatedDate ? (
+                                <time dateTime={scheduled.estimatedDate}>
+                                  {scheduled.estimatedDate}
+                                </time>
+                              ) : (
+                                'Fecha individual por confirmar'
+                              )}
+                              {scheduled &&
+                                ` · ${STATUS_LABELS[scheduled.status]}`}
+                            </p>
+                            <p>
+                              Previene: {requirement.disease}.{' '}
+                              {requirement.access === 'pai'
+                                ? 'Referencia PAI, sujeta a elegibilidad.'
+                                : requirement.access === 'private'
+                                  ? 'Referencia particular / complementaria.'
+                                  : 'Acceso condicional; confirmar elegibilidad.'}
+                            </p>
+                            {requirement.note && <p>{requirement.note}</p>}
+                            <SourceReferences
+                              ids={requirement.sourceIds}
+                              catalog={catalog}
+                            />
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                  {product && (
+                    <>
+                      <h4>Fuentes del producto</h4>
+                      <SourceReferences
+                        ids={product.sourceIds}
+                        catalog={catalog}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {notice && <p role="status">{notice}</p>}
         {error && <p role="alert">{error}</p>}
       </section>
       <p className="notice">
@@ -196,5 +275,44 @@ export function CalendarView({
         programación. No calculamos rescate clínico ni intervalos mínimos.
       </p>
     </section>
+  );
+}
+
+function SourceReferences({
+  ids,
+  catalog,
+}: {
+  ids: string[];
+  catalog: Catalog;
+}) {
+  if (ids.length === 0)
+    return <p>Sin fuentes documentadas disponibles: por revisar.</p>;
+  return (
+    <ul>
+      {ids.map((id) => {
+        const source = catalog.sources.find((entry) => entry.id === id);
+        return (
+          <li key={id}>
+            {source ? (
+              <>
+                <a href={source.url} target="_blank" rel="noreferrer">
+                  {source.title ?? source.id}
+                </a>{' '}
+                · fecha editorial:{' '}
+                {source.publishedAt && source.publishedAt !== 'unknown'
+                  ? source.publishedAt
+                  : 'no visible en el documento'}{' '}
+                · consulta/revisión: {source.reviewedAt} ·{' '}
+                {source.verification === 'verified'
+                  ? 'Verificada para las reglas documentadas'
+                  : 'Por revisar; no concede equivalencia automática'}
+              </>
+            ) : (
+              'Fuente no disponible: por revisar'
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }

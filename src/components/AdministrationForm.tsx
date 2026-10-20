@@ -14,6 +14,7 @@ import type {
 import type { Catalog } from '@/data/catalog/types';
 import { UNIDENTIFIED_PRODUCT_ID } from '@/data/catalog';
 import { resolveSelection } from '@/lib/schedule/resolveCoverage';
+import { getRegistrationStages } from '@/lib/schedule/referencePresentation';
 import { milestoneLabels, operationError, reviewLabels } from './presentation';
 
 export function AdministrationForm({
@@ -59,13 +60,13 @@ export function AdministrationForm({
   const pending = useRef<AdministrationCommand | null>(null);
 
   const selection = resolveSelection(input, catalog);
-  const stages = [
-    ...new Map(
-      catalog.products
-        .flatMap((p) => p.coverageRules)
-        .map((r) => [r.milestoneId, r.milestoneId]),
-    ).keys(),
-  ];
+  const stages = getRegistrationStages(
+    child,
+    catalog,
+    input.productId,
+    input.milestoneId,
+  );
+  const retainedStage = stages.find((stage) => stage.retained);
 
   function update<K extends keyof AdministrationInput>(
     key: K,
@@ -115,13 +116,20 @@ export function AdministrationForm({
           {administration ? 'Editar aplicación' : 'Registrar aplicación real'}
         </legend>
         <div className="field">
-          <Label htmlFor="product-search">Buscar producto o marca</Label>
+          <Label htmlFor="product-search">
+            Ingresa el nombre de la vacuna o la marca del biológico
+          </Label>
           <Input
             id="product-search"
             type="search"
+            aria-describedby="product-search-help"
             value={productSearch}
             onChange={(e) => setProductSearch(e.target.value)}
           />
+          <p id="product-search-help" className="muted">
+            Este texto filtra la lista «Producto o biológico». Elige el producto
+            en esa lista; escribir aquí no lo selecciona ni lo guarda.
+          </p>
         </div>
         <div className="field">
           <Label htmlFor="product">Producto o biológico</Label>
@@ -203,22 +211,32 @@ export function AdministrationForm({
             <select
               id="milestone"
               value={input.milestoneId ?? ''}
+              aria-describedby="milestone-help"
               onChange={(e) =>
                 update('milestoneId', e.target.value || undefined)
               }
             >
               <option value="">Por verificar / no se conoce</option>
-              {input.milestoneId && !stages.includes(input.milestoneId) && (
-                <option value={input.milestoneId}>
-                  Etapa conservada por verificar: {input.milestoneId}
-                </option>
-              )}
-              {stages.map((s) => (
-                <option key={s} value={s}>
-                  {milestoneLabels[s] ?? s}
+              {stages.map((stage) => (
+                <option key={stage.id} value={stage.id}>
+                  {stage.retained
+                    ? `Etapa conservada fuera de esta referencia: ${milestoneLabels[stage.id] ?? stage.id}`
+                    : stage.label}
                 </option>
               ))}
             </select>
+            <p id="milestone-help" className="muted">
+              Las edades y dosis corresponden al producto y la referencia de
+              este perfil, no a una confirmación clínica de la aplicación.
+              {!child.primaryScheduleId &&
+                ' El perfil todavía no tiene un esquema confirmado; no se elige uno automáticamente.'}
+              {child.referenceCatalogVersion !== catalog.version &&
+                ' El catálogo recibido no corresponde al perfil; no se sustituye su referencia.'}
+              {stages.filter((stage) => !stage.retained).length === 0 &&
+                ' No hay etapas documentadas disponibles para esta selección. Puedes conservar el registro por revisar.'}
+              {retainedStage &&
+                ' La etapa guardada se conserva, pero no pertenece a las opciones actuales de este producto y esquema. Confírmala con el vacunador; no se cambia automáticamente.'}
+            </p>
           </div>
         </div>
         <div className="field">

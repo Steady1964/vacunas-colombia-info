@@ -514,6 +514,12 @@ pre {
   padding: 14px 0;
   border-bottom: 1px solid var(--line);
 }
+
+.optional-product > [role='region'] {
+  flex-basis: 100%;
+  min-width: 0;
+}
+
 .section-heading {
   display: flex;
   flex-wrap: wrap;

@@ -217,6 +217,16 @@ Edad actual y esquema seleccionado usan bloques etiquetados independientes, sepa
 
 El recorrido de producción guardó una aplicación física de hexavalente desde Inicio y la recuperó en Carné, sin un segundo botón de registro. La revisión independiente no encontró regresiones. Las comprobaciones integradas de estas tareas y sus límites se registran en las secciones siguientes.
 
+## Task 24 — Registro y referencias de productos
+
+**Resultado: pasa en producción local.** La búsqueda por **Hexaxim** filtró el selector de producto sin cambiar por sí sola el valor «no identificado». Elegir hexavalente ofreció **6/12/18 semanas** en 2026 y **2/4/6 meses** en la referencia histórica. Rotarix ofreció solo dos etapas; RotaTeq conservó la tercera con edad por confirmar, sin tomar prestadas las 18 semanas de otra referencia. Fiebre amarilla ofreció 9 meses en 2026 y 18 meses en el catálogo histórico.
+
+Se recorrieron los **6 productos complementarios × 3 filtros × 2 referencias = 36 estados**. Todos desplegaron su panel junto al botón, sin overflow a 390 px, con información y fuentes visibles incluso al excluir sus filas de la línea de tiempo. Hexavalente y Rotarix mostraron las correspondencias PAI ya existentes sin añadir dosis; ACWY, meningococo B y dosis cero mostraron el límite de fechas documentadas. La tercera dosis particular de RotaTeq permaneció sin edad/fecha calculada.
+
+Se guardó una aplicación ficticia de fiebre amarilla en `month-18`, se cambió el perfil a 2026 y se abrió su edición: el valor de 18 meses permaneció seleccionado y marcado fuera de la referencia actual, junto a la opción documentada de 9 meses. Editar el lote conservó la fecha y etapa, sin convertirlas automáticamente en cobertura actual. Después se restauró la referencia histórica.
+
+Las 10 nuevas pruebas de presentación comprueban el alcance por producto/esquema, catálogos incompatibles, captura manual, etapas conservadas y ausencia de edades verificadas. **101/101 pruebas en 12 archivos**, formato y build pasaron. No se modificaron catálogos clínicos, reglas de cobertura, esquemas persistidos ni etiquetas históricas del carné; la revisión independiente no encontró bloqueantes.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |
