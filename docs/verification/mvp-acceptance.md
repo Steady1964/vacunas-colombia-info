@@ -247,6 +247,14 @@ Formato, **101/101 pruebas en 12 archivos** y build Next 16.4.2 pasaron con Node
 
 El control mantiene su valor histórico cuando no se cambia explícitamente de producto; no se borra el registro para habilitarlo. La ayuda explica la condición y el estado deshabilitado tiene indicación visual. La comprobación de producción confirmó el estado inicial y permitió completar después la identificación de una aplicación guardada.
 
+## Task 27 — Descartar edición mediante diálogo
+
+**Resultado: pasa en Chromium local y producción.** Cancelar, Escape, el cierre y el fondo del formulario con cambios abrieron un diálogo de la aplicación, no `window.confirm`. La opción Cancelar recibió el foco inicial. Cancelar o Escape conservaron exactamente el borrador y devolvieron el foco; Confirmar cerró el formulario sin persistir el texto descartado. Un formulario sin cambios se cerró sin confirmación.
+
+En **320, 390 y 1280 px** no hubo overflow: el ancho del diálogo fue 288, 358 y 512 px respectivamente, con botones de 44 px. La comprobación del fondo no registró diálogos nativos. El formulario permaneció montado mientras se decidía; no se sustituyó por otra instancia ni se escribió el borrador.
+
+La protección nativa al cerrar o recargar la pestaña se conserva: los navegadores no permiten reemplazar `beforeunload` por un diálogo personalizado fiable.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

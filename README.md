@@ -79,6 +79,8 @@ Sin perfiles, la navegación muestra solo **Inicio** y **Ajustes**. **Calendario
 
 La entrada de nombre de vacuna o marca **filtra** la lista **Producto o biológico**: escribir no equivale a seleccionar ni guardar. **Etapa confirmada** permanece deshabilitada en captura manual o con un producto no disponible; se activa al seleccionar un producto del catálogo y ofrece las edades y dosis documentadas para ese producto y esquema. Una etapa histórica fuera de esa referencia se conserva y se señala para revisión; cambiar explícitamente de producto exige volver a elegir dosis y etapa.
 
+Salir de la creación o edición con cambios abre el diálogo **Hay cambios sin guardar**, con **Confirmar** y **Cancelar**. Cancelar o pulsar Escape conserva el borrador y devuelve el foco; Confirmar lo descarta sin guardar. Si no hay cambios, se cierra directamente. El cierre o recarga de la pestaña mantiene la protección nativa del navegador mediante `beforeunload`.
+
 Corregir lote, IPS o notas de una aplicación verificada conserva su snapshot de cobertura aunque después se haya cambiado de referencia. Cambiar producto, marca, dosis o etapa lo recalcula con el catálogo del perfil; el calendario siempre valida la compatibilidad actual. Al reparar una incidencia, tanto la previsualización como el guardado usan la referencia del niño destino elegido explícitamente.
 
 Las correspondencias y fechas se basan en catálogos inmutables de `src/data/catalog/`. La fecha editorial del documento y la fecha en que fue consultado se muestran por separado; una consulta no se presenta como fecha de publicación. Consulta las fuentes, reglas y límites en [docs/catalog-sources.md](docs/catalog-sources.md). La aplicación no calcula rescates ni intervalos clínicos mínimos.

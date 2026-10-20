@@ -105,6 +105,7 @@ export function AppClient() {
   const [requestedView, setView] = useState<View>('inicio');
   const [dialog, setDialog] = useState<FormDialog | null>(null);
   const [formDirty, setFormDirty] = useState(false);
+  const [discardRequested, setDiscardRequested] = useState(false);
   const [otherDirty, setOtherDirty] = useState<Record<string, boolean>>({});
   const [mutationBusy, setMutationBusy] = useState(false);
   const [error, setError] = useState('');
@@ -118,6 +119,7 @@ export function AppClient() {
     null,
   );
   const mutationLock = useRef(false);
+  const discardReturnFocus = useRef<HTMLElement | null>(null);
 
   const snapshot = family.snapshot;
   const storedActive = snapshot?.preferences.find(
@@ -208,13 +210,21 @@ export function AppClient() {
 
   function closeForm() {
     setDialog(null);
+    setDiscardRequested(false);
     setFormDirty(false);
   }
 
   function requestCloseForm() {
-    if (mutationBusy) return;
-    if (!formDirty || window.confirm('Hay cambios sin guardar. ¿Descartarlos?'))
+    if (mutationBusy || discardRequested) return;
+    if (!formDirty) {
       closeForm();
+      return;
+    }
+    discardReturnFocus.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    setDiscardRequested(true);
   }
 
   function createProfile() {
@@ -693,6 +703,45 @@ export function AppClient() {
               )}
             </div>
           </DialogContent>
+          <AlertDialog
+            open={discardRequested}
+            onOpenChange={(open) => {
+              if (!open && !mutationBusy) setDiscardRequested(false);
+            }}
+          >
+            <AlertDialogContent
+              onCloseAutoFocus={(event) => {
+                event.preventDefault();
+                const target = discardReturnFocus.current;
+                if (target?.isConnected && !target.matches(':disabled')) {
+                  target.focus({ preventScroll: true });
+                }
+              }}
+            >
+              <div className="dialog-body">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Hay cambios sin guardar</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    ¿Desea descartarlos? Los cambios de esta edición no se
+                    guardarán.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={mutationBusy}>
+                  Cancelar
+                </AlertDialogCancel>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={mutationBusy}
+                  onClick={closeForm}
+                >
+                  Confirmar
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </Dialog>
       )}
       {scheduleChange && (
