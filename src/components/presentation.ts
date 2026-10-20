@@ -26,7 +26,7 @@ export const reviewLabels: Record<ReviewReason, string> = {
   'before-birth': 'Fecha anterior al nacimiento',
   'mixed-course': 'Curso con productos diferentes: confirmar con el vacunador',
   'missing-profile': 'Perfil de origen no disponible',
-  'legacy-unconfirmed': 'Registro heredado sin confirmar',
+  'legacy-unconfirmed': 'Registro sin correspondencia confirmada',
 };
 
 export const STATUS_LABELS = {

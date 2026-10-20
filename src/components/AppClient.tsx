@@ -503,6 +503,9 @@ export function AppClient() {
               referenceId={activeReferenceId}
               catalog={catalog}
               summary={summary}
+              administrations={applications}
+              reviewById={coverage?.reviewByAdministrationId}
+              onEditAdministration={editAdministration}
               optionalIds={optionalIds}
               onScheduleChange={(referenceId) => {
                 if (referenceId !== activeReferenceId)

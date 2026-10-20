@@ -1,9 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import type { ChildProfile, ScheduleReferenceId } from '@/lib/types';
+import type {
+  ChildProfile,
+  ReviewReason,
+  ScheduleReferenceId,
+  VaccineAdministration,
+} from '@/lib/types';
 import type { Catalog } from '@/data/catalog/types';
 import type { ScheduleSummary } from '@/lib/schedule/summarizeSchedule';
+import { getCalendarRecordReviews } from '@/lib/schedule/calendarAdministrationPresentation';
 import {
   getProductReferences,
   getScheduleReferences,
@@ -11,7 +17,34 @@ import {
 } from '@/lib/schedule/referencePresentation';
 import { Button } from '@/components/ui/button';
 import { ScheduleSelector } from './ScheduleSelector';
-import { STATUS_LABELS } from './presentation';
+import { milestoneLabels, reviewLabels, STATUS_LABELS } from './presentation';
+
+const CALENDAR_STATUS_LABELS: Record<keyof typeof STATUS_LABELS, string> = {
+  ...STATUS_LABELS,
+  past: 'Fecha pasada · sin enlace confirmado',
+};
+
+const REVIEW_ACTIONS: Record<ReviewReason, string> = {
+  'unknown-schedule':
+    'Confirma la referencia del perfil con el vacunador antes de enlazar aplicaciones.',
+  'unidentified-product':
+    'Revisa el producto identificado y la marca con el soporte de aplicación; no se asignan por semejanza de nombres.',
+  'unidentified-stage':
+    'Completa la dosis y la etapa confirmada según el soporte; no las deduzcas de la fecha o la edad.',
+  'unverified-rule':
+    'Confirma la correspondencia y su fuente con el vacunador. Editar no garantiza un enlace si el catálogo no lo documenta.',
+  'invalid-date': 'Corrige la fecha real de aplicación según el soporte.',
+  'future-date':
+    'Revisa la fecha: una aplicación real no puede ser posterior a hoy.',
+  'before-birth':
+    'Revisa la fecha de aplicación y el nacimiento del perfil con el soporte.',
+  'mixed-course':
+    'Consulta al vacunador sobre los productos registrados; no se asume intercambiabilidad ni se decide un rescate.',
+  'missing-profile':
+    'Revisa el perfil de origen. No traslades el registro a otro niño para enlazarlo.',
+  'legacy-unconfirmed':
+    'Revisa y guarda los datos confirmados con el soporte. Un registro incompleto o heredado se conserva sin conceder cobertura.',
+};
 
 export function CalendarView({
   profile,
@@ -21,6 +54,9 @@ export function CalendarView({
   optionalIds,
   onScheduleChange,
   onOptionalChange,
+  administrations,
+  reviewById,
+  onEditAdministration,
 }: {
   profile: ChildProfile;
   referenceId: ScheduleReferenceId;
@@ -29,6 +65,9 @@ export function CalendarView({
   optionalIds: string[];
   onScheduleChange: (id: ScheduleReferenceId) => void;
   onOptionalChange: (ids: string[]) => Promise<void>;
+  administrations: readonly VaccineAdministration[];
+  reviewById: Map<string, ReviewReason[]> | undefined;
+  onEditAdministration: (event: VaccineAdministration) => void;
 }) {
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState('');
@@ -43,6 +82,12 @@ export function CalendarView({
   const optionalProductIds = [
     ...new Set([...Object.keys(catalog.optionalRequirements), ...optionalIds]),
   ];
+  const recordReviews = getCalendarRecordReviews(
+    profile.id,
+    administrations,
+    summary,
+    reviewById,
+  );
 
   function ageLabel(requirementId: string) {
     const reference = referenceByRequirementId.get(requirementId);
@@ -82,6 +127,18 @@ export function CalendarView({
       <p>
         Catálogo {catalog.version} · revisión {catalog.reviewedAt}
       </p>
+      <details className="information-section">
+        <summary>¿Por qué una dosis sigue pendiente?</summary>
+        <p className="information-section-body">
+          El Carné conserva las aplicaciones reales; este calendario muestra
+          requisitos y fechas estimadas de la referencia del perfil. La fecha
+          estimada no es la fecha real de aplicación ni tiene que coincidir con
+          ella. «Aplicada» indica una correspondencia documentada de producto,
+          dosis y etapa, no una certificación clínica. Registrar una dosis no
+          marca todas las dosis ni todas las vacunas de esa etapa como
+          aplicadas.
+        </p>
+      </details>
       <ScheduleSelector
         value={referenceId}
         onChange={onScheduleChange}
@@ -99,6 +156,89 @@ export function CalendarView({
           <option value="private">Complementarias</option>
         </select>
       </div>
+      {recordReviews.length > 0 && (
+        <details className="information-section">
+          <summary id="calendar-record-reviews">
+            Aplicaciones sin enlace confirmado ({recordReviews.length})
+          </summary>
+          <div className="information-section-body">
+            <p>
+              Estos registros de {profile.nickname} siguen en el Carné. Se
+              muestran independientemente del filtro de requisitos; no se
+              asignan a una dosis pendiente sin confirmar sus datos. Consulta el
+              soporte de aplicación y al vacunador antes de corregirlos.
+            </p>
+            <ul>
+              {recordReviews.map(({ administration, kind, reasons }) => (
+                <li key={administration.id}>
+                  <strong>{administration.productName}</strong>
+                  <p>
+                    Fecha real registrada:{' '}
+                    <time dateTime={administration.appliedDate}>
+                      {administration.appliedDate}
+                    </time>
+                    {' · '}
+                    {administration.doseNumber
+                      ? `Dosis ${administration.doseNumber}`
+                      : 'Dosis sin identificar'}
+                    {' · '}
+                    {administration.milestoneId
+                      ? (milestoneLabels[administration.milestoneId] ??
+                        'Etapa registrada por verificar')
+                      : 'Etapa sin identificar'}
+                  </p>
+                  {kind === 'needs-review' && (
+                    <>
+                      <p>No concede cobertura automática: requiere revisión.</p>
+                      {reasons.length > 0 ? (
+                        <ul>
+                          {reasons.map((reason) => (
+                            <li key={reason}>
+                              <strong>{reviewLabels[reason]}.</strong>{' '}
+                              {REVIEW_ACTIONS[reason]}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>
+                          El registro está guardado por verificar. Confirma el
+                          producto, la dosis y la etapa con el soporte antes de
+                          volver a guardarlo.
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {kind === 'outside-reference' && (
+                    <p>
+                      Sus requisitos guardados no aparecen en la referencia
+                      consultada. Revisa la referencia del perfil y, si
+                      corresponde al producto documentado, las referencias
+                      complementarias de abajo. No se sustituye por otro
+                      producto ni se enlaza por nombre o fecha.
+                    </p>
+                  )}
+                  {kind === 'unlinked' && (
+                    <p>
+                      Tiene una correspondencia guardada, pero el resumen actual
+                      no la confirma como aplicada. Revisa los datos y la
+                      referencia del perfil con el vacunador; no se concede
+                      cobertura solo porque el registro esté en el Carné.
+                    </p>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onEditAdministration(administration)}
+                    aria-label={`Revisar y editar ${administration.productName} del ${administration.appliedDate}`}
+                  >
+                    Revisar / editar registro
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      )}
       <div className="timeline">
         {summary.items
           .filter(
@@ -111,6 +251,8 @@ export function CalendarView({
               <div className="event-date">
                 <strong>{ageLabel(r.id)}</strong>
                 <br />
+                <span>Fecha estimada</span>
+                <br />
                 <time dateTime={r.estimatedDate ?? undefined}>
                   {r.estimatedDate ?? 'Fecha por confirmar'}
                 </time>
@@ -119,8 +261,9 @@ export function CalendarView({
               <div className="event-content">
                 <strong>{r.name}</strong>
                 <span className={`tag status-${r.status}`}>
-                  {STATUS_LABELS[r.status]}
+                  {CALENDAR_STATUS_LABELS[r.status]}
                 </span>
+                <p>Dosis {r.doseNumber}</p>
                 <details>
                   <summary>Enfermedad, acceso y fuentes</summary>
                   <p>
@@ -233,7 +376,7 @@ export function CalendarView({
                                 'Fecha individual por confirmar'
                               )}
                               {scheduled &&
-                                ` · ${STATUS_LABELS[scheduled.status]}`}
+                                ` · ${CALENDAR_STATUS_LABELS[scheduled.status]}`}
                             </p>
                             <p>
                               Previene: {requirement.disease}.{' '}

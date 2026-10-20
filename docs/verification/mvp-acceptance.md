@@ -255,6 +255,16 @@ En **320, 390 y 1280 px** no hubo overflow: el ancho del diálogo fue 288, 358 y
 
 La protección nativa al cerrar o recargar la pestaña se conserva: los navegadores no permiten reemplazar `beforeunload` por un diálogo personalizado fiable.
 
+## Task 28 — Carné y calendario: enlace por dosis
+
+**Resultado: pasa mediante motor real, repositorio y navegador.** Una hexavalente ficticia con producto y dosis 1, pero sin etapa, se guardó en Carné y dejó pentavalente/IPV 1 sin enlace. Calendario mostró la fecha real, la etapa faltante y los motivos, con acceso directo a editar. Completar `primary-1` en ese mismo formulario produjo dos requisitos aplicados; pentavalente 2 permaneció sin enlace. No se marcó todo el producto ni toda la etapa como aplicada.
+
+Las explicaciones y registros por revisar están en desplegables, separados del filtro de requisitos. El estado anterior se aclaró como **Fecha pasada · sin enlace confirmado**. La etiqueta de registro sin confirmación ahora también es correcta para aplicaciones nuevas incompletas, sin llamarlas heredadas.
+
+Cuatro regresiones comprueban la transición incompleta/corregida, revisión contextual, aislamiento e inmutabilidad por perfil y requisitos opcionales fuera de la referencia. Pasaron **105/105 pruebas en 13 archivos**, formato y build. No se modificaron las reglas clínicas ni se concedió cobertura por nombre, edad o fecha aproximada.
+
+**Límite diagnóstico:** no se accedió al registro real del navegador del usuario. Se demostró una causa reproducible y se hicieron visibles los motivos calculados; no se afirmó que su aplicación concreta tuviera necesariamente esa misma omisión.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |
