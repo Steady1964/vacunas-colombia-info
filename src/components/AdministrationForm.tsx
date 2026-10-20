@@ -59,6 +59,9 @@ export function AdministrationForm({
   const inFlight = useRef(false);
   const pending = useRef<AdministrationCommand | null>(null);
 
+  const hasIdentifiedProduct =
+    input.productId !== UNIDENTIFIED_PRODUCT_ID &&
+    catalog.products.some((product) => product.id === input.productId);
   const selection = resolveSelection(input, catalog);
   const stages = getRegistrationStages(
     child,
@@ -210,6 +213,8 @@ export function AdministrationForm({
             <Label htmlFor="milestone">Etapa confirmada</Label>
             <select
               id="milestone"
+              disabled={!hasIdentifiedProduct}
+              className="disabled:cursor-not-allowed disabled:opacity-60"
               value={input.milestoneId ?? ''}
               aria-describedby="milestone-help"
               onChange={(e) =>
@@ -226,8 +231,9 @@ export function AdministrationForm({
               ))}
             </select>
             <p id="milestone-help" className="muted">
-              Las edades y dosis corresponden al producto y la referencia de
-              este perfil, no a una confirmación clínica de la aplicación.
+              {hasIdentifiedProduct
+                ? 'Las edades y dosis corresponden al producto y la referencia de este perfil, no a una confirmación clínica de la aplicación.'
+                : 'Selecciona primero un producto o biológico identificado para habilitar la etapa confirmada. Escribir en la búsqueda no lo selecciona.'}
               {!child.primaryScheduleId &&
                 ' El perfil todavía no tiene un esquema confirmado; no se elige uno automáticamente.'}
               {child.referenceCatalogVersion !== catalog.version &&

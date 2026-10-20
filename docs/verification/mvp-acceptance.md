@@ -241,6 +241,12 @@ Formato, **101/101 pruebas en 12 archivos** y build Next 16.4.2 pasaron con Node
 
 **Límites:** no se instaló físicamente la PWA en iOS/Android/PC, no se forzó un fallo de registro del worker ni se comprobó un nuevo deployment Vercel. Las guías usan documentación oficial, no constituyen una certificación por dispositivo. No se versionaron capturas, datos ficticios ni artefactos de build; el servidor de desarrollo del usuario no se detuvo.
 
+## Task 26 — Producto antes de etapa
+
+**Resultado: pasa en navegador local.** La etapa empieza deshabilitada con producto no identificado. Escribir **Hexaxim** en la búsqueda no la habilitó; seleccionar hexavalente sí lo hizo. Volver a captura manual dejó la etapa deshabilitada y sin trasladar la selección anterior al nuevo producto.
+
+El control mantiene su valor histórico cuando no se cambia explícitamente de producto; no se borra el registro para habilitarlo. La ayuda explica la condición y el estado deshabilitado tiene indicación visual. La comprobación de producción confirmó el estado inicial y permitió completar después la identificación de una aplicación guardada.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |
