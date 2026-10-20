@@ -265,6 +265,28 @@ Cuatro regresiones comprueban la transición incompleta/corregida, revisión con
 
 **Límite diagnóstico:** no se accedió al registro real del navegador del usuario. Se demostró una causa reproducible y se hicieron visibles los motivos calculados; no se afirmó que su aplicación concreta tuviera necesariamente esa misma omisión.
 
+## Task 29 — Carné infantil imprimible minimalista
+
+**Resultado: pasa con PDF real de Chromium, extracción y rasterización nativa de PDFKit.** A4 vertical, márgenes de 14 mm, jerarquía monocromática y aplicaciones a 9,5 pt. Los títulos de columnas, apodo y nacimiento se repiten por página. Un `colgroup` fija las proporciones de las cuatro columnas impresas; las acciones permanecen solo en pantalla.
+
+| Caso ficticio impreso | Resultado observado |
+|---|---|
+| Perfil sin aplicaciones | Una página con identidad, contador cero y explicación; sin vacunas previstas. |
+| Una hexavalente identificada | Una página con fecha, dosis/etapa, marca, lote, IPS, acceso, PAIWEB, revisión y observaciones. |
+| 41 aplicaciones, 40 de ellas incompletas con motivos de revisión | 17 páginas A4 sin páginas vacías; los 40 identificadores de prueba y la aplicación identificada se conservaron. |
+| Observaciones de 100 líneas y 4.204 caracteres | Se paginaron completas; la línea 100 y el marcador final aparecen en la última página. |
+| Apodo Unicode largo, lote de 131 caracteres y prestador largo | Texto ajustado sin recortes; se comprobó íntegra la cadena del lote y del prestador en el PDF extraído. |
+
+La muestra extrema conserva deliberadamente los motivos de revisión en vez de reducir la letra para comprimirla. No se imprimieron navegación, botones ni diálogos. Se invirtió el orden cronológico y se verificaron primera/última fecha; el perfil vacío no mostró aplicaciones del otro niño. En 320/390 px la tabla desplazó dentro de su contenedor sin overflow de la página; a 1280 px no necesitó desplazamiento horizontal.
+
+Con el servidor detenido se recargó la versión final, se recuperaron las 41 aplicaciones y se generó de nuevo el PDF completo, con todos sus identificadores, encabezados y campos largos. El recorrido final registró **0 errores de navegador**.
+
+Fuentes de organización leídas: [Wisconsin DHS](https://www.dhs.wisconsin.gov/forms/f4/f44257.pdf), [Iowa HHS](https://hhs.iowa.gov/media/665/download?inline) y [CDC sobre registros](https://www.cdc.gov/vaccines-children/records/). No se copiaron certificaciones, firmas, requisitos ni recomendaciones clínicas de esas fuentes.
+
+Verificación final de Tasks 26–29: formato, **105/105 pruebas en 13 archivos** y build Next 16.4.2 con Node 24.22.0/pnpm 12.14.0 correctos. Revisión independiente y revisión de los últimos ajustes sin hallazgos accionables. Sin cambios de catálogo, reglas clínicas, esquema de datos, dependencias o formato de respaldo.
+
+**Límites:** impresión física, Safari/iOS/Android y nuevo deployment Vercel no comprobados. Los datos y PDF son ficticios y temporales, fuera del repositorio; no se usó el historial personal del usuario.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

@@ -89,7 +89,11 @@ Las correspondencias y fechas se basan en catálogos inmutables de `src/data/cat
 
 ## Carné imprimible y privacidad
 
-**Carné** contiene únicamente aplicaciones físicas del perfil activo, no las fechas orientativas pendientes. Permite invertir el orden y abrir la impresión del navegador para guardar un PDF A4 con apodo, nacimiento, fecha de exportación, producto, dosis o estado por verificar, marca, lote, IPS, acceso y PAIWEB. El documento es un registro familiar no oficial y no reemplaza el carné del prestador ni PAIWEB.
+**Carné** contiene únicamente aplicaciones físicas del perfil activo, no las fechas orientativas pendientes. Permite invertir el orden y guardar un **PDF A4 vertical**, minimalista y legible en blanco y negro: nombre destacado, nacimiento, fecha de exportación y número de aplicaciones; después, fecha real, producto, dosis/etapa, marca, lote, IPS, acceso, PAIWEB y revisión. Las observaciones conservan sus saltos de línea y pueden continuar en otra página. El documento sigue siendo un registro familiar no oficial, no un carné del prestador ni una certificación clínica o de PAIWEB.
+
+La impresión usa márgenes de 14 mm y texto de aplicaciones de 9,5 pt. Nombre, nacimiento y títulos de columnas se repiten en cada página; los registros largos se ajustan sin reducir todo el carné a una sola hoja. En móvil, el desplazamiento horizontal queda dentro de la tabla, no de la página. Las acciones y la navegación no se imprimen.
+
+Como referencias de organización se consultaron los registros de [Wisconsin DHS](https://www.dhs.wisconsin.gov/forms/f4/f44257.pdf) e [Iowa HHS](https://hhs.iowa.gov/media/665/download?inline), y la [guía de conservación de registros de CDC](https://www.cdc.gov/vaccines-children/records/). Solo orientan la jerarquía y los campos: no se copiaron certificados, firmas, requisitos vacunales ni recomendaciones clínicas extranjeras.
 
 Los datos familiares permanecen en IndexedDB del navegador y no se sincronizan con una cuenta. El respaldo JSON no está cifrado. Borrar datos del navegador, desinstalar la app o cambiar de dispositivo puede eliminar el historial; solicitar almacenamiento persistente reduce algunos borrados automáticos, pero no garantiza permanencia. El hosting puede procesar IP y solicitudes técnicas para servir la web; la aplicación no incorpora publicidad, analítica, push ni SDK de seguimiento.
 
