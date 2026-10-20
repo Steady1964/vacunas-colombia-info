@@ -227,6 +227,20 @@ Se guardó una aplicación ficticia de fiebre amarilla en `month-18`, se cambió
 
 Las 10 nuevas pruebas de presentación comprueban el alcance por producto/esquema, catálogos incompatibles, captura manual, etapas conservadas y ausencia de edades verificadas. **101/101 pruebas en 12 archivos**, formato y build pasaron. No se modificaron catálogos clínicos, reglas de cobertura, esquemas persistidos ni etiquetas históricas del carné; la revisión independiente no encontró bloqueantes.
 
+## Task 25 — Instalación y mensajes sin conexión
+
+**Resultado: pasa en producción local.** En desarrollo se observó el mensaje explícito de uso sin conexión desactivado; en producción se observó la transición de preparación a disponibilidad. El mensaje deja claro que el estado pertenece a ese navegador y que instalar no sincroniza los registros.
+
+**Cómo instalar la aplicación** abre tres tutoriales desplegables con pasos numerados y enlaces oficiales de Apple, Chrome y Edge. Las opciones de dispositivo aparecen antes de las notas explicativas y las tres quedan visibles inicialmente en **320 × 640, 390 × 844, 844 × 390 y 1280 × 900 px**. No hubo overflow horizontal; los diálogos respetaron al menos 16 px por borde y mantuvieron scroll interno. Los pasos tienen separación propia y los grupos 16 px. Enter abrió la primera sección; Escape cerró el popup y devolvió el foco al botón.
+
+Se detectó un build nuevo con el worker anterior activo: un borrador de aplicación deshabilitó **Actualizar aplicación** y permaneció intacto. Después de descartar únicamente ese borrador ficticio, la confirmación explícita permitió cargar la nueva versión conservando los perfiles y registros.
+
+Con el servidor propio detenido, una recarga del build final recuperó **Luna/2026**, **Sol/histórico**, sus dos aplicaciones físicas y las selecciones de RotaTeq/ACWY. El calendario y los tres tutoriales siguieron disponibles, con listas numeradas y fuentes integradas en la interfaz; los enlaces externos requieren conexión. El recorrido final de producción registró **0 errores de navegador**.
+
+Formato, **101/101 pruebas en 12 archivos** y build Next 16.4.2 pasaron con Node 24.22.0/pnpm 12.14.0. La revisión independiente no encontró bloqueantes. Se actualizaron README y esta evidencia, sin nuevas dependencias ni cambios en la activación automática del worker.
+
+**Límites:** no se instaló físicamente la PWA en iOS/Android/PC, no se forzó un fallo de registro del worker ni se comprobó un nuevo deployment Vercel. Las guías usan documentación oficial, no constituyen una certificación por dispositivo. No se versionaron capturas, datos ficticios ni artefactos de build; el servidor de desarrollo del usuario no se detuvo.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

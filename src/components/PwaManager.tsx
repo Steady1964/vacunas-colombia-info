@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Download, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { registerPwa } from '../lib/pwa';
+import { InstallationGuide } from './InstallationGuide';
 
 type InstallPrompt = Event & {
   prompt(): Promise<void>;
@@ -17,9 +18,6 @@ export function PwaManager({
   hasUnsavedChanges: boolean;
   storageBlocked: boolean;
 }) {
-  const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>(
-    'other',
-  );
   const [installed, setInstalled] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<InstallPrompt | null>(
     null,
@@ -40,12 +38,6 @@ export function PwaManager({
     let disposed = false;
     let registration: ServiceWorkerRegistration | null = null;
     let installing: ServiceWorker | null = null;
-    const ios =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    setPlatform(
-      ios ? 'ios' : /Android/.test(navigator.userAgent) ? 'android' : 'other',
-    );
     setInstalled(
       window.matchMedia('(display-mode: standalone)').matches ||
         Boolean((navigator as Navigator & { standalone?: boolean }).standalone),
@@ -156,26 +148,16 @@ export function PwaManager({
       aria-label="Instalación y uso sin conexión"
     >
       <strong>Vacunas Colombia en tu dispositivo</strong>
-      <p>
-        {offlineReady
-          ? 'La aplicación está preparada para uso sin conexión. Conserva también una copia de tus datos.'
-          : 'Completa la primera carga con conexión para disponer del calendario y carné offline.'}
+      <p role="status">
+        {process.env.NODE_ENV !== 'production'
+          ? 'Modo de desarrollo: el uso sin conexión está desactivado. No necesitas completar ninguna preparación; esta función requiere la versión de producción.'
+          : registrationFailed
+            ? 'No se pudo preparar el uso sin conexión. Comprueba la conexión y vuelve a abrir la aplicación; tus registros locales no se borrarán.'
+            : offlineReady
+              ? 'La aplicación está preparada para abrirse sin conexión en este navegador. Tus registros se guardan en este dispositivo, no se sincronizan automáticamente; conserva un respaldo.'
+              : 'Preparando la aplicación para abrirse sin conexión en este navegador. Mantén esta página abierta con conexión hasta que aparezca la confirmación de preparación.'}
       </p>
-      {!installed && platform === 'ios' && (
-        <p>En Safari: toca Compartir y elige Agregar a pantalla de inicio.</p>
-      )}
-      {!installed && platform === 'android' && !installPrompt && (
-        <p>
-          Abre el menú de tu navegador y busca Instalar aplicación o Agregar a
-          pantalla de inicio. La opción depende del navegador.
-        </p>
-      )}
-      {!installed && platform === 'other' && !installPrompt && (
-        <p>
-          Para instalarla, busca la opción de instalación en la barra de
-          direcciones o en el menú del navegador.
-        </p>
-      )}
+      <InstallationGuide />
       {!installed && installPrompt && (
         <Button
           type="button"
@@ -192,14 +174,8 @@ export function PwaManager({
       )}
       {installError && (
         <p role="status">
-          No se pudo abrir la instalación nativa. Usa las opciones del menú del
-          navegador.
-        </p>
-      )}
-      {registrationFailed && (
-        <p role="status">
-          No se pudo preparar el uso offline. Comprueba la conexión y vuelve a
-          abrir la aplicación; tus registros locales no se borrarán.
+          No se pudo abrir la instalación nativa. Consulta «Cómo instalar la
+          aplicación» para ver los pasos de tu navegador.
         </p>
       )}
       {(waitingWorker || activatedUpdate) && (
