@@ -1,26 +1,39 @@
 'use client';
 
+import type { Catalog } from '@/data/catalog/types';
 import type { ChildProfile, CivilDate } from '@/lib/types';
 import { ageAt } from '@/lib/civilDate';
+import { formatCivilDate } from '@/lib/datePresentation';
+import {
+  getPendingReferenceGroups,
+  type PendingReference,
+} from '@/lib/schedule/pendingReferencePresentation';
 import type { ScheduleSummary } from '@/lib/schedule/summarizeSchedule';
 
 export function DashboardView({
   profile,
+  catalog,
   referenceLabel,
   summary,
   today,
   eventCount,
 }: {
   profile: ChildProfile;
+  catalog: Catalog;
   referenceLabel: string;
   summary: ScheduleSummary;
   today: CivilDate;
   eventCount: number;
 }) {
   const age = ageAt(profile.birthDate, today);
-  const next = summary.items.filter((item) =>
-    summary.nextRequirementIds.includes(item.id),
+  const groups = getPendingReferenceGroups(profile, catalog, summary.items);
+  const next = [...groups.pai, ...groups.private, ...groups.conditional].filter(
+    ({ requirement }) => summary.nextRequirementIds.includes(requirement.id),
   );
+  const nextIsPast = summary.nextDate !== null && summary.nextDate < today;
+  const nextSourceAges = [
+    ...new Set(next.map((entry) => entry.sourceAgeLabel)),
+  ].join(' / ');
 
   return (
     <div className="content-grid">
@@ -67,7 +80,7 @@ export function DashboardView({
           </div>
           <div className="stat">
             <strong>{summary.upcoming}</strong>
-            <span>Próximos (30 días)</span>
+            <span>En los próximos 30 días</span>
           </div>
           <div className="stat">
             <strong>
@@ -84,38 +97,207 @@ export function DashboardView({
         <p>{eventCount} aplicaciones físicas en el carné.</p>
       </section>
       <section className="card">
-        <div className="eyebrow">Siguiente fecha orientativa</div>
-        <h2>{summary.nextDate ?? 'Sin próxima fecha confirmada'}</h2>
+        <div className="eyebrow">Primera dosis pendiente de referencia</div>
+        <h2 className="break-words">
+          {summary.nextDate
+            ? formatCivilDate(summary.nextDate)
+            : 'Sin fecha orientativa confirmada'}
+        </h2>
         {next.length > 0 ? (
-          <ul>
-            {next.map((r) => (
-              <li key={r.id}>
-                {r.name} · dosis {r.doseNumber}
-              </li>
-            ))}
-          </ul>
+          <>
+            <p>Edad de referencia según la fuente: {nextSourceAges}.</p>
+            {next[0].calendarAgeLabel && (
+              <p>Edad calendario en esa fecha: {next[0].calendarAgeLabel}.</p>
+            )}
+            <ul>
+              {next.map(({ requirement }) => (
+                <li key={requirement.id}>{requirement.name}</li>
+              ))}
+            </ul>
+          </>
         ) : (
-          <p>Consulta al vacunador para confirmar la programación.</p>
+          <p>
+            {groups.pai.length +
+              groups.private.length +
+              groups.conditional.length >
+            0
+              ? 'Consulta las referencias sin fecha en las listas y confirma la programación con el vacunador.'
+              : 'No hay requisitos pendientes en las referencias seleccionadas.'}
+          </p>
         )}
+        {nextIsPast && (
+          <p role="note">
+            La fecha orientativa ya pasó. Confirma con el vacunador la
+            programación individual; esta referencia no calcula un esquema de
+            recuperación ni indica aplicar una dosis ahora.
+          </p>
+        )}
+        <p>
+          La edad de referencia se cuenta desde el nacimiento, no desde hoy ni
+          desde una aplicación tardía.
+        </p>
       </section>
       <section className="card wide">
-        <h2>Próximas vacunas</h2>
-        {summary.items.some((r) => r.status === 'upcoming') ? (
-          <ul className="upcoming-list">
-            {summary.items
-              .filter((r) => r.status === 'upcoming')
-              .map((r) => (
-                <li key={r.id}>
-                  <strong>{r.estimatedDate}</strong> · {r.name} · dosis{' '}
-                  {r.doseNumber}
-                </li>
-              ))}
-          </ul>
-        ) : (
-          <p>No hay requisitos sin cubrir con fecha en los próximos 30 días.</p>
+        <h2>Referencias pendientes</h2>
+        <p>
+          Incluyen todas las dosis sin cobertura verificada: fechas pasadas,
+          futuras y por confirmar, no solo los próximos 30 días. Son requisitos
+          del calendario, no aplicaciones físicas ni indicaciones de rescate.
+        </p>
+        <p>
+          La referencia inicial no es una aplicación registrada. Los totales
+          documentados se limitan al alcance indicado; no representan todas las
+          vacunas o refuerzos de por vida ni confirman un producto.
+        </p>
+        <PendingReferenceList
+          title="Próximas vacunas PAI"
+          entries={groups.pai}
+          today={today}
+          emptyMessage="No hay requisitos PAI pendientes en la referencia seleccionada."
+        />
+        <PendingReferenceList
+          title="Próximas vacunas No PAI"
+          entries={groups.private}
+          today={today}
+          emptyMessage="No hay referencias particulares pendientes seleccionadas. En Calendario puedes mostrar referencias opcionales por producto; no se activan automáticamente ni representan todas las vacunas privadas disponibles."
+        />
+        {groups.conditional.length > 0 && (
+          <>
+            <p>
+              El acceso condicional no equivale a No PAI: la elegibilidad y la
+              financiación deben confirmarse para cada caso.
+            </p>
+            <PendingReferenceList
+              title="Acceso por confirmar"
+              entries={groups.conditional}
+              today={today}
+            />
+          </>
         )}
         <p>Fechas orientativas. Confirma el esquema con tu vacunador.</p>
       </section>
     </div>
+  );
+}
+
+function PendingReferenceList({
+  title,
+  entries,
+  today,
+  emptyMessage,
+}: {
+  title: string;
+  entries: readonly PendingReference[];
+  today: CivilDate;
+  emptyMessage?: string;
+}) {
+  return (
+    <section className="mt-8 min-w-0">
+      <h3>{title}</h3>
+      {entries.length === 0 ? (
+        <p>{emptyMessage}</p>
+      ) : (
+        <div
+          className="table-scroll"
+          role="region"
+          aria-label={title}
+          tabIndex={0}
+        >
+          <table className="min-w-[42rem]">
+            <thead>
+              <tr>
+                <th scope="col">Fecha calculada</th>
+                <th scope="col">Vacuna y dosis pendiente</th>
+                <th scope="col">Dosis inicial de referencia</th>
+                <th scope="col">Total documentado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map(
+                ({
+                  requirement,
+                  initialReference,
+                  documentedTotal,
+                  sourceAgeLabel,
+                }) => {
+                  const isPast =
+                    requirement.estimatedDate !== null &&
+                    requirement.estimatedDate < today;
+                  const nameIncludesDose = requirement.name
+                    .toLocaleLowerCase('es')
+                    .includes(`dosis ${requirement.doseNumber}`);
+                  return (
+                    <tr key={requirement.id}>
+                      <td>
+                        {requirement.estimatedDate
+                          ? formatCivilDate(requirement.estimatedDate)
+                          : 'Sin fecha documentada'}
+                        {isPast && (
+                          <div className="mt-1 text-sm">
+                            Referencia ya pasada
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <strong>{requirement.name}</strong>
+                        {!nameIncludesDose && (
+                          <div className="mt-1">
+                            Dosis {requirement.doseNumber}
+                          </div>
+                        )}
+                        <div className="mt-1 text-sm">
+                          Edad: {sourceAgeLabel}
+                        </div>
+                        {requirement.note && (
+                          <details className="mt-2">
+                            <summary>Ver advertencias</summary>
+                            <p className="mb-0 text-sm">{requirement.note}</p>
+                          </details>
+                        )}
+                      </td>
+                      <td>
+                        {initialReference ? (
+                          <>
+                            <div>Dosis {initialReference.doseNumber}</div>
+                            <div className="mt-1">
+                              {initialReference.estimatedDate
+                                ? formatCivilDate(
+                                    initialReference.estimatedDate,
+                                  )
+                                : 'Fecha por confirmar'}
+                            </div>
+                            <div className="mt-1 text-sm">
+                              {initialReference.sourceAgeLabel}
+                            </div>
+                          </>
+                        ) : (
+                          'Por confirmar'
+                        )}
+                      </td>
+                      <td>
+                        {documentedTotal ? (
+                          <>
+                            <strong>{documentedTotal.doseCount} dosis</strong>
+                            <div className="mt-1 text-sm">
+                              {documentedTotal.scope === 'primary-series'
+                                ? 'Serie primaria, sin refuerzos'
+                                : documentedTotal.scope === 'selected-reference'
+                                  ? 'En esta referencia; no es un total de por vida'
+                                  : `Curso del producto ${documentedTotal.productName}`}
+                            </div>
+                          </>
+                        ) : (
+                          'Por confirmar: curso no documentado o ambiguo'
+                        )}
+                      </td>
+                    </tr>
+                  );
+                },
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }

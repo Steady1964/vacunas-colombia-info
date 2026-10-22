@@ -311,6 +311,29 @@ Se observó `2026-07-10` en el valor nativo y **10 / julio / 2026** en la vista 
 
 El formateador cubre bisiestos, meses completos, años menores de cien y fechas históricas inválidas que deben seguir siendo corregibles. Las cuatro suites de fechas, resumen y presentación pasaron **49/49** en cada zona: Bogotá, Nueva York y Kiritimati. No se modificaron cálculos, ordenación, JSON técnico, respaldos ni valores `dateTime`.
 
+## Task 32 — Edad, fecha y tablas PAI/No PAI
+
+**Resultado: pasa en producción local.** La tarjeta muestra una sola vez la edad según la fuente y la edad calendario de la primera fecha pendiente, seguidas de todas las vacunas de ese grupo. Para julio mostró **6 semanas**, **1 mes y 11 días** y **21 / agosto / 2026**. El nombre de cada vacuna no recibe otro sufijo numérico de dosis duplicado.
+
+Las tablas compactas separan PAI, No PAI y acceso condicional. Cada fila incluye fecha, vacuna/dosis pendiente, primera referencia y total documentado con alcance. Se mantienen fechas pasadas, futuras y desconocidas; no se activa ningún producto particular automáticamente.
+
+| Caso observado | Resultado |
+|---|---|
+| Pentavalente/IPV primarias | 3 dosis de serie primaria, sin incluir refuerzos. |
+| Neumococo primario/refuerzo | 2 primarias; el refuerzo usa el total documentado de la referencia. |
+| Rotavirus genérico | Total por confirmar cuando los cursos Rotarix/RotaTeq difieren. |
+| RotaTeq particular seleccionado | Curso de 3 dosis, tercera sin fecha inventada. |
+| ACWY seleccionado | Visible sin fecha ni total no documentados. |
+| Dosis cero condicional | Grupo de acceso por confirmar, no clasificada automáticamente como No PAI. |
+
+Las regresiones comprueban consenso de reglas verificadas, series completas, requisitos ausentes, reglas incompletas o no verificadas, totales contradictorios y referencias históricas. El total de una referencia seleccionada no se presenta como curso universal de un producto ni como obligación clínica.
+
+En **320, 390 y 1280 px** no hubo overflow horizontal de la página; las tablas se desplazan internamente en móvil y caben sin desplazamiento en escritorio. Con el servidor detenido, recargar mantuvo la primera referencia de agosto, los grupos PAI/No PAI/condicional y las aplicaciones con fechas legibles. El recorrido final tuvo **0 errores de navegador**.
+
+Verificación integrada Tasks 30–32: **135/135 pruebas en 15 archivos**, formato y build Next 16.4.2 correctos; **49/49** casos de fechas/referencias en cada una de las tres zonas horarias. Revisión independiente sin defectos accionables. Sin cambios de catálogo, cálculo clínico de fechas, cobertura, esquema de datos o dependencias.
+
+**Límites:** datos ficticios, no historial personal del usuario; instalación física, impresión física y Vercel no comprobados. El cambio previo del usuario en la etiqueta de laboratorio se conservó fuera de los commits de estas tareas.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

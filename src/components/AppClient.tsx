@@ -484,15 +484,20 @@ export function AppClient() {
             </Button>
           </section>
         )}
-        {view === 'inicio' && profile && activeReference && summary && (
-          <DashboardView
-            profile={profile}
-            referenceLabel={activeReference.label}
-            summary={summary}
-            today={today}
-            eventCount={applications.length}
-          />
-        )}
+        {view === 'inicio' &&
+          profile &&
+          catalog &&
+          activeReference &&
+          summary && (
+            <DashboardView
+              profile={profile}
+              catalog={catalog}
+              referenceLabel={activeReference.label}
+              summary={summary}
+              today={today}
+              eventCount={applications.length}
+            />
+          )}
         {view === 'calendario' &&
           profile &&
           activeReferenceId &&
