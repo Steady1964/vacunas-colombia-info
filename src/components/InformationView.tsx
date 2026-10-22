@@ -1,4 +1,5 @@
 import type { Catalog } from '@/data/catalog/types';
+import { formatCivilDate } from '@/lib/datePresentation';
 import { PrivacyNotice } from './PrivacyNotice';
 
 export function InformationView({ catalog }: { catalog: Catalog }) {
@@ -50,8 +51,9 @@ export function InformationView({ catalog }: { catalog: Catalog }) {
         <summary>Catálogo y fuentes</summary>
         <div className="information-section-body">
           <p>
-            Versión {catalog.version} · consulta/revisión {catalog.reviewedAt}.
-            La fecha de revisión no garantiza vigencia clínica individual.
+            Versión {catalog.version} · consulta/revisión{' '}
+            {formatCivilDate(catalog.reviewedAt)}. La fecha de revisión no
+            garantiza vigencia clínica individual.
           </p>
           <ul className="source-list">
             {catalog.sources.map((s) => (
@@ -62,9 +64,9 @@ export function InformationView({ catalog }: { catalog: Catalog }) {
                 <p>
                   Fecha editorial:{' '}
                   {s.publishedAt && s.publishedAt !== 'unknown'
-                    ? s.publishedAt
+                    ? formatCivilDate(s.publishedAt)
                     : 'no visible en el documento'}{' '}
-                  · Consulta/revisión: {s.reviewedAt} ·{' '}
+                  · Consulta/revisión: {formatCivilDate(s.reviewedAt)} ·{' '}
                   {s.verification === 'verified'
                     ? 'Fuente verificada para las reglas documentadas'
                     : 'Por revisar: no concede cobertura automática'}
@@ -112,7 +114,8 @@ export function InformationView({ catalog }: { catalog: Catalog }) {
                           {' '}
                           {s ? (
                             <a href={s.url} target="_blank" rel="noreferrer">
-                              {s.title ?? s.id} ({s.reviewedAt};{' '}
+                              {s.title ?? s.id} ({formatCivilDate(s.reviewedAt)}
+                              ;{' '}
                               {s.verification === 'verified'
                                 ? 'verificada'
                                 : 'por revisar'}

@@ -10,6 +10,7 @@ import type {
 import type { Catalog } from '@/data/catalog/types';
 import type { ScheduleSummary } from '@/lib/schedule/summarizeSchedule';
 import { getCalendarRecordReviews } from '@/lib/schedule/calendarAdministrationPresentation';
+import { formatCivilDate } from '@/lib/datePresentation';
 import {
   getProductReferences,
   getScheduleReferences,
@@ -125,7 +126,8 @@ export function CalendarView({
     <section className="card">
       <h2>Calendario de referencia</h2>
       <p>
-        Catálogo {catalog.version} · revisión {catalog.reviewedAt}
+        Catálogo {catalog.version} · revisión{' '}
+        {formatCivilDate(catalog.reviewedAt)}
       </p>
       <details className="information-section">
         <summary>¿Por qué una dosis sigue pendiente?</summary>
@@ -175,7 +177,7 @@ export function CalendarView({
                   <p>
                     Fecha real registrada:{' '}
                     <time dateTime={administration.appliedDate}>
-                      {administration.appliedDate}
+                      {formatCivilDate(administration.appliedDate)}
                     </time>
                     {' · '}
                     {administration.doseNumber
@@ -229,7 +231,7 @@ export function CalendarView({
                     type="button"
                     variant="outline"
                     onClick={() => onEditAdministration(administration)}
-                    aria-label={`Revisar y editar ${administration.productName} del ${administration.appliedDate}`}
+                    aria-label={`Revisar y editar ${administration.productName} del ${formatCivilDate(administration.appliedDate)}`}
                   >
                     Revisar / editar registro
                   </Button>
@@ -254,7 +256,7 @@ export function CalendarView({
                 <span>Fecha estimada</span>
                 <br />
                 <time dateTime={r.estimatedDate ?? undefined}>
-                  {r.estimatedDate ?? 'Fecha por confirmar'}
+                  {formatCivilDate(r.estimatedDate ?? '')}
                 </time>
               </div>
               <div className="dotline" />
@@ -370,7 +372,7 @@ export function CalendarView({
                               {requirement.doseNumber} ·{' '}
                               {scheduled?.estimatedDate ? (
                                 <time dateTime={scheduled.estimatedDate}>
-                                  {scheduled.estimatedDate}
+                                  {formatCivilDate(scheduled.estimatedDate)}
                                 </time>
                               ) : (
                                 'Fecha individual por confirmar'
@@ -443,9 +445,9 @@ function SourceReferences({
                 </a>{' '}
                 · fecha editorial:{' '}
                 {source.publishedAt && source.publishedAt !== 'unknown'
-                  ? source.publishedAt
+                  ? formatCivilDate(source.publishedAt)
                   : 'no visible en el documento'}{' '}
-                · consulta/revisión: {source.reviewedAt} ·{' '}
+                · consulta/revisión: {formatCivilDate(source.reviewedAt)} ·{' '}
                 {source.verification === 'verified'
                   ? 'Verificada para las reglas documentadas'
                   : 'Por revisar; no concede equivalencia automática'}

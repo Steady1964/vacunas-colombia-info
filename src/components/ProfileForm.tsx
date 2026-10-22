@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { identifyScheduleReference } from '@/data/catalog';
+import { formatCivilDate } from '@/lib/datePresentation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -118,12 +119,16 @@ export function ProfileForm({
             type="date"
             value={birthDate}
             max={today}
+            aria-describedby="birth-date-preview"
             required
             onChange={(e) => {
               changed();
               setBirthDate(e.target.value);
             }}
           />
+          <p id="birth-date-preview">
+            Fecha seleccionada: {formatCivilDate(birthDate)}
+          </p>
         </div>
         <ScheduleSelector
           value={schedule}

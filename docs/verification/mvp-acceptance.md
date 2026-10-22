@@ -303,6 +303,14 @@ En producción se crearon el perfil y ambas aplicaciones de nacimiento mediante 
 
 **Precisión:** seis semanas son 42 días, no 45. Para este nacimiento, la edad calendario en la primera referencia es un mes y once días. La diferencia entre el 12 y el 13 de noviembre depende del nacimiento guardado; no se asumió el dato personal del usuario a partir de la fecha de aplicación.
 
+## Task 31 — Fechas civiles con mes en letras
+
+**Resultado: pasa en vistas reales y PDF.** Se utiliza un formateador común sin construir instantes UTC: día numérico, mes completo en español y año. Se migraron etiquetas de calendario, carné, perfiles, incidencias, fuentes, confirmaciones y texto accesible. Los campos nativos mantienen sus valores ISO y límites, con vista legible asociada.
+
+Se observó `2026-07-10` en el valor nativo y **10 / julio / 2026** en la vista de nacimiento/aplicación. El cambio previo del usuario **Marca comercial o Laboratorio (opcional)** se preservó. En el PDF real se conservaron ambas vacunas y se verificó visualmente **10 / septiembre / 2026**, ajustado en la columna sin invadir la siguiente, además de julio y la fecha de exportación.
+
+El formateador cubre bisiestos, meses completos, años menores de cien y fechas históricas inválidas que deben seguir siendo corregibles. Las cuatro suites de fechas, resumen y presentación pasaron **49/49** en cada zona: Bogotá, Nueva York y Kiritimati. No se modificaron cálculos, ordenación, JSON técnico, respaldos ni valores `dateTime`.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

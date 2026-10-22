@@ -16,6 +16,7 @@ import { UNIDENTIFIED_PRODUCT_ID } from '@/data/catalog';
 import { resolveSelection } from '@/lib/schedule/resolveCoverage';
 import { getRegistrationStages } from '@/lib/schedule/referencePresentation';
 import { milestoneLabels, operationError, reviewLabels } from './presentation';
+import { formatCivilDate } from '@/lib/datePresentation';
 
 export function AdministrationForm({
   commandId,
@@ -249,6 +250,7 @@ export function AdministrationForm({
           <Label htmlFor="application-date">Fecha real de aplicación</Label>
           <Input
             id="application-date"
+            aria-describedby="application-date-preview"
             type="date"
             required
             min={child.birthDate}
@@ -256,6 +258,11 @@ export function AdministrationForm({
             value={input.appliedDate}
             onChange={(e) => update('appliedDate', e.target.value)}
           />
+          <p id="application-date-preview">
+            {input.appliedDate
+              ? formatCivilDate(input.appliedDate)
+              : 'Selecciona la fecha real de aplicación.'}
+          </p>
         </div>
         {(['brand', 'lot', 'provider'] as const).map((key, index) => (
           <div className="field" key={key}>

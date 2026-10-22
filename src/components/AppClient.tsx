@@ -36,6 +36,7 @@ import {
 import { calculateSchedule } from '@/lib/schedule/calculateSchedule';
 import { resolveCoverage } from '@/lib/schedule/resolveCoverage';
 import { summarizeSchedule } from '@/lib/schedule/summarizeSchedule';
+import { formatCivilDate } from '@/lib/datePresentation';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -535,7 +536,7 @@ export function AppClient() {
             onDelete={(event) =>
               setRemoval({
                 scope: 'administration',
-                label: `la aplicación de ${event.productName} del ${event.appliedDate}`,
+                label: `la aplicación de ${event.productName} del ${formatCivilDate(event.appliedDate)}`,
                 childId: event.childId,
                 administrationId: event.id,
               })

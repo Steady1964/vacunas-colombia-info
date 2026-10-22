@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { formatCivilDate } from '@/lib/datePresentation';
 import type {
   CivilDate,
   StoredProfile,
@@ -55,11 +56,11 @@ export function CarnetView({
       <dl className="carnet-metadata">
         <div>
           <dt>Fecha de nacimiento</dt>
-          <dd>{profile.birthDate}</dd>
+          <dd>{formatCivilDate(profile.birthDate)}</dd>
         </div>
         <div>
           <dt>Fecha de exportación</dt>
-          <dd>{today}</dd>
+          <dd>{formatCivilDate(today)}</dd>
         </div>
         <div>
           <dt>Aplicaciones registradas</dt>
@@ -93,7 +94,8 @@ export function CarnetView({
             <thead>
               <tr className="carnet-page-identity">
                 <th colSpan={4}>
-                  {profile.nickname} · Nacimiento: {profile.birthDate}
+                  {profile.nickname} · Nacimiento:{' '}
+                  {formatCivilDate(profile.birthDate)}
                 </th>
               </tr>
               <tr>
@@ -119,7 +121,9 @@ export function CarnetView({
               return (
                 <tbody key={a.id} className="carnet-application">
                   <tr>
-                    <td className="carnet-date">{a.appliedDate}</td>
+                    <td className="carnet-date">
+                      {formatCivilDate(a.appliedDate)}
+                    </td>
                     <td>
                       <strong>{a.productName}</strong>
                       <div className="carnet-detail">

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { VaccineDb } from '@/lib/db';
+import { formatCivilDate } from '@/lib/datePresentation';
 import type {
   CivilDate,
   FamilySnapshot,
@@ -88,7 +89,7 @@ export function SettingsView({
             <div className="review-row" key={p.id}>
               <strong>{p.nickname}</strong>
               <p>
-                {p.birthDate} ·{' '}
+                {formatCivilDate(p.birthDate)} ·{' '}
                 {p.primaryScheduleId
                   ? 'Esquema elegido'
                   : 'Pendiente de elegir esquema'}

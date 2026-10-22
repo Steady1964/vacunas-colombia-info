@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { getCatalog, getScheduleReference } from '@/data/catalog';
 import type { VaccineDb } from '@/lib/db';
+import { formatCivilDate } from '@/lib/datePresentation';
 import type {
   AdministrationCommand,
   AdministrationInput,
@@ -159,7 +160,7 @@ export function MigrationReviewPanel({
           <strong>
             {snapshot.profiles.find((p) => p.id === a.childId)?.nickname ??
               'Perfil no disponible'}{' '}
-            · {a.productName} · {a.appliedDate}
+            · {a.productName} · {formatCivilDate(a.appliedDate)}
           </strong>
           <p>{a.reviewReasons.map((r) => reviewLabels[r]).join('. ')}</p>
           <Button variant="outline" onClick={() => onEditAdministration(a)}>
