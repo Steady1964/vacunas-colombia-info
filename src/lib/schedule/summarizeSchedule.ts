@@ -63,11 +63,7 @@ export function summarizeSchedule(
       pending++;
     }
     items.push({ ...requirement, status });
-    if (
-      !covered &&
-      requirement.estimatedDate &&
-      requirement.estimatedDate >= today
-    ) {
+    if (!covered && requirement.estimatedDate) {
       if (!nextDate || requirement.estimatedDate < nextDate) {
         nextDate = requirement.estimatedDate;
         nextRequirementIds = [requirement.id];

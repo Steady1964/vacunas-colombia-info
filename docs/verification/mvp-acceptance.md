@@ -287,6 +287,22 @@ Verificación final de Tasks 26–29: formato, **105/105 pruebas en 13 archivos*
 
 **Límites:** impresión física, Safari/iOS/Android y nuevo deployment Vercel no comprobados. Los datos y PDF son ficticios y temporales, fuera del repositorio; no se usó el historial personal del usuario.
 
+## Task 30 — Primera dosis pendiente sin saltos
+
+**Resultado: pasa con regresión fallando antes y pasando después, motor y navegador de producción.** El selector anterior descartaba requisitos sin cubrir cuando su fecha estimada era anterior a hoy. Para nacimiento `2026-07-10`, con BCG y hepatitis B neonatal verificadas, devolvía noviembre en vez del primer grupo a 42 días.
+
+| Referencia 2026 | Fecha civil calculada |
+|---|---|
+| Primera etapa, 6 semanas | 21 / agosto / 2026 |
+| Segunda etapa, 12 semanas | 2 / octubre / 2026 |
+| Tercera etapa, 18 semanas | 13 / noviembre / 2026 |
+
+Ahora se selecciona el primer grupo fechado sin cobertura, incluso si está pasado. Cubrir solo parte de un grupo no salta sus requisitos restantes. Los estados y contadores de la ventana de 30 días conservan sus reglas; no se inventa una fecha de recuperación.
+
+En producción se crearon el perfil y ambas aplicaciones de nacimiento mediante la interfaz: el resumen mostró agosto y las dosis 1, no las dosis 3. Cambiar a la referencia histórica mostró 10 / septiembre / 2026 y 2 meses. Editar después una fecha de aplicación neonatal a septiembre no desplazó la primera referencia de agosto: el anclaje sigue siendo el nacimiento del perfil.
+
+**Precisión:** seis semanas son 42 días, no 45. Para este nacimiento, la edad calendario en la primera referencia es un mes y once días. La diferencia entre el 12 y el 13 de noviembre depende del nacimiento guardado; no se asumió el dato personal del usuario a partir de la fecha de aplicación.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |
