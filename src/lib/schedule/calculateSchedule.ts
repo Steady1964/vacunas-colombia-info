@@ -9,6 +9,21 @@ import type { ChildProfile, CivilDate } from '../types';
 export type ScheduledRequirement = Requirement & {
   estimatedDate: CivilDate | null;
   conditional: boolean;
+  timing?:
+    | {
+        kind: 'after-administration';
+        referenceDate: CivilDate | null;
+        appliedDate: CivilDate;
+        administrationId: string;
+        intervalDays: number;
+        sourceIds: string[];
+      }
+    | {
+        kind: 'needs-review';
+        referenceDate: CivilDate | null;
+        reason: string;
+        sourceIds: string[];
+      };
 };
 
 export function calculateSchedule(

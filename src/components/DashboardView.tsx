@@ -9,6 +9,8 @@ import {
   type PendingReference,
 } from '@/lib/schedule/pendingReferencePresentation';
 import type { ScheduleSummary } from '@/lib/schedule/summarizeSchedule';
+import { PrimarySeriesFollowUp } from './PrimarySeriesFollowUp';
+import { ReferenceTiming } from './ReferenceTiming';
 
 export function DashboardView({
   profile,
@@ -133,10 +135,12 @@ export function DashboardView({
           </p>
         )}
         <p>
-          La edad de referencia se cuenta desde el nacimiento, no desde hoy ni
-          desde una aplicación tardía.
+          Las edades de referencia se cuentan desde el nacimiento. La
+          continuación de pentavalente/polio puede usar el intervalo desde una
+          aplicación real confirmada, como se explica abajo.
         </p>
       </section>
+      <PrimarySeriesFollowUp items={summary.items} catalog={catalog} />
       <section className="card wide">
         <h2>Referencias pendientes</h2>
         <p>
@@ -153,12 +157,14 @@ export function DashboardView({
           title="Próximas vacunas PAI"
           entries={groups.pai}
           today={today}
+          catalog={catalog}
           emptyMessage="No hay requisitos PAI pendientes en la referencia seleccionada."
         />
         <PendingReferenceList
           title="Próximas vacunas No PAI"
           entries={groups.private}
           today={today}
+          catalog={catalog}
           emptyMessage="No hay referencias particulares pendientes seleccionadas. En Calendario puedes mostrar referencias opcionales por producto; no se activan automáticamente ni representan todas las vacunas privadas disponibles."
         />
         {groups.conditional.length > 0 && (
@@ -171,6 +177,7 @@ export function DashboardView({
               title="Acceso por confirmar"
               entries={groups.conditional}
               today={today}
+              catalog={catalog}
             />
           </>
         )}
@@ -184,11 +191,13 @@ function PendingReferenceList({
   title,
   entries,
   today,
+  catalog,
   emptyMessage,
 }: {
   title: string;
   entries: readonly PendingReference[];
   today: CivilDate;
+  catalog: Catalog;
   emptyMessage?: string;
 }) {
   return (
@@ -231,12 +240,18 @@ function PendingReferenceList({
                       <td>
                         {requirement.estimatedDate
                           ? formatCivilDate(requirement.estimatedDate)
-                          : 'Sin fecha documentada'}
+                          : requirement.timing?.kind === 'needs-review'
+                            ? 'Fecha de continuación por confirmar'
+                            : 'Sin fecha documentada'}
                         {isPast && (
                           <div className="mt-1 text-sm">
                             Referencia ya pasada
                           </div>
                         )}
+                        <ReferenceTiming
+                          requirement={requirement}
+                          catalog={catalog}
+                        />
                       </td>
                       <td>
                         <strong>{requirement.name}</strong>
@@ -246,7 +261,7 @@ function PendingReferenceList({
                           </div>
                         )}
                         <div className="mt-1 text-sm">
-                          Edad: {sourceAgeLabel}
+                          Edad de la referencia original: {sourceAgeLabel}
                         </div>
                         {requirement.note && (
                           <details className="mt-2">

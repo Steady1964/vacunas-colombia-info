@@ -34,6 +34,7 @@ import {
   setPreference,
 } from '@/lib/repository';
 import { calculateSchedule } from '@/lib/schedule/calculateSchedule';
+import { applyAdministrationIntervals } from '@/lib/schedule/applyAdministrationIntervals';
 import { resolveCoverage } from '@/lib/schedule/resolveCoverage';
 import { summarizeSchedule } from '@/lib/schedule/summarizeSchedule';
 import { formatCivilDate } from '@/lib/datePresentation';
@@ -154,7 +155,7 @@ export function AppClient() {
   const activeReference = activeReferenceId
     ? getScheduleReference(activeReferenceId)
     : undefined;
-  const scheduled =
+  const birthScheduled =
     profile &&
     catalog &&
     activeReference &&
@@ -163,8 +164,19 @@ export function AppClient() {
       ? calculateSchedule(profile, catalog, today, optionalIds)
       : null;
   const coverage =
-    profile && catalog && today && scheduled
-      ? resolveCoverage(profile, applications, scheduled, catalog, today)
+    profile && catalog && today && birthScheduled
+      ? resolveCoverage(profile, applications, birthScheduled, catalog, today)
+      : null;
+  const scheduled =
+    profile && catalog && today && birthScheduled && coverage
+      ? applyAdministrationIntervals(
+          profile,
+          catalog,
+          birthScheduled,
+          applications,
+          coverage,
+          today,
+        )
       : null;
   const summary =
     scheduled && coverage && today

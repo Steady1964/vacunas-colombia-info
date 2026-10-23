@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScheduleSelector } from './ScheduleSelector';
 import { milestoneLabels, reviewLabels, STATUS_LABELS } from './presentation';
+import { ReferenceTiming } from './ReferenceTiming';
 
 const CALENDAR_STATUS_LABELS: Record<keyof typeof STATUS_LABELS, string> = {
   ...STATUS_LABELS,
@@ -251,9 +252,15 @@ export function CalendarView({
           .map((r) => (
             <article className="event" key={r.id}>
               <div className="event-date">
-                <strong>{ageLabel(r.id)}</strong>
+                <strong>Referencia: {ageLabel(r.id)}</strong>
                 <br />
-                <span>Fecha estimada</span>
+                <span>
+                  {r.timing?.kind === 'after-administration'
+                    ? 'Desde aplicación real'
+                    : r.timing?.kind === 'needs-review'
+                      ? 'Continuación por confirmar'
+                      : 'Fecha estimada por edad'}
+                </span>
                 <br />
                 <time dateTime={r.estimatedDate ?? undefined}>
                   {formatCivilDate(r.estimatedDate ?? '')}
@@ -266,6 +273,7 @@ export function CalendarView({
                   {CALENDAR_STATUS_LABELS[r.status]}
                 </span>
                 <p>Dosis {r.doseNumber}</p>
+                <ReferenceTiming requirement={r} catalog={catalog} />
                 <details>
                   <summary>Enfermedad, acceso y fuentes</summary>
                   <p>

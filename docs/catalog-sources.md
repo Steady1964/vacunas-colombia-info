@@ -39,6 +39,15 @@ La combinación `CO-PAI-PRIMARY-2-4-6` + `CO-PAI-SHARED-2026-10` se conserva com
 - Se conserva `dpt-booster-1` como ID semántico estable, con etiqueta **Primer refuerzo DPT (en pentavalente)** y dosis 4 de la serie a `month-18`. En Esquema 2026, la correspondencia disponible es con `pentavalent-cellular`; no con DPT aislada. `dpt-booster-2` corresponde a dosis 5 / `year-5`. IPV usa dosis 4/5 para los refuerzos; PCV dosis 3 para su refuerzo.
 - Hepatitis B neonatal es un requisito independiente. Una hexavalente o pentavalente posterior no lo cumple automáticamente.
 
+### Intervalos derivados de aplicaciones reales
+
+La ampliación de seguimiento distingue **referencia por edad** de **fecha derivada de un antecedente real**. MinSalud, Primera Jornada de enero de 2026, p. 28, dice: «con un intervalo de 6 semanas entre cada aplicación», desde seis semanas de vida; el bloque de p. 27 se refiere a pentavalente/hexavalente en menores de un año. El texto remite a otras indicaciones técnicas desde los doce meses y declara transitoria la medida. **Seis semanas es el intervalo programático de esta referencia, no un mínimo clínico universal.**
+
+El cálculo derivado aplica 42 días a la dosis real anterior confirmada de la misma serie y perfil, sin usar BCG/HB neonatal como anclas y sin inventar aplicaciones intermedias. Revalida fuentes, composición, dosis/etapa, snapshots, fechas y secuencia; mantiene la referencia original por edad. En pentavalente e IPV separados se conservan los antecedentes y fechas de cada componente. No se calcula automáticamente una continuación cuyo antecedente sea ambiguo, duplicado, mixto, prematuro para la pauta o fuera del alcance infantil; queda por confirmar. El calendario histórico, refuerzos y otros biológicos no heredan esta regla.
+
+El lineamiento de hexavalente de septiembre de 2025, p. 11, documenta las seis enfermedades cubiertas mediante pentavalente + VIP frente a una hexavalente. Su tabla de p. 16 describe tres primarias hexavalentes y refuerzos pentavalente/VIP y DPT/VIP. **Esto no demuestra intercambiabilidad libre a mitad de la serie primaria.** Las dos formulaciones se muestran como comparación documentada de composición, no como una indicación de sustitución. La selección y elegibilidad individual requieren confirmación con el vacunador; registrar acceso particular no elimina estos límites ni altera el intervalo.
+
+
 ## Fichas oficiales de productos efectivamente leídas
 
 Todas se revisaron el **16/10/2026**. Fuentes extranjeras confirman composición/curso, no autorización local, financiación PAI, disponibilidad en Colombia o elegibilidad individual.

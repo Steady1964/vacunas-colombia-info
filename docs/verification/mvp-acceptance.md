@@ -348,6 +348,33 @@ En desarrollo se creó una aplicación particular de hexavalente, dosis 1, prime
 
 La etiqueta preexistente del usuario se conserva. No se infiere la marca a partir de la categoría del biológico ni se modifica el esquema persistido.
 
+## Task 35 — Continuación desde aplicaciones reales
+
+**Resultado: pasa en motor y producción local.** Se añadió una capa derivada sobre el calendario por nacimiento, después de validar las correspondencias actuales y antes del resumen. No modifica aplicaciones, snapshots, catálogos inmutables ni respaldos. Usa el intervalo programático de seis semanas documentado para la serie primaria 2026; no se publica como mínimo clínico universal.
+
+Las regresiones fallaron primero por fechas/estados incorrectos, no por imports: una primera dosis tardía conservaba octubre 2 en vez de octubre 13. Una segunda regresión mostró que conservar la tercera referencia por nacimiento podía adelantarla a la segunda calculada; ahora falta de antecedente real deja esa continuación por confirmar, con la referencia original visible.
+
+Recorrido de producción con perfil ficticio nacido el 10 de julio, BCG/HB neonatal y dos aplicaciones particulares de hexavalente capturadas en la interfaz:
+
+| Acción real | Continuación observada |
+|---|---|
+| Primera hexavalente el 21 de agosto | Dosis 2 el 2 de octubre, seis semanas después. |
+| Editar primera aplicación al 1 de septiembre | Dosis 2 el 13 de octubre, no octubre 2. |
+| Registrar segunda aplicación el 13 de octubre | Dosis 3 el 24 de noviembre, no noviembre 13. |
+| Consultar Calendario | Pentavalente/IPV dosis 3 muestran noviembre 24, con edad original de 18 semanas y desglose del ancla real. |
+| Cambiar a referencia histórica y confirmar | Dosis 2 conserva referencia de cuatro meses, noviembre 10; desaparece la capa de seis semanas. Las cuatro aplicaciones, fechas y marcas siguen en Carné. |
+| Volver a Esquema 2026 | Se recupera la continuación del 24 de noviembre sin reescribir eventos. |
+
+El resumen presenta hexavalente de una aplicación frente a pentavalente **+ IPV** de dos, solo con correspondencias y fuentes verificadas para la etapa. Explica que composición compartida no autoriza intercambiar fabricantes/productos a mitad de serie, y que el acceso PAI a hexavalente es restringido. No se programan por esta regla los demás biológicos, refuerzos, cursos particulares sin fecha documentada o continuaciones desde doce meses.
+
+La prueba de marca se repitió en producción: editar a un laboratorio no catalogado, guardar y recargar recuperó el texto exacto y los motivos de revisión; restaurar Hexaxim recuperó la correspondencia. El respaldo real exportado contiene las dos marcas, fechas, dosis y lotes originales, sin metadatos derivados `timing`. El PDF A4 generado incluye las cuatro aplicaciones y ambas marcas; no imprime pendientes ni ayuda de revisión.
+
+Se inspeccionó visualmente la tarjeta móvil y se midieron **320, 390 y 1280 px** sin overflow horizontal de página. Con el servidor de producción detenido se recargó, se recuperó noviembre 24 y se editó la segunda marca a **HEXAXIM**; otra recarga offline conservó exactamente ese texto, lote, dosis y correspondencia. **Cero errores del navegador de producción** durante el recorrido.
+
+Verificación final: **169/169 pruebas en 16 archivos**, formato y build Next 16.4.2 correctos. Las tres suites temporales/calendario pasaron **59/59** en Bogotá, Nueva York y Kiritimati. Revisión independiente del código sin hallazgos accionables. Sin dependencias nuevas, cambio de formato persistido ni publicación Vercel.
+
+**Límites:** no hubo revisión clínica independiente ni prueba en dispositivos físicos/impresora. Las fuentes respaldan el alcance indicado, no una recomendación personalizada de rescate o sustitución. El historial del usuario no fue inspeccionado. El servidor de desarrollo preexistente del usuario se dejó intacto.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |
