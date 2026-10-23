@@ -50,6 +50,56 @@ describe('cobertura por producto, dosis y etapa', () => {
     expect(events).toEqual(before);
   });
 
+  it('uses the selected biologic, not its laboratory text, to link one hexavalent dose', () => {
+    const catalog = getCatalog(CURRENT_CATALOG_VERSION)!;
+    const profile = makeProfile({ birthDate: '2026-07-10' });
+    const input = {
+      productId: 'hexavalent-acellular',
+      brand: 'Sanofi',
+      doseNumber: 1,
+      milestoneId: 'primary-1',
+    };
+    const selection = resolveSelection(input, catalog);
+    expect(selection).toEqual({
+      coveredRequirementIds: ['penta-1', 'ipv-1'],
+      coverageStatus: 'verified',
+      reviewReasons: [],
+    });
+    const event = makeAdministration({
+      ...input,
+      ...selection,
+      productName: 'Hexaxim',
+      appliedDate: '2026-08-25',
+    });
+    const result = resolveCoverage(
+      profile,
+      [event],
+      calculateSchedule(profile, catalog, FIXED_TODAY, []),
+      catalog,
+      FIXED_TODAY,
+    );
+    expect([...result.coveredRequirementIds].sort()).toEqual([
+      'ipv-1',
+      'penta-1',
+    ]);
+    expect(result.reviewByAdministrationId.has(event.id)).toBe(false);
+  });
+
+  it('does not identify a manual biologic from a commercial brand alone', () => {
+    const catalog = getCatalog(CURRENT_CATALOG_VERSION)!;
+    const result = resolveSelection(
+      {
+        productId: 'unidentified',
+        brand: 'Hexaxim',
+        doseNumber: 1,
+        milestoneId: 'primary-1',
+      },
+      catalog,
+    );
+    expect(result.coveredRequirementIds).toEqual([]);
+    expect(result.reviewReasons).toContain('unidentified-product');
+  });
+
   it('nunca promociona registros heredados, futuros o pertenecientes a otro niño', () => {
     const catalog = getCatalog(CURRENT_CATALOG_VERSION)!;
     const profile = makeProfile({ referenceCatalogVersion: catalog.version });

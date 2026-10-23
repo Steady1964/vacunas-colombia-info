@@ -81,8 +81,20 @@ function selectionCoverage(
       brand &&
       product.brands.length > 0 &&
       !product.brands.some((known) => known.toLocaleLowerCase('es') === brand)
-    )
-      reviewReasons.push('unidentified-product');
+    ) {
+      // This optional field can contain a laboratory, not just a commercial
+      // brand. Only a known incompatible brand contradicts the selected product.
+      for (const candidate of index.products.values()) {
+        if (
+          candidate.brands.some(
+            (known) => known.toLocaleLowerCase('es') === brand,
+          )
+        ) {
+          reviewReasons.push('unidentified-product');
+          break;
+        }
+      }
+    }
     const sourceIds = [...product.sourceIds, ...(rule?.sourceIds ?? [])];
     if (
       sourceIds.length === 0 ||

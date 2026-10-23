@@ -228,8 +228,10 @@ export function applyAdministrationIntervals(
         return review(
           'El antecedente queda fuera del alcance de esta pauta: desde seis semanas y antes de cumplir un año.',
         );
-      const brand =
-        application.brand?.trim().toLocaleLowerCase('es') || undefined;
+      const recordedBrand = application.brand?.trim().toLocaleLowerCase('es');
+      const brand = product.brands.find(
+        (known) => known.toLocaleLowerCase('es') === recordedBrand,
+      );
       if (
         (courseProduct !== undefined &&
           courseProduct !== application.productId) ||

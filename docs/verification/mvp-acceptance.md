@@ -375,6 +375,16 @@ Verificación final: **169/169 pruebas en 16 archivos**, formato y build Next 16
 
 **Límites:** no hubo revisión clínica independiente ni prueba en dispositivos físicos/impresora. Las fuentes respaldan el alcance indicado, no una recomendación personalizada de rescate o sustitución. El historial del usuario no fue inspeccionado. El servidor de desarrollo preexistente del usuario se dejó intacto.
 
+## Task 36 — Laboratorio no confundido con marca comercial
+
+La captura aportada identificó la causa que la corrección anterior de etiquetas no resolvía: el campo aceptaba laboratorio, pero el motor rechazaba cualquier texto distinto de las marcas del producto. No era un problema de aplicación física ni una nueva equivalencia clínica.
+
+Las regresiones fallaron primero: hexavalente + Sanofi no cubría penta/IPV y la secuencia laboratorio/marca impedía calcular una tercera dosis coherente. Ahora el biológico seleccionado explícitamente, la dosis, etapa y fuentes determinan la correspondencia. El campo administrativo no la invalida por ser un laboratorio. Una marca comercial reconocida y contradictoria sigue por revisar; escribir una marca sin seleccionar el producto no lo identifica.
+
+Se ejecutaron **55/55** pruebas focales de cobertura, intervalos y repositorio. En navegador de desarrollo se creó una aplicación ficticia con biológico hexavalente, nombre Hexaxim, laboratorio Sanofi, dosis 1, primera etapa y fecha 25 de agosto. La previsualización y Carné indicaron correspondencia verificada; Calendario mostró **pentavalente 1 e IPV 1 aplicadas**, sin marcar las dosis 2, cuya referencia pasó a octubre 6. Las etiquetas y ayuda describen el nuevo criterio.
+
+Esta tarea corrige nuevas capturas/ediciones. La reparación automática de snapshots ya guardados con el rechazo anterior se verifica en Task 37; no se pretende resolverla solo cambiando el mensaje.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

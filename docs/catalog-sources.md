@@ -75,6 +75,8 @@ No se verificaron: el expediente INVIMA de cada marca, equivalencia de cada form
 
 Las reglas monovalentes y de referencia PAI se limitan al biológico identificado y la etapa explícita del afiche: BCG; HB neonatal; IPV; neumococo **conjugado** en curso PAI; influenza en primovacunación de misma cepa confirmada; FA; SRP; varicela monovalente; HA del curso PAI; y DPT del segundo refuerzo. No infieren formulación, cepa, marca ni número de dosis a partir de texto libre. Si esas condiciones no están confirmadas, se debe capturar como producto no identificado o sin etapa y conservar la aplicación por revisar. El producto `unidentified` carece de componentes y reglas.
 
+La identificación del biológico usa la selección explícita del catálogo, dosis, etapa y fuentes verificadas. El campo opcional de marca/laboratorio conserva texto administrativo; un laboratorio no se compara como si fuera una marca comercial. Un texto no catalogado no identifica productos por sí solo ni invalida una selección completa. Se conserva la revisión cuando una marca reconocida contradice el vocabulario específico del producto elegido. El seguimiento distingue cambios entre marcas comerciales reconocidas de simples diferencias entre laboratorio y marca; no certifica intercambiabilidad ni modifica las correspondencias clínicas.
+
 ## Excel y registro de cambios de esta referencia
 
 El Excel `Esquema de Vacunacion Colombia - PAI, Vacunas Acelulares, Tarifas y Puntos de Atencion.xlsx` permanece exclusivamente como referencia **local de desarrollo**. No se subió a un servidor ni se usa como evidencia clínica; no se copiaron ejemplos familiares, tarifas, IPS, recomendaciones de medicamentos ni comparativas comerciales al catálogo.

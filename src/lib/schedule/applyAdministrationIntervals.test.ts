@@ -104,6 +104,22 @@ describe('actual-administration primary intervals', () => {
     }
   });
 
+  it('does not mistake laboratory text for a change of commercial brand', () => {
+    const { result } = pipeline([
+      injection(1, '2026-09-01', { brand: 'Sanofi' }),
+      injection(2, '2026-10-13', { brand: 'Hexaxim' }),
+    ]);
+    for (const id of ['penta-3', 'ipv-3']) {
+      expect(result.find((row) => row.id === id)).toMatchObject({
+        estimatedDate: '2026-11-24',
+        timing: {
+          kind: 'after-administration',
+          administrationId: 'application-2',
+        },
+      });
+    }
+  });
+
   it('does not cascade a projected second dose into a fabricated third', () => {
     const { result } = pipeline([injection(1, '2026-09-01')]);
     expect(result.find((row) => row.id === 'penta-2')?.estimatedDate).toBe(
@@ -200,7 +216,6 @@ describe('actual-administration primary intervals', () => {
   });
 
   it.each([
-    ['unknown brand', { brand: 'Raw unrecognized lab' }],
     ['unknown stage', { milestoneId: undefined }],
     ['future date', { appliedDate: '2027-01-01' }],
     ['before birth', { appliedDate: '2026-07-09' }],

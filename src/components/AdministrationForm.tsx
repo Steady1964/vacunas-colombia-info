@@ -271,11 +271,11 @@ export function AdministrationForm({
                   ))}
                 </datalist>
                 <p id="brand-help" className="muted">
-                  Este valor sí se guarda y aparece en el carné. Puedes elegir
-                  una sugerencia o escribir lo que figura en el soporte; no se
-                  completa automáticamente al elegir el biológico. Una marca o
-                  laboratorio no reconocido se conserva por verificar, sin
-                  confirmar su correspondencia.
+                  Se guarda literalmente en el carné. Puedes elegir una marca
+                  sugerida o escribir el laboratorio del soporte; elegir el
+                  biológico no completa este campo. El laboratorio no invalida
+                  el producto seleccionado. Una marca comercial reconocida de
+                  otro biológico sí requiere revisar la selección.
                 </p>
               </>
             )}

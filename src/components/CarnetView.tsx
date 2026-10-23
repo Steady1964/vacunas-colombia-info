@@ -81,9 +81,10 @@ export function CarnetView({
             aplicado ni que deba repetirse.
           </p>
           <p>
-            «Biológico o marca sin confirmar» puede indicar captura manual, un
-            producto no disponible o una marca/laboratorio que el catálogo no
-            reconoce. Escribir un nombre no confirma su composición.
+            «Biológico sin identificar o marca de otro producto» puede indicar
+            captura manual, un producto no disponible o una marca comercial
+            contradictoria. Escribir el laboratorio no invalida un biológico
+            seleccionado; el nombre libre tampoco identifica su composición.
           </p>
           <p>
             «Registro guardado sin enlace confirmado al esquema» indica que
