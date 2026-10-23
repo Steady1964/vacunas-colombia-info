@@ -113,6 +113,8 @@ Los datos familiares permanecen en IndexedDB del navegador y no se sincronizan c
 
 La aplicación conserva la base IndexedDB `vacunas-colombia` y transforma el esquema anterior mediante una transacción versionada. Preserva IDs, fechas reales, marcas, lote, IPS y notas; no elimina automáticamente posibles duplicados.
 
+La actualización local de base **3 → 4** repara los registros completos que el validador anterior rechazó únicamente por confundir laboratorio con marca. Revalida producto seleccionado, dosis/etapa, fuentes, perfil y fechas; actualiza solo su correspondencia, conservando ID, nombre, marca/laboratorio, lote, IPS, notas, timestamps y procedencia. No exige editar ni volver a registrar esa aplicación. Los registros manuales o con otros motivos pendientes no se promocionan. La importación de respaldos v2 aplica la misma reparación para no restaurar el rechazo antiguo.
+
 Las aplicaciones heredadas requieren revisión antes de conceder cobertura. Perfiles sin esquema piden una elección consciente; filas incoherentes o sin perfil permanecen como registros pendientes, exportables y corregibles. Un fallo de apertura o migración nunca autoriza borrar los datos automáticamente.
 
 En **Ajustes → Revisar registros conservados** puedes corregir una aplicación o una incidencia sin perder su identificador ni sus datos originales. Un perfil pendiente necesita elegir esquema. Reparar una aplicación huérfana exige elegir y confirmar el niño destino; resolver una fila no elimina las demás incidencias. Las fechas futuras o anteriores al nacimiento heredadas permanecen señaladas, no se convierten automáticamente en cobertura.

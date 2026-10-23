@@ -385,6 +385,32 @@ Se ejecutaron **55/55** pruebas focales de cobertura, intervalos y repositorio. 
 
 Esta tarea corrige nuevas capturas/ediciones. La reparación automática de snapshots ya guardados con el rechazo anterior se verifica en Task 37; no se pretende resolverla solo cambiando el mensaje.
 
+## Task 37 — Reparación persistente de la correspondencia anterior
+
+**Resultado: pasa en migración real, importación y producción local.** La versión local 4 de IndexedDB repara únicamente snapshots cuyo rechazo anterior era `unidentified-product`, sin cobertura, con producto/dosis/etapa completos y texto administrativo no perteneciente a las marcas reconocidas. Revalida catálogo, fuentes, referencia, perfil y fechas. Un laboratorio no se convierte en alias de un producto.
+
+Solo cambian `coverageStatus`, `coveredRequirementIds` y `reviewReasons`; se conservan todos los campos capturados, timestamps y procedencia. Una procedencia histórica conservada no invalida una selección posterior explícita; los motivos de revisión heredada aún sin resolver sí bloquean la reparación. Los casos manuales, de otra marca comercial, sin etapa, con otros motivos, fechas incoherentes, perfil inexistente o catálogo no disponible permanecen intactos. La importación de respaldos v2 reutiliza el mismo criterio.
+
+Se observaron primero tres regresiones fallando por snapshots sin reparar y ausencia de actualización transaccional; después, dos fallos específicos de registros ya editados que conservaban procedencia. Las pruebas pasan tras corregir ambos límites y verifican reversión completa si falla la escritura de revisión, reapertura sin otra reparación y preservación de los registros no elegibles.
+
+Para el recorrido real se preparó un origen de prueba independiente con la compilación anterior y una base versión 3 que contenía una aplicación ficticia de Hexaxim/Sanofi rechazada por ese único motivo. Tras activar el worker de la compilación nueva y recargar, **sin editar ni importar la aplicación**:
+
+| Comprobación | Resultado |
+|---|---|
+| Versión de base | Dexie 3 → 4; versión nativa 30 → 40. |
+| Revisión de datos | 20 → 21, mantenida en 21 al volver a abrir. |
+| Registro persistido | Exactamente el original salvo los tres campos de correspondencia. |
+| Carné | Marca/laboratorio Sanofi, fecha agosto 25, lote, IPS y nota originales; correspondencia verificada. |
+| Calendario | Penta 1 e IPV 1 aplicadas; dosis 2 no aplicada y seguimiento desde la aplicación real a octubre 6. |
+| Respaldo antiguo importado | Previsualización: una aplicación idéntica, cero conflictos y cero registros por revisar; combinar no duplica ni restaura el error. |
+| Respaldo exportado | Una aplicación física, mismos datos originales y cobertura de penta 1/IPV 1. |
+
+Se guardó después una segunda aplicación real ficticia de Hexaxim/Sanofi para octubre 6: penta/IPV 1–2 quedaron aplicadas y las dosis 3 siguieron pendientes, con referencia de noviembre 17. Con el servidor detenido se recargó y persistieron ambas aplicaciones, marcas y estados. **Cero errores del navegador de producción.**
+
+Carné inspeccionado visualmente; en **320, 390 y 1280 px** no hubo overflow horizontal de página. La activación del worker se efectuó mediante su mensaje estándar y recarga en la prueba; no se certifica aquí la automatización del diálogo nativo de actualización. No se borraron cachés ni datos para obtener la reparación.
+
+Verificación final: formato, **188/188 pruebas en 16 archivos** y build Next 16.4.2 correctos; **60/60** casos de migración/cobertura/intervalos en cada zona Bogotá, Nueva York y Kiritimati. Revisión independiente sin hallazgos accionables. Sin dependencias, cambios de equivalencias clínicas, formato de respaldo, push ni despliegue Vercel. Datos ficticios aislados; no se abrió ni modificó el historial personal del usuario.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

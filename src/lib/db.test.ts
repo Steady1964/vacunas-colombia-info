@@ -1,8 +1,14 @@
 import Dexie from 'dexie';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeLegacyFamily, seedLegacyDatabase } from '../test/legacyDatabase';
 import { openDatabase, VaccineDb } from './db';
 import type { FamilySnapshot } from './types';
+import { CURRENT_CATALOG_VERSION, getCatalog } from '../data/catalog';
+import { FIXED_NOW, makeAdministration, makeProfile } from '../test/fixtures';
+import type { ChildProfile, VaccineAdministration } from './types';
+import { calculateSchedule } from './schedule/calculateSchedule';
+import { resolveCoverage } from './schedule/resolveCoverage';
+import { summarizeSchedule } from './schedule/summarizeSchedule';
 
 let sequence = 0;
 const databases: VaccineDb[] = [];
@@ -155,6 +161,190 @@ describe('database opening and transactional schema upgrades', () => {
       );
     } finally {
       if (original) Object.defineProperty(globalThis, 'indexedDB', original);
+    }
+  });
+});
+
+describe('repairing laboratory-only brand rejections', () => {
+  const profile = makeProfile({ birthDate: '2026-07-10' });
+  const rejected = makeAdministration({
+    productId: 'hexavalent-acellular',
+    productName: 'Hexaxim',
+    brand: 'Sanofi',
+    doseNumber: 1,
+    milestoneId: 'primary-1',
+    appliedDate: '2026-08-25',
+    lot: 'TEST-LOT',
+    provider: 'IPS de prueba',
+    notes: 'Conservar todos los datos capturados',
+    coverageStatus: 'needs-review',
+    coveredRequirementIds: [],
+    reviewReasons: ['unidentified-product'],
+  });
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(FIXED_NOW);
+  });
+  afterEach(() => vi.useRealTimers());
+
+  async function seedVersionThree(
+    name: string,
+    record: VaccineAdministration = rejected,
+    savedProfile: ChildProfile = profile,
+  ) {
+    const old = new Dexie(name);
+    old.version(3).stores({
+      profiles: 'id, nickname',
+      administrations: 'id, childId, appliedDate',
+      preferences: 'key',
+      migrationIssues: 'id, kind, childId',
+    });
+    try {
+      await old.open();
+      await old.table('profiles').put(savedProfile);
+      await old.table('administrations').put(record);
+      await old
+        .table('preferences')
+        .put({ key: 'internal:revision', value: 20 });
+    } finally {
+      old.close();
+    }
+  }
+
+  it.each([false, true])(
+    'repairs existing coverage once, retaining legacy provenance: %s',
+    async (withLegacy) => {
+      const record = {
+        ...rejected,
+        ...(withLegacy
+          ? {
+              legacy: {
+                raw: { vaccine: 'Nombre anterior', date: '2026-08-25' },
+                migratedAt: FIXED_NOW,
+                generatedTimestamps: false,
+              },
+            }
+          : {}),
+      };
+      const name = testName();
+      await seedVersionThree(name, record);
+      const db = await openDatabase(name);
+      databases.push(db);
+      const snapshot = await readPersistedFamily(db);
+      const repaired = snapshot.administrations[0];
+      expect(repaired).toEqual({
+        ...record,
+        coverageStatus: 'verified',
+        coveredRequirementIds: ['penta-1', 'ipv-1'],
+        reviewReasons: [],
+      });
+      expect(snapshot.revision).toBe(21);
+      const catalog = getCatalog(CURRENT_CATALOG_VERSION)!;
+      const schedule = calculateSchedule(profile, catalog, '2026-10-16', []);
+      const summary = summarizeSchedule(
+        schedule,
+        resolveCoverage(profile, [repaired], schedule, catalog, '2026-10-16'),
+        '2026-10-16',
+      );
+      expect(
+        summary.items
+          .filter((row) => row.status === 'applied')
+          .map((row) => row.id)
+          .sort(),
+      ).toEqual(['ipv-1', 'penta-1']);
+      db.close();
+      const reopened = await openDatabase(name);
+      databases.push(reopened);
+      expect(await readPersistedFamily(reopened)).toEqual(snapshot);
+    },
+  );
+
+  const unresolvedCases: {
+    name: string;
+    record?: Partial<VaccineAdministration>;
+    profile?: Partial<ChildProfile>;
+  }[] = [
+    { name: 'manual biologic', record: { productId: 'unidentified' } },
+    { name: 'missing stage', record: { milestoneId: undefined } },
+    { name: 'known contradictory brand', record: { brand: 'Rotarix' } },
+    {
+      name: 'another unresolved reason',
+      record: { reviewReasons: ['unidentified-product', 'unidentified-stage'] },
+    },
+    {
+      name: 'unconfirmed legacy provenance',
+      record: {
+        reviewReasons: ['legacy-unconfirmed', 'unidentified-product'],
+        legacy: {
+          raw: { product: 'Hexaxim' },
+          migratedAt: FIXED_NOW,
+          generatedTimestamps: false,
+        },
+      },
+    },
+    { name: 'before birth', record: { appliedDate: '2026-07-09' } },
+    { name: 'future date', record: { appliedDate: '2099-01-01' } },
+    { name: 'invalid date', record: { appliedDate: '2026-02-30' } },
+    { name: 'missing profile', record: { childId: 'other-child' } },
+    {
+      name: 'unavailable catalog',
+      profile: { referenceCatalogVersion: 'missing' },
+    },
+    { name: 'not a brand rejection', record: { brand: 'Hexaxim' } },
+    {
+      name: 'already verified snapshot',
+      record: {
+        coverageStatus: 'verified',
+        reviewReasons: [],
+        coveredRequirementIds: ['penta-1', 'ipv-1'],
+      },
+    },
+  ];
+  it.each(unresolvedCases)(
+    'does not promote or rewrite $name',
+    async (entry) => {
+      const name = testName();
+      const record = { ...rejected, ...entry.record };
+      const savedProfile = { ...profile, ...entry.profile };
+      await seedVersionThree(name, record, savedProfile);
+      const db = await openDatabase(name);
+      databases.push(db);
+      expect(await db.administrations.get(record.id)).toEqual(record);
+      expect((await readPersistedFamily(db)).revision).toBe(20);
+    },
+  );
+
+  it('rolls back the repaired application if its revision write fails', async () => {
+    const name = testName();
+    await seedVersionThree(name);
+    const upgrading = new VaccineDb(name);
+    databases.push(upgrading);
+    upgrading.preferences.hook('updating', () => {
+      throw new Error('injected-brand-repair-failure');
+    });
+    await expect(upgrading.open()).rejects.toThrow(
+      'injected-brand-repair-failure',
+    );
+    upgrading.close();
+    const old = new Dexie(name);
+    old.version(3).stores({
+      profiles: 'id, nickname',
+      administrations: 'id, childId, appliedDate',
+      preferences: 'key',
+      migrationIssues: 'id, kind, childId',
+    });
+    try {
+      await old.open();
+      expect(await old.table('administrations').get(rejected.id)).toEqual(
+        rejected,
+      );
+      expect(await old.table('preferences').get('internal:revision')).toEqual({
+        key: 'internal:revision',
+        value: 20,
+      });
+    } finally {
+      old.close();
     }
   });
 });

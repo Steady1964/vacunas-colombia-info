@@ -250,7 +250,7 @@ export function AdministrationForm({
             <Label htmlFor={key}>
               {
                 [
-                  'Marca comercial (opcional)',
+                  'Marca comercial o Laboratorio (opcional)',
                   'Lote (opcional)',
                   'IPS o prestador (opcional)',
                 ][index]

@@ -77,6 +77,8 @@ Las reglas monovalentes y de referencia PAI se limitan al biológico identificad
 
 La identificación del biológico usa la selección explícita del catálogo, dosis, etapa y fuentes verificadas. El campo opcional de marca/laboratorio conserva texto administrativo; un laboratorio no se compara como si fuera una marca comercial. Un texto no catalogado no identifica productos por sí solo ni invalida una selección completa. Se conserva la revisión cuando una marca reconocida contradice el vocabulario específico del producto elegido. El seguimiento distingue cambios entre marcas comerciales reconocidas de simples diferencias entre laboratorio y marca; no certifica intercambiabilidad ni modifica las correspondencias clínicas.
 
+La actualización técnica de snapshots rechazados por el criterio antiguo no añade equivalencias: vuelve a resolver la selección explícita con las fuentes y reglas actuales. Solo corrige el motivo aislado de rechazo por marca/laboratorio, con fecha válida y perfil/referencia disponibles. La procedencia histórica se conserva; la revisión heredada aún pendiente, la captura manual y cualquier otro motivo bloquean la reparación automática.
+
 ## Excel y registro de cambios de esta referencia
 
 El Excel `Esquema de Vacunacion Colombia - PAI, Vacunas Acelulares, Tarifas y Puntos de Atencion.xlsx` permanece exclusivamente como referencia **local de desarrollo**. No se subió a un servidor ni se usa como evidencia clínica; no se copiaron ejemplos familiares, tarifas, IPS, recomendaciones de medicamentos ni comparativas comerciales al catálogo.

@@ -87,6 +87,56 @@ afterEach(async () => {
 });
 
 describe('private validated v2 backups', () => {
+  it.each([false, true])(
+    'restores a laboratory-rejected hexavalent, retaining legacy provenance: %s',
+    async (withLegacy) => {
+      const rejected = makeAdministration({
+        productId: 'hexavalent-acellular',
+        productName: 'Hexaxim',
+        brand: 'Sanofi',
+        doseNumber: 1,
+        milestoneId: 'primary-1',
+        appliedDate: '2026-08-25',
+        coveredRequirementIds: [],
+        coverageStatus: 'needs-review',
+        reviewReasons: ['unidentified-product'],
+        lot: 'BACKUP-LOT',
+        provider: 'IPS de prueba',
+        notes: 'Texto original',
+        ...(withLegacy
+          ? {
+              legacy: {
+                raw: { vaccine: 'Nombre anterior', date: '2026-08-25' },
+                migratedAt: FIXED_NOW,
+                generatedTimestamps: false,
+              },
+            }
+          : {}),
+      });
+      const snapshot: FamilySnapshot = {
+        ...empty,
+        profiles: [makeProfile({ birthDate: '2026-07-10' })],
+        administrations: [rejected],
+      };
+      const text = textOf(snapshot);
+      const expected = {
+        ...rejected,
+        coverageStatus: 'verified',
+        coveredRequirementIds: ['penta-1', 'ipv-1'],
+        reviewReasons: [],
+      };
+      expect(parseBackup(text, context).administrations).toEqual([expected]);
+      const preview = previewImport(text, await readFamily(db), context);
+      await applyImport(db, preview, 'merge');
+      const restored = await readFamily(db);
+      expect(restored.administrations).toEqual([expected]);
+      expect(
+        parseBackup(serializeBackup(restored, FIXED_NOW), context)
+          .administrations,
+      ).toEqual([expected]);
+    },
+  );
+
   it('roundtrips all captured fields, pending profiles, issues and raw metadata without exporting revision', async () => {
     const migrated = parseBackup(JSON.stringify(makeLegacyFamily()), context);
     migrated.preferences = [

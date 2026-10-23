@@ -1,5 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import { migrateLegacyFamily } from './migration';
+import { todayCivil } from './civilDate';
+import { repairBrandRejection } from './repairBrandRejection';
 import type {
   JsonObject,
   LocalPreference,
@@ -52,6 +54,41 @@ export class VaccineDb extends Dexie {
           .put({ key: REVISION_KEY, value: 1 });
       });
     this.version(3).stores({ doses: null });
+    this.version(4)
+      .stores({})
+      .upgrade(async (transaction) => {
+        const profiles = new Map(
+          (await transaction.table<StoredProfile>('profiles').toArray()).map(
+            (profile) => [profile.id, profile],
+          ),
+        );
+        const administrations =
+          transaction.table<VaccineAdministration>('administrations');
+        const repaired: VaccineAdministration[] = [];
+        const today = todayCivil();
+        for (const application of await administrations.toArray()) {
+          const updated = repairBrandRejection(
+            application,
+            profiles.get(application.childId),
+            today,
+          );
+          if (updated) repaired.push(updated);
+        }
+        if (repaired.length === 0) return;
+        const preferences = transaction.table<LocalPreference>('preferences');
+        const value = (await preferences.get(REVISION_KEY))?.value;
+        const revision = value === undefined ? 0 : value;
+        if (
+          typeof revision !== 'number' ||
+          !Number.isSafeInteger(revision) ||
+          revision < 0
+        )
+          throw new Error('invalid-revision');
+        if (revision === Number.MAX_SAFE_INTEGER)
+          throw new Error('revision-overflow');
+        await administrations.bulkPut(repaired);
+        await preferences.put({ key: REVISION_KEY, value: revision + 1 });
+      });
   }
 }
 

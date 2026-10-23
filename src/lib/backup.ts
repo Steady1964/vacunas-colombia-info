@@ -9,6 +9,7 @@ import { REVISION_KEY, type VaccineDb } from './db';
 import { migrateLegacyFamily } from './migration';
 import { readRevision, repairActiveProfile } from './repository';
 import { resolveSelection } from './schedule/resolveCoverage';
+import { repairBrandRejection } from './repairBrandRejection';
 import {
   timestampSchema,
   vaccineAdministrationSchema,
@@ -269,6 +270,12 @@ export function parseBackup(text: string, context: ImportContext): BackupV2 {
       !(inheritedDate && administration.reviewReasons.includes('before-birth'))
     )
       throw new Error('before-birth');
+    const repaired = repairBrandRejection(
+      administration,
+      profile,
+      context.today,
+    );
+    if (repaired) Object.assign(administration, repaired);
     if (administration.coverageStatus !== 'verified') continue;
     const catalog = getCatalog(profile.referenceCatalogVersion);
     const selection = catalog
