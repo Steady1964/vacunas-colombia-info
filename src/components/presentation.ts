@@ -18,7 +18,7 @@ export const milestoneLabels: Record<string, string> = {
 
 export const reviewLabels: Record<ReviewReason, string> = {
   'unknown-schedule': 'Esquema sin identificar',
-  'unidentified-product': 'Producto sin identificar',
+  'unidentified-product': 'Biológico o marca sin confirmar en el catálogo',
   'unidentified-stage': 'Dosis o etapa sin identificar',
   'unverified-rule': 'Correspondencia o fuente por verificar',
   'invalid-date': 'Fecha inválida',
@@ -26,7 +26,7 @@ export const reviewLabels: Record<ReviewReason, string> = {
   'before-birth': 'Fecha anterior al nacimiento',
   'mixed-course': 'Curso con productos diferentes: confirmar con el vacunador',
   'missing-profile': 'Perfil de origen no disponible',
-  'legacy-unconfirmed': 'Registro sin correspondencia confirmada',
+  'legacy-unconfirmed': 'Registro guardado sin enlace confirmado al esquema',
 };
 
 export const STATUS_LABELS = {

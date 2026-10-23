@@ -72,6 +72,27 @@ export function CarnetView({
         prestador ni PAIWEB. La revisión indica correspondencia del registro, no
         certificación clínica.
       </p>
+      <details className="information-section no-print">
+        <summary>¿Qué significa «Por verificar con el vacunador»?</summary>
+        <div className="information-section-body">
+          <p>
+            La aplicación está guardada en este carné. Lo pendiente es confirmar
+            su enlace con una dosis del calendario; no significa que no se haya
+            aplicado ni que deba repetirse.
+          </p>
+          <p>
+            «Biológico o marca sin confirmar» puede indicar captura manual, un
+            producto no disponible o una marca/laboratorio que el catálogo no
+            reconoce. Escribir un nombre no confirma su composición.
+          </p>
+          <p>
+            «Registro guardado sin enlace confirmado al esquema» indica que
+            faltan datos confirmados o una correspondencia documentada. Usa
+            Editar para revisar el producto, la marca, el número de dosis y la
+            etapa con el soporte de aplicación y el vacunador.
+          </p>
+        </div>
+      </details>
       {events.length ? (
         <div className="table-scroll">
           <table className="carnet-table">

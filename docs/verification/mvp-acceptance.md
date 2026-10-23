@@ -334,6 +334,12 @@ Verificación integrada Tasks 30–32: **135/135 pruebas en 15 archivos**, forma
 
 **Límites:** datos ficticios, no historial personal del usuario; instalación física, impresión física y Vercel no comprobados. El cambio previo del usuario en la etiqueta de laboratorio se conservó fuera de los commits de estas tareas.
 
+## Task 33 — Estados de revisión comprensibles
+
+Se abrió en el navegador de desarrollo el desplegable **¿Qué significa «Por verificar con el vacunador»?** de Carné. Distingue aplicación guardada, biológico/marca no reconocido y enlace al calendario aún no confirmado. Indica revisar producto, marca, dosis y etapa con el soporte, sin sugerir repetir la vacuna. Las etiquetas compartidas ya no presentan una marca desconocida como si necesariamente faltara seleccionar el producto.
+
+Se conservan los motivos técnicos y snapshots: el cambio no concede cobertura ni modifica aplicaciones. La ayuda no se imprime. Esta evidencia inicial corresponde al navegador de desarrollo, no a una certificación clínica ni al despliegue Vercel.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |
