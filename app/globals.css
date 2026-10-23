@@ -483,6 +483,89 @@ progress {
 .status-needs-review {
   background: #fff0df;
 }
+.event.application-event {
+  grid-template-columns: 155px minmax(0, 1fr);
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+.application-event .event-date {
+  font-size: 0.875rem;
+}
+.application-event .event-date time {
+  display: block;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+.application-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+.application-heading h3 {
+  flex: 1 1 220px;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.125rem;
+}
+.application-heading .tag {
+  margin: 0;
+  font-size: 0.875rem;
+}
+.application-recorded-name {
+  margin-bottom: 8px;
+}
+.application-metadata {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin: 16px 0;
+}
+.application-metadata dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.application-metadata dd {
+  margin: 4px 0 0;
+}
+.coverage-requirements {
+  margin-top: 16px;
+}
+.coverage-requirements .coverage-list {
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+.coverage-list li {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--cream);
+}
+.coverage-list li + li {
+  margin-top: 8px;
+}
+.coverage-list li span {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.875rem;
+}
+.application-event details > summary,
+.coverage-disclosure > summary {
+  min-height: 44px;
+}
+@media (max-width: 640px) {
+  .event.application-event {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px;
+  }
+}
 details {
   border-top: 1px solid var(--line);
   padding: 13px 0;

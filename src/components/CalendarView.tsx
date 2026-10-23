@@ -10,6 +10,7 @@ import type {
 import type { Catalog } from '@/data/catalog/types';
 import type { ScheduleSummary } from '@/lib/schedule/summarizeSchedule';
 import { getCalendarRecordReviews } from '@/lib/schedule/calendarAdministrationPresentation';
+import type { AppliedAdministrationGroup } from '@/lib/schedule/administrationCoveragePresentation';
 import { formatCivilDate } from '@/lib/datePresentation';
 import {
   getProductReferences,
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { ScheduleSelector } from './ScheduleSelector';
 import { milestoneLabels, reviewLabels, STATUS_LABELS } from './presentation';
 import { ReferenceTiming } from './ReferenceTiming';
+import { AppliedVaccineCard } from './AppliedVaccineCard';
 
 const CALENDAR_STATUS_LABELS: Record<keyof typeof STATUS_LABELS, string> = {
   ...STATUS_LABELS,
@@ -53,6 +55,7 @@ export function CalendarView({
   referenceId,
   catalog,
   summary,
+  coverageGroups,
   optionalIds,
   onScheduleChange,
   onOptionalChange,
@@ -64,6 +67,7 @@ export function CalendarView({
   referenceId: ScheduleReferenceId;
   catalog: Catalog;
   summary: ScheduleSummary;
+  coverageGroups: readonly AppliedAdministrationGroup[];
   optionalIds: string[];
   onScheduleChange: (id: ScheduleReferenceId) => void;
   onOptionalChange: (ids: string[]) => Promise<void>;
@@ -89,6 +93,23 @@ export function CalendarView({
     administrations,
     summary,
     reviewById,
+  );
+  const appliedGroups = coverageGroups.filter((group) =>
+    group.requirements.some(
+      (requirement) =>
+        filter === 'all' ||
+        (filter === 'pai'
+          ? requirement.access === 'pai'
+          : requirement.access !== 'pai'),
+    ),
+  );
+  const pendingRequirements = summary.items.filter(
+    (requirement) =>
+      requirement.status !== 'applied' &&
+      (filter === 'all' ||
+        (filter === 'pai'
+          ? requirement.access === 'pai'
+          : requirement.access !== 'pai')),
   );
 
   function ageLabel(requirementId: string) {
@@ -242,57 +263,87 @@ export function CalendarView({
           </div>
         </details>
       )}
+      <section aria-labelledby="calendar-applications">
+        <h3 id="calendar-applications">Vacunas realmente aplicadas</h3>
+        <p>
+          Una tarjeta por aplicación física, con su fecha real. Los requisitos
+          que cubre aparecen dentro: no son otras vacunas administradas.
+        </p>
+        <p className="muted">
+          El filtro considera los requisitos cubiertos, no quién financió la
+          aplicación. Una vacuna particular puede cubrir requisitos PAI.
+        </p>
+        {appliedGroups.length > 0 ? (
+          <div className="timeline">
+            {appliedGroups.map((group) => (
+              <AppliedVaccineCard
+                key={group.administration.id}
+                group={group}
+                catalog={catalog}
+              />
+            ))}
+          </div>
+        ) : (
+          <p>
+            No hay aplicaciones con cobertura confirmada para este filtro. Los
+            registros por revisar o fuera de la referencia siguen en Carné y en
+            el desplegable de revisión.
+          </p>
+        )}
+      </section>
+      <h3>Referencias pendientes</h3>
+      <p>
+        Estos son requisitos del calendario, no aplicaciones registradas. Cubrir
+        una dosis no marca las siguientes como aplicadas.
+      </p>
+      {pendingRequirements.length === 0 && (
+        <p>No hay requisitos pendientes para este filtro.</p>
+      )}
       <div className="timeline">
-        {summary.items
-          .filter(
-            (r) =>
-              filter === 'all' ||
-              (filter === 'pai' ? r.access === 'pai' : r.access !== 'pai'),
-          )
-          .map((r) => (
-            <article className="event" key={r.id}>
-              <div className="event-date">
-                <strong>Referencia: {ageLabel(r.id)}</strong>
-                <br />
-                <span>
-                  {r.timing?.kind === 'after-administration'
-                    ? 'Desde aplicación real'
-                    : r.timing?.kind === 'needs-review'
-                      ? 'Continuación por confirmar'
-                      : 'Fecha estimada por edad'}
-                </span>
-                <br />
-                <time dateTime={r.estimatedDate ?? undefined}>
-                  {formatCivilDate(r.estimatedDate ?? '')}
-                </time>
-              </div>
-              <div className="dotline" />
-              <div className="event-content">
-                <strong>{r.name}</strong>
-                <span className={`tag status-${r.status}`}>
-                  {CALENDAR_STATUS_LABELS[r.status]}
-                </span>
-                <p>Dosis {r.doseNumber}</p>
-                <ReferenceTiming requirement={r} catalog={catalog} />
-                <details>
-                  <summary>Enfermedad, acceso y fuentes</summary>
-                  <p>
-                    Previene: {r.disease}. Dosis {r.doseNumber}. Etapa:{' '}
-                    {ageLabel(r.id)}.
-                  </p>
-                  <p>
-                    {r.access === 'pai'
-                      ? 'Referencia PAI, sujeta a elegibilidad.'
-                      : r.access === 'private'
-                        ? 'Referencia particular / complementaria.'
-                        : 'Acceso condicional: confirmar elegibilidad con el vacunador.'}
-                  </p>
-                  {r.note && <p>{r.note}</p>}
-                  <SourceReferences ids={r.sourceIds} catalog={catalog} />
-                </details>
-              </div>
-            </article>
-          ))}
+        {pendingRequirements.map((r) => (
+          <article className="event" key={r.id}>
+            <div className="event-date">
+              <strong>Referencia: {ageLabel(r.id)}</strong>
+              <br />
+              <span>
+                {r.timing?.kind === 'after-administration'
+                  ? 'Desde aplicación real'
+                  : r.timing?.kind === 'needs-review'
+                    ? 'Continuación por confirmar'
+                    : 'Fecha estimada por edad'}
+              </span>
+              <br />
+              <time dateTime={r.estimatedDate ?? undefined}>
+                {formatCivilDate(r.estimatedDate ?? '')}
+              </time>
+            </div>
+            <div className="dotline" />
+            <div className="event-content">
+              <strong>{r.name}</strong>
+              <span className={`tag status-${r.status}`}>
+                {CALENDAR_STATUS_LABELS[r.status]}
+              </span>
+              <p>Dosis {r.doseNumber}</p>
+              <ReferenceTiming requirement={r} catalog={catalog} />
+              <details>
+                <summary>Enfermedad, acceso y fuentes</summary>
+                <p>
+                  Previene: {r.disease}. Dosis {r.doseNumber}. Etapa:{' '}
+                  {ageLabel(r.id)}.
+                </p>
+                <p>
+                  {r.access === 'pai'
+                    ? 'Referencia PAI, sujeta a elegibilidad.'
+                    : r.access === 'private'
+                      ? 'Referencia particular / complementaria.'
+                      : 'Acceso condicional: confirmar elegibilidad con el vacunador.'}
+                </p>
+                {r.note && <p>{r.note}</p>}
+                <SourceReferences ids={r.sourceIds} catalog={catalog} />
+              </details>
+            </div>
+          </article>
+        ))}
       </div>
       <section>
         <h3>Referencias de productos complementarios</h3>

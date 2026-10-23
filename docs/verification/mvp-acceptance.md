@@ -411,6 +411,16 @@ Carné inspeccionado visualmente; en **320, 390 y 1280 px** no hubo overflow hor
 
 Verificación final: formato, **188/188 pruebas en 16 archivos** y build Next 16.4.2 correctos; **60/60** casos de migración/cobertura/intervalos en cada zona Bogotá, Nueva York y Kiritimati. Revisión independiente sin hallazgos accionables. Sin dependencias, cambios de equivalencias clínicas, formato de respaldo, push ni despliegue Vercel. Datos ficticios aislados; no se abrió ni modificó el historial personal del usuario.
 
+## Task 38 — Calendario por aplicación física
+
+Se añadió un modelo de presentación que une cada aplicación con sus propios requisitos activos y confirmados por el motor actual. No altera correspondencias, contadores, fechas proyectadas ni datos persistidos. Agrupa por identificador de aplicación, no por fecha, marca o producto.
+
+Las seis regresiones fallaron primero con la agrupación ausente y pasaron después: hexavalente de una aplicación con dos requisitos; penta/IPV separadas el mismo día; aplicaciones distintas del mismo producto/fecha; exclusión de registros revisados y otros perfiles aunque exista cobertura agregada; fuentes y opcionales activos; etapas distintas y orden por fecha real sin mutación.
+
+En el navegador de desarrollo, una aplicación Hexaxim/Sanofi del 25 de agosto se mostró como **una tarjeta de hexavalente**, con fecha real, dosis/etapa y una sola etiqueta Aplicada. Dentro figuraron penta/IPV 1 como **Cubierto por Hexaxim**; las siguientes dosis permanecieron en referencias pendientes. Filtro PAI: una tarjeta; complementarias: ninguna para esa aplicación de cobertura PAI. En 390 px la tarjeta pasó a una columna y no hubo overflow de página; se inspeccionó visualmente la presentación.
+
+Las fuentes de los requisitos siguen accesibles en un desplegable. Las aplicaciones por revisar o fuera de la referencia conservan el panel de revisión y sus registros originales en Carné. Las pruebas focales pasan **6/6**; la verificación integrada de producción se registra con Task 39.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

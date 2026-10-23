@@ -37,6 +37,7 @@ import { calculateSchedule } from '@/lib/schedule/calculateSchedule';
 import { applyAdministrationIntervals } from '@/lib/schedule/applyAdministrationIntervals';
 import { resolveCoverage } from '@/lib/schedule/resolveCoverage';
 import { summarizeSchedule } from '@/lib/schedule/summarizeSchedule';
+import { getAppliedAdministrationGroups } from '@/lib/schedule/administrationCoveragePresentation';
 import { formatCivilDate } from '@/lib/datePresentation';
 import { Button } from '@/components/ui/button';
 import {
@@ -182,6 +183,16 @@ export function AppClient() {
     scheduled && coverage && today
       ? summarizeSchedule(scheduled, coverage, today)
       : null;
+  const coverageGroups =
+    profile && catalog && summary && coverage
+      ? getAppliedAdministrationGroups(
+          profile.id,
+          applications,
+          summary,
+          catalog,
+          coverage,
+        )
+      : [];
   const referenceUnavailable = Boolean(
     active && (!catalog || (profile && !activeReference)),
   );
@@ -521,6 +532,7 @@ export function AppClient() {
               referenceId={activeReferenceId}
               catalog={catalog}
               summary={summary}
+              coverageGroups={coverageGroups}
               administrations={applications}
               reviewById={coverage?.reviewByAdministrationId}
               onEditAdministration={editAdministration}
