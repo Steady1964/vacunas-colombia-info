@@ -340,6 +340,14 @@ Se abrió en el navegador de desarrollo el desplegable **¿Qué significa «Por 
 
 Se conservan los motivos técnicos y snapshots: el cambio no concede cobertura ni modifica aplicaciones. La ayuda no se imprime. Esta evidencia inicial corresponde al navegador de desarrollo, no a una certificación clínica ni al despliegue Vercel.
 
+## Task 34 — Captura persistente de marca o laboratorio
+
+El primer campo anterior guardaba solo una consulta transitoria: escribir **Hexaxim** y seleccionar hexavalente dejaba `brand` vacío, observado en el formulario real. Repositorio y esquema ya conservaban el campo `brand`; el problema identificado era la captura engañosa. Se eliminó esa búsqueda y se mantuvo un único campo real de marca/laboratorio, con sugerencias editables y ayuda sobre lo que se guarda.
+
+En desarrollo se creó una aplicación particular de hexavalente, dosis 1, primera etapa, fecha **1 / septiembre / 2026**, marca **Hexaxim** y lote de prueba. El carné mostró la marca y el formulario la recuperó después de recargar. Se editó a **Laboratorio de ejemplo sin catálogo** y la siguiente recarga recuperó el texto exacto, sin conceder correspondencia por esa marca. Se restauró Hexaxim mediante edición y volvió a mostrarse verificada. En 390 px, el diálogo midió 358 px, con márgenes de 16 px y sin overflow de página.
+
+La etiqueta preexistente del usuario se conserva. No se infiere la marca a partir de la categoría del biológico ni se modifica el esquema persistido.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

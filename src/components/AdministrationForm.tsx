@@ -56,13 +56,15 @@ export function AdministrationForm({
   const owner = useRef(child.id);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [productSearch, setProductSearch] = useState('');
   const inFlight = useRef(false);
   const pending = useRef<AdministrationCommand | null>(null);
 
+  const selectedProduct = catalog.products.find(
+    (product) => product.id === input.productId,
+  );
   const hasIdentifiedProduct =
     input.productId !== UNIDENTIFIED_PRODUCT_ID &&
-    catalog.products.some((product) => product.id === input.productId);
+    selectedProduct !== undefined;
   const selection = resolveSelection(input, catalog);
   const stages = getRegistrationStages(
     child,
@@ -120,22 +122,6 @@ export function AdministrationForm({
           {administration ? 'Editar aplicación' : 'Registrar aplicación real'}
         </legend>
         <div className="field">
-          <Label htmlFor="product-search">
-            Ingresa el nombre de la vacuna o la marca del biológico
-          </Label>
-          <Input
-            id="product-search"
-            type="search"
-            aria-describedby="product-search-help"
-            value={productSearch}
-            onChange={(e) => setProductSearch(e.target.value)}
-          />
-          <p id="product-search-help" className="muted">
-            Este texto filtra la lista «Producto o biológico». Elige el producto
-            en esa lista; escribir aquí no lo selecciona ni lo guarda.
-          </p>
-        </div>
-        <div className="field">
           <Label htmlFor="product">Producto o biológico</Label>
           <select
             id="product"
@@ -163,21 +149,16 @@ export function AdministrationForm({
                 Producto conservado no disponible: {input.productName}
               </option>
             )}
-            {catalog.products
-              .filter(
-                (p) =>
-                  p.id === input.productId ||
-                  p.id === UNIDENTIFIED_PRODUCT_ID ||
-                  `${p.name} ${p.brands.join(' ')}`
-                    .toLocaleLowerCase('es')
-                    .includes(productSearch.toLocaleLowerCase('es')),
-              )
-              .map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
+            {catalog.products.map((product) => (
+              <option key={product.id} value={product.id}>
+                {product.name}
+              </option>
+            ))}
           </select>
+          <p className="muted">
+            Selecciona el biológico según su composición en el carné. La marca o
+            el laboratorio se escribe por separado en el campo de abajo.
+          </p>
         </div>
         <div className="field">
           <Label htmlFor="product-name">
@@ -277,9 +258,27 @@ export function AdministrationForm({
             </Label>
             <Input
               id={key}
+              list={key === 'brand' ? 'known-brands' : undefined}
+              aria-describedby={key === 'brand' ? 'brand-help' : undefined}
               value={input[key] ?? ''}
               onChange={(e) => update(key, e.target.value)}
             />
+            {key === 'brand' && (
+              <>
+                <datalist id="known-brands">
+                  {selectedProduct?.brands.map((brand) => (
+                    <option key={brand} value={brand} />
+                  ))}
+                </datalist>
+                <p id="brand-help" className="muted">
+                  Este valor sí se guarda y aparece en el carné. Puedes elegir
+                  una sugerencia o escribir lo que figura en el soporte; no se
+                  completa automáticamente al elegir el biológico. Una marca o
+                  laboratorio no reconocido se conserva por verificar, sin
+                  confirmar su correspondencia.
+                </p>
+              </>
+            )}
           </div>
         ))}
         <div className="field">
