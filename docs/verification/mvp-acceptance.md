@@ -421,6 +421,31 @@ En el navegador de desarrollo, una aplicación Hexaxim/Sanofi del 25 de agosto s
 
 Las fuentes de los requisitos siguen accesibles en un desplegable. Las aplicaciones por revisar o fuera de la referencia conservan el panel de revisión y sus registros originales en Carné. Las pruebas focales pasan **6/6**; la verificación integrada de producción se registra con Task 39.
 
+## Task 39 — Desglose de cobertura en Carné
+
+**Resultado: pasa en producción local y offline.** Carné mantiene una fila por aplicación, todos sus datos, orden, edición y eliminación. Añade el desplegable cerrado **Qué cubre esta vacuna**, que reutiliza la misma correspondencia validada del Calendario. Un registro sin cobertura actual muestra una explicación explícita, no requisitos inferidos por nombre o fecha. La etiqueta administrativa ahora dice marca/laboratorio.
+
+Se probaron mediante formularios reales dos perfiles ficticios separados:
+
+| Caso | Presentación comprobada |
+|---|---|
+| Hexaxim/Sanofi particular, dosis 1 | Una tarjeta de hexavalente, fecha real agosto 25, una etiqueta Aplicada y penta/IPV 1 dentro como Cubierto por Hexaxim. Ningún evento aplicado separado de penta/IPV 1; las siguientes dosis permanecen pendientes. |
+| Dos aplicaciones PAI de penta e IPV el mismo día | Dos tarjetas independientes, cada una con su propio requisito; no se fusionan en una hexavalente. |
+| Captura manual con el mismo nombre Hexaxim y la misma fecha | Sigue por revisar en Carné/panel; su desplegable no hereda la cobertura del registro identificado. |
+| RotaTeq 3 sin referencia opcional seleccionada | No aparece como aplicación con requisitos activos. Tras elegir explícitamente su referencia se muestra su requisito particular, no dosis PAI inferidas. |
+| Filtros del perfil combinado | Todas: hexavalente y RotaTeq; PAI: solo hexavalente, aunque fue particular; complementarias: solo RotaTeq. |
+| Cambio de perfil y regreso | Cada perfil conserva únicamente sus aplicaciones y referencias seleccionadas. |
+
+En Carné se observaron tres filas del primer perfil, todos los desplegables cerrados inicialmente. Foco y Enter abrieron el de hexavalente con dos requisitos y el manual con su advertencia. El de RotaTeq mostró únicamente su tercera dosis particular. Los registros originales de ese perfil, incluidos sus campos y timestamps, permanecieron exactamente iguales al comparar IndexedDB antes y después de consultar, filtrar y cambiar de perfil.
+
+En **320, 390 y 1280 px**, Calendario y Carné no produjeron overflow de página. Las tarjetas pasaron a una columna en móvil y el carné conservó el desplazamiento interno de su tabla. Se inspeccionó visualmente la tarjeta móvil de producción.
+
+Se generó un **PDF A4 real con el desglose abierto**: una página, tres aplicaciones originales, fechas, lotes, IPS, marcas/laboratorios y notas conservados. Los desplegables y sus requisitos no se imprimieron ni crearon aplicaciones adicionales. Se extrajo el texto y se inspeccionó la miniatura real del PDF.
+
+Con el servidor detenido se recargó: se recuperaron las dos tarjetas confirmadas y tres filas físicas del perfil combinado; el desglose siguió funcionando por teclado, las referencias opcionales persistieron y no reaparecieron eventos aplicados duplicados. **Cero errores del navegador de producción.**
+
+Verificación integrada Tasks 38–39: formato, **194/194 pruebas en 17 archivos** y build Next 16.4.2 correctos. Las seis regresiones de atribución/agrupar por aplicación fallaron antes y pasaron después. Revisión independiente sin hallazgos accionables. Sin cambios de reglas clínicas, fechas del motor, fuentes, esquema de datos, dependencias o respaldo. Impresión física, dispositivos móviles físicos y Vercel no comprobados.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

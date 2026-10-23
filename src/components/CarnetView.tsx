@@ -10,10 +10,13 @@ import type {
   ReviewReason,
 } from '@/lib/types';
 import { milestoneLabels, reviewLabels } from './presentation';
+import type { AppliedAdministrationGroup } from '@/lib/schedule/administrationCoveragePresentation';
+import { CoverageRequirements } from './CoverageRequirements';
 
 export function CarnetView({
   profile,
   administrations,
+  coverageGroups,
   today,
   reviewById,
   onEdit,
@@ -21,12 +24,16 @@ export function CarnetView({
 }: {
   profile: StoredProfile;
   administrations: VaccineAdministration[];
+  coverageGroups: readonly AppliedAdministrationGroup[];
   today: CivilDate;
   reviewById?: Map<string, ReviewReason[]>;
   onEdit: (event: VaccineAdministration) => void;
   onDelete: (event: VaccineAdministration) => void;
 }) {
   const [ascending, setAscending] = useState(false);
+  const coverageByAdministrationId = new Map(
+    coverageGroups.map((group) => [group.administration.id, group]),
+  );
 
   const events = administrations
     .filter((a) => a.childId === profile.id)
@@ -140,6 +147,7 @@ export function CarnetView({
             </thead>
             {events.map((a) => {
               const reasons = reviewById?.get(a.id) ?? a.reviewReasons;
+              const group = coverageByAdministrationId.get(a.id);
               return (
                 <tbody key={a.id} className="carnet-application">
                   <tr>
@@ -159,9 +167,35 @@ export function CarnetView({
                           ? (milestoneLabels[a.milestoneId] ?? a.milestoneId)
                           : 'Por verificar con el vacunador'}
                       </div>
+                      <details className="coverage-disclosure no-print">
+                        <summary
+                          aria-label={`Qué cubre esta vacuna: ${a.productName}, ${formatCivilDate(a.appliedDate)}`}
+                        >
+                          Qué cubre esta vacuna
+                        </summary>
+                        {group ? (
+                          <>
+                            {group.product.name !== a.productName && (
+                              <p>
+                                Biológico identificado: {group.product.name}
+                              </p>
+                            )}
+                            <CoverageRequirements group={group} />
+                          </>
+                        ) : (
+                          <p>
+                            No hay requisitos confirmados para este registro en
+                            el calendario actual. Revisa el biológico, dosis,
+                            etapa y referencia con el soporte y el vacunador; no
+                            se asignan por semejanza de nombres.
+                          </p>
+                        )}
+                      </details>
                     </td>
                     <td>
-                      <div>Marca: {a.brand || 'No registrada'}</div>
+                      <div>
+                        Marca / laboratorio: {a.brand || 'No registrado'}
+                      </div>
                       <div>Lote: {a.lot || 'No registrado'}</div>
                       <div>
                         IPS / prestador: {a.provider || 'No registrado'}

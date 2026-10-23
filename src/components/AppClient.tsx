@@ -559,6 +559,7 @@ export function AppClient() {
             key={active.id}
             profile={active}
             administrations={applications}
+            coverageGroups={coverageGroups}
             today={today}
             reviewById={coverage?.reviewByAdministrationId}
             onEdit={editAdministration}
