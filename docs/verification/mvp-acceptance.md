@@ -473,6 +473,23 @@ Se sustituyó «Primera dosis pendiente de referencia» por **Próxima dosis · 
 
 Comprobado en el navegador aislado sobre el servidor de desarrollo local existente: título y esquema correctos, advertencia conservada y ningún overflow horizontal a **320 y 390 px**; se inspeccionó la captura real del viewport móvil. No se añadieron pruebas permanentes que fijen textos. La comprobación integrada de producción y suite existente se recoge en Task 42.
 
+## Task 42 — Icono reconocible e integración de los textos
+
+Se sustituyó el símbolo diagonal abstracto por un **frasco de vacuna con escudo y verificación**, con la misma paleta verde/menta/coral. `app/icon.svg` sigue siendo la fuente única; las cabeceras de carga y con datos usan ese recurso, con texto alternativo vacío porque el nombre de la app está al lado. Se regeneraron los tres PNG mediante el script Sharp existente, sin nuevas dependencias, cambios al manifiesto ni nuevos identificadores de instalación.
+
+**Verificación integrada Tasks 41–42:** formato, **203/203 pruebas en 17 archivos** y build Next 16.4.2/TypeScript correctos. No se añadieron pruebas de texto o de copia de assets. En producción local propia, puerto **3160**, se registraron por los formularios un perfil ficticio y las cinco aplicaciones del caso del 25 de agosto; el título nuevo identifica correctamente las dosis 2, la referencia seleccionada y el **6 / octubre / 2026**, sin cambiar los cálculos anteriores.
+
+| Superficie | Resultado observado |
+|---|---|
+| Cabecera con perfil | SVG nuevo cargado, proporción cuadrada conservada y nombre accesible sin duplicación del icono. |
+| Metadatos del documento | Enlaces al icono de navegador de 192 px y Apple Touch de 180 px; manifiesto con identidad, scope y URL inicial `/` conservados. |
+| Recursos PNG servidos | Tres respuestas HTTP 200 `image/png`, decodificadas en el navegador a **192×192**, **512×512** y **180×180**. Las dimensiones se comprobaron también con Sharp sobre los archivos generados. |
+| Inicio a 320, 390 y 1280 px | Nuevo título y cabecera sin overflow horizontal. Se inspeccionaron el PNG de 512 px y el viewport móvil real con el icono y la tarjeta de dosis 2. |
+| Servidor propio detenido, red offline y recarga | Título nuevo, fecha del 6 de octubre y cabecera recuperados; SVG y los tres PNG siguieron decodificando sin conexión. |
+| Carné e IndexedDB tras la consulta offline | Cinco aplicaciones físicas; perfiles y aplicaciones idénticos al snapshot anterior, incluidos IDs y timestamps. |
+
+**Cero errores del navegador de producción.** Sin cambios al motor, datos, reglas de cobertura, esquema de base, respaldo o proceso de actualización del worker. No se probó la renovación del icono de un acceso directo instalado en un sistema operativo físico ni el despliegue en Vercel.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

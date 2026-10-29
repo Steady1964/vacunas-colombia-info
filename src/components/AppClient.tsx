@@ -7,7 +7,6 @@ import {
   Info,
   Settings,
   ShieldCheck,
-  Syringe,
 } from 'lucide-react';
 import { useFamily } from '@/hooks/useFamily';
 import { useToday } from '@/hooks/useToday';
@@ -339,7 +338,7 @@ export function AppClient() {
       <main className="app">
         <header className="topbar">
           <div className="brand">
-            <Syringe />
+            <img src="/icon.svg" alt="" width={36} height={36} />
             Vacunas Colombia
           </div>
         </header>
@@ -372,7 +371,7 @@ export function AppClient() {
       <header className="topbar no-print">
         <div className="brand">
           <span className="brandmark">
-            <Syringe size={18} />
+            <img src="/icon.svg" alt="" width={36} height={36} />
           </span>
           Vacunas Colombia
         </div>
