@@ -22,7 +22,10 @@ export function PrimarySeriesFollowUp({
 
   const groups = new Map<string, RequirementView[]>();
   for (const item of nextByComponent.values()) {
-    const key = `${item.doseNumber}:${item.estimatedDate ?? 'review'}`;
+    const component = item.id.split('-')[0];
+    const series =
+      component === 'penta' || component === 'ipv' ? 'penta-ipv' : component;
+    const key = `${series}:${item.doseNumber}:${item.estimatedDate ?? 'review'}`;
     const group = groups.get(key) ?? [];
     group.push(item);
     groups.set(key, group);
@@ -52,11 +55,11 @@ export function PrimarySeriesFollowUp({
 
   return (
     <section className="card wide">
-      <h2>Siguiente dosis de la serie pentavalente / polio</h2>
+      <h2>Siguientes dosis según aplicaciones registradas</h2>
       <p>
-        Este seguimiento usa las aplicaciones reales confirmadas. Las dosis de
-        nacimiento no inician el intervalo de esta serie. Otras vacunas
-        pendientes pueden tener una fecha distinta.
+        Cada serie usa su propia aplicación anterior confirmada. BCG y hepatitis
+        B neonatal no inician estos intervalos. Las series pueden tener fechas
+        distintas.
       </p>
       {[...groups.entries()].map(([key, group]) => {
         const first = group[0];
@@ -77,7 +80,11 @@ export function PrimarySeriesFollowUp({
 
         return (
           <section className="mt-6" key={key}>
-            <h3>Dosis {dose} de la serie primaria</h3>
+            <h3>
+              {first.id.startsWith('penta-') || first.id.startsWith('ipv-')
+                ? `Pentavalente / polio · dosis ${dose}`
+                : first.name}
+            </h3>
             <p>
               <strong>
                 {first.estimatedDate

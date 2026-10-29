@@ -135,9 +135,10 @@ export function DashboardView({
           </p>
         )}
         <p>
-          Las edades de referencia se cuentan desde el nacimiento. La
-          continuación de pentavalente/polio puede usar el intervalo desde una
-          aplicación real confirmada, como se explica abajo.
+          Las primeras referencias se cuentan desde el nacimiento. En el Esquema
+          2026, la continuación de pentavalente/polio, rotavirus y neumococo usa
+          la aplicación anterior confirmada de cada serie, como se explica
+          abajo.
         </p>
       </section>
       <PrimarySeriesFollowUp items={summary.items} catalog={catalog} />

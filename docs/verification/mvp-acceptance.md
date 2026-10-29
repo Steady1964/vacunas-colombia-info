@@ -446,6 +446,27 @@ Con el servidor detenido se recargó: se recuperaron las dos tarjetas confirmada
 
 Verificación integrada Tasks 38–39: formato, **194/194 pruebas en 17 archivos** y build Next 16.4.2 correctos. Las seis regresiones de atribución/agrupar por aplicación fallaron antes y pasaron después. Revisión independiente sin hallazgos accionables. Sin cambios de reglas clínicas, fechas del motor, fuentes, esquema de datos, dependencias o respaldo. Impresión física, dispositivos móviles físicos y Vercel no comprobados.
 
+## Task 40 — Continuación de rotavirus y neumococo desde su dosis real
+
+**Resultado: pasa en producción local.** Se reprodujo el caso con perfil ficticio nacido el **9 de julio de 2026**; BCG y hepatitis B neonatal el **10 de julio**; hexavalente/Hexaxim, RotaTeq y neumococo conjugado del curso PAI, todos dosis 1/primera etapa, el **25 de agosto**. Antes del cambio, `rota-2` y `pcv-2` conservaban el **1 de octubre** desde nacimiento, mientras `penta-2`/`ipv-2` ya usaban el antecedente real.
+
+Nueve regresiones fallaron por fechas o estados incorrectos antes de implementar. Tras ampliar la capa derivada existente, **43/43** pruebas focales y **203/203** de la suite completa pasaron, junto con formato y build Next 16.4.2/TypeScript. Las 43 focales pasaron también en Bogotá, Nueva York y Kiritimati. Incluyen anclas independientes, duplicados, fechas inválidas/futuras, snapshots incompletos, fuentes por revisar, otro perfil y límites de edad de Rotarix/RotaTeq. No cambian las primeras dosis, referencias históricas, refuerzo de neumococo ni tercera opcional de RotaTeq.
+
+En Chromium aislado, puerto propio **3158**, se crearon el perfil y las cinco aplicaciones mediante los formularios reales:
+
+| Comprobación | Resultado observado |
+|---|---|
+| Inicio y Calendario con las tres primeras aplicaciones del 25 de agosto | Cuatro requisitos de dosis 2 con fecha **6 / octubre / 2026**, identificados como calculados desde aplicación real. |
+| Seguimiento de series simultáneas | Tres bloques visibles: pentavalente/polio, neumococo y rotavirus. Cada uno muestra su antecedente del 25 de agosto; los dos últimos no se ocultan dentro de las formulaciones combinadas. |
+| Editar solo RotaTeq al 1 de septiembre | Rotavirus 2 pasa al **13 de octubre**; las otras series siguen el 6. Restaurar el 25 de agosto devuelve el 6. |
+| Editar solo neumococo al 27 de agosto | Neumococo 2 pasa al **8 de octubre**; las otras series siguen el 6. Restaurar devuelve el 6. |
+| Carné | Exactamente cinco aplicaciones físicas, con dosis, etapas, marcas/laboratorios, lotes, prestador y notas conservados. No se crean aplicaciones por calcular fechas. |
+| Inicio a 320, 390 y 1280 px | Tres bloques de continuación y ningún overflow horizontal de página. Se inspeccionó una captura del viewport móvil real. |
+| Servidor propio detenido, red emulada offline y recarga | Inicio y los cuatro eventos de dosis 2 del Calendario conservan el 6 de octubre; Carné recupera las cinco aplicaciones. |
+| Comparación de IndexedDB antes/después de consultar y recargar | Perfiles y aplicaciones idénticos, incluidos IDs y timestamps. Los cambios de fecha anteriores fueron ediciones explícitas del fixture, restauradas antes de esta comparación. |
+
+**Cero errores del navegador.** Revisión independiente sin hallazgos accionables. Se conservan fechas por edad y fuentes como referencia separada; seis semanas no se presentan como mínimo clínico universal ni cita confirmada. No se añadieron citas manuales, migraciones, dependencias, versiones nuevas de catálogo ni equivalencias de productos. No se accedió a datos reales del usuario; Vercel y dispositivos físicos no comprobados.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |

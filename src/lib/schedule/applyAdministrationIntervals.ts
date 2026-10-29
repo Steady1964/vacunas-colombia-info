@@ -9,11 +9,26 @@ import { resolveSelection, type CoverageResult } from './resolveCoverage';
 const INTERVAL_DAYS = 42;
 const INTERVAL_SOURCE = 'minsalud-january-2026';
 const COMPOSITION_SOURCE = 'minsalud-hexavalent-2025';
-type Component = 'penta' | 'ipv';
+type Component = 'penta' | 'ipv' | 'rota' | 'pcv';
 
-// This overlays requirement timing, not permission to change products. The January
-// 2026 p. 28 interval applies to the selected shortened primary scheme under one
-// year; it is not a universal clinical minimum or a catch-up algorithm.
+const PRIMARY_PRODUCTS: Readonly<Record<Component, readonly string[]>> = {
+  penta: ['pentavalent-cellular', 'hexavalent-acellular'],
+  ipv: ['ipv', 'hexavalent-acellular'],
+  rota: ['rotarix', 'rotateq'],
+  pcv: ['pneumococcal-conjugate'],
+};
+
+const ROTAVIRUS_AGE_LIMITS: Readonly<
+  Record<string, { courseDays: number; firstDoseDays?: number }>
+> = {
+  rotarix: { courseDays: 168 },
+  rotateq: { courseDays: 224, firstDoseDays: 84 },
+};
+
+// The selected 2026 reference uses six-week primary steps (January guidance and
+// the childhood table). Continue each started series from its own real dose.
+// This is programmatic timing, not a universal clinical minimum, permission to
+// change products, or a catch-up algorithm; product age limits still apply.
 export function applyAdministrationIntervals(
   profile: ChildProfile,
   catalog: Catalog,
@@ -55,7 +70,7 @@ export function applyAdministrationIntervals(
   );
 
   const result = scheduled.map((row): ScheduledRequirement => {
-    const match = /^(penta|ipv)-([23])$/.exec(row.id);
+    const match = /^(penta|ipv|rota|pcv)-([23])$/.exec(row.id);
     if (
       !match ||
       row.access !== 'pai' ||
@@ -67,10 +82,9 @@ export function applyAdministrationIntervals(
     const component = match[1] as Component;
     const predecessorStage = Number(match[2]) - 1;
     const course = sameChild.filter((application) => {
-      const knownComponent =
-        application.productId === 'hexavalent-acellular' ||
-        application.productId ===
-          (component === 'penta' ? 'pentavalent-cellular' : 'ipv');
+      const knownComponent = PRIMARY_PRODUCTS[component].includes(
+        application.productId,
+      );
       const storedComponent = application.coveredRequirementIds.some((id) =>
         new RegExp(`^${component}-[123]$`).test(id),
       );
@@ -177,11 +191,9 @@ export function applyAdministrationIntervals(
       const expectedIds =
         application.productId === 'hexavalent-acellular'
           ? [`penta-${stage}`, `ipv-${stage}`]
-          : application.productId === 'pentavalent-cellular'
-            ? [`penta-${stage}`]
-            : application.productId === 'ipv'
-              ? [`ipv-${stage}`]
-              : [];
+          : PRIMARY_PRODUCTS[component].includes(application.productId)
+            ? [`${component}-${stage}`]
+            : [];
       const selection = resolveSelection(application, catalog);
       const snapshot = new Set(application.coveredRequirementIds);
       if (
@@ -228,6 +240,25 @@ export function applyAdministrationIntervals(
         return review(
           'El antecedente queda fuera del alcance de esta pauta: desde seis semanas y antes de cumplir un año.',
         );
+      const ageLimits = ROTAVIRUS_AGE_LIMITS[application.productId];
+      if (
+        ageLimits &&
+        (application.appliedDate >
+          addCivil(profile.birthDate, {
+            unit: 'days',
+            value: ageLimits.courseDays,
+          }) ||
+          (stage === 1 &&
+            ageLimits.firstDoseDays !== undefined &&
+            application.appliedDate >
+              addCivil(profile.birthDate, {
+                unit: 'days',
+                value: ageLimits.firstDoseDays,
+              })))
+      )
+        return review(
+          'El antecedente supera los límites de edad documentados para este producto de rotavirus; confirma el curso con el vacunador.',
+        );
       const recordedBrand = application.brand?.trim().toLocaleLowerCase('es');
       const brand = product.brands.find(
         (known) => known.toLocaleLowerCase('es') === recordedBrand,
@@ -268,6 +299,18 @@ export function applyAdministrationIntervals(
     if (estimatedDate >= firstBirthday)
       return review(
         'La siguiente fecha alcanza o supera los doce meses; la continuación necesita otras indicaciones técnicas del vacunador.',
+      );
+    const ageLimits = ROTAVIRUS_AGE_LIMITS[anchor.productId];
+    if (
+      ageLimits &&
+      estimatedDate >
+        addCivil(profile.birthDate, {
+          unit: 'days',
+          value: ageLimits.courseDays,
+        })
+    )
+      return review(
+        'La fecha calculada supera el límite de edad documentado para este producto de rotavirus; no se extrapola la pauta.',
       );
     return {
       ...row,

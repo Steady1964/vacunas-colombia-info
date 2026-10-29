@@ -66,6 +66,158 @@ function pipeline(
 }
 
 describe('actual-administration primary intervals', () => {
+  it('uses the recorded first-dose date for every series in the reported newborn card', () => {
+    const selectedProfile = { ...profile, birthDate: '2026-07-09' };
+    const applications = [
+      ...['bcg', 'hepatitis-b'].map((productId) => {
+        const selection = { productId, doseNumber: 1, milestoneId: 'birth' };
+        return makeAdministration({
+          id: productId,
+          childId: selectedProfile.id,
+          appliedDate: '2026-07-10',
+          ...selection,
+          ...resolveSelection(selection, catalog),
+        });
+      }),
+      ...['hexavalent-acellular', 'rotateq', 'pneumococcal-conjugate'].map(
+        (productId) => injection(1, '2026-08-25', { id: productId, productId }),
+      ),
+    ];
+    const saved = structuredClone(applications);
+    const { result, coverage } = pipeline(applications, selectedProfile);
+    const summary = summarizeSchedule(result, coverage, TODAY);
+
+    expect(summary.nextDate).toBe('2026-10-06');
+    expect(summary.nextRequirementIds.toSorted()).toEqual([
+      'ipv-2',
+      'pcv-2',
+      'penta-2',
+      'rota-2',
+    ]);
+    for (const id of ['penta-1', 'ipv-1', 'rota-1', 'pcv-1']) {
+      expect(summary.items.find((row) => row.id === id)?.status).toBe(
+        'applied',
+      );
+    }
+    for (const id of ['penta-2', 'ipv-2', 'rota-2', 'pcv-2']) {
+      expect(result.find((row) => row.id === id)).toMatchObject({
+        estimatedDate: '2026-10-06',
+        timing: {
+          kind: 'after-administration',
+          referenceDate: '2026-10-01',
+          appliedDate: '2026-08-25',
+          intervalDays: 42,
+        },
+      });
+    }
+    expect(
+      result.find((row) => row.id === 'rota-private-3')?.estimatedDate,
+    ).toBeNull();
+    expect(applications).toEqual(saved);
+  });
+
+  it('uses each biological series own predecessor rather than the latest unrelated application', () => {
+    const { result } = pipeline([
+      injection(1, '2026-08-25'),
+      injection(1, '2026-08-27', {
+        id: 'rotavirus-first',
+        productId: 'rotateq',
+      }),
+      injection(1, '2026-09-01', {
+        id: 'pneumococcal-first',
+        productId: 'pneumococcal-conjugate',
+      }),
+    ]);
+
+    for (const [id, date, anchor] of [
+      ['penta-2', '2026-10-06', 'application-1'],
+      ['ipv-2', '2026-10-06', 'application-1'],
+      ['rota-2', '2026-10-08', 'rotavirus-first'],
+      ['pcv-2', '2026-10-13', 'pneumococcal-first'],
+    ]) {
+      expect(result.find((row) => row.id === id)).toMatchObject({
+        estimatedDate: date,
+        timing: { administrationId: anchor },
+      });
+    }
+  });
+
+  it.each([
+    ['rotarix', 'rota-2'],
+    ['rotateq', 'rota-2'],
+    ['pneumococcal-conjugate', 'pcv-2'],
+  ])(
+    'validates the actual predecessor of %s before dating its continuation',
+    (productId, requirementId) => {
+      const first = injection(1, '2026-08-25', { productId });
+      const mutations: VaccineAdministration[][] = [
+        [first, { ...first, id: 'duplicate' }],
+        [{ ...first, milestoneId: undefined }],
+        [{ ...first, coverageStatus: 'needs-review' }],
+        [{ ...first, coveredRequirementIds: [] }],
+        [{ ...first, appliedDate: '2026-02-30' }],
+        [{ ...first, appliedDate: '2027-01-01' }],
+      ];
+
+      for (const applications of mutations) {
+        const { result } = pipeline(applications);
+        expect(result.find((row) => row.id === requirementId)).toMatchObject({
+          estimatedDate: null,
+          timing: { kind: 'needs-review', referenceDate: '2026-10-02' },
+        });
+      }
+      const { result, base } = pipeline([{ ...first, childId: 'other-child' }]);
+      expect(result).toEqual(base);
+      const changed: Catalog = {
+        ...catalog,
+        sources: catalog.sources.map((source) =>
+          source.id === 'minsalud-childhood-2026'
+            ? { ...source, verification: 'needs-review' as const }
+            : source,
+        ),
+      };
+      expect(
+        pipeline([first], profile, changed).result.find(
+          (row) => row.id === requirementId,
+        ),
+      ).toMatchObject({
+        estimatedDate: null,
+        timing: { kind: 'needs-review' },
+      });
+    },
+  );
+
+  it.each([
+    ['rotarix', '2026-11-13', '2026-12-25'],
+    ['rotateq', '2026-10-02', '2026-11-13'],
+  ])(
+    'keeps a %s continuation within its documented age boundary',
+    (productId, date, want) => {
+      expect(
+        pipeline([injection(1, date, { productId })]).result.find(
+          (row) => row.id === 'rota-2',
+        ),
+      ).toMatchObject({ estimatedDate: want });
+    },
+  );
+
+  it.each([
+    ['rotarix', '2026-11-14'],
+    ['rotateq', '2026-10-03'],
+  ])(
+    'requires review instead of exceeding the %s course age boundary',
+    (productId, date) => {
+      expect(
+        pipeline([injection(1, date, { productId })]).result.find(
+          (row) => row.id === 'rota-2',
+        ),
+      ).toMatchObject({
+        estimatedDate: null,
+        timing: { kind: 'needs-review' },
+      });
+    },
+  );
+
   it.each([
     ['2026-08-21', '2026-10-02'],
     ['2026-09-01', '2026-10-13'],
@@ -316,7 +468,7 @@ describe('actual-administration primary intervals', () => {
     });
   });
 
-  it('does not derive an interval from free text or an unrelated biological', () => {
+  it('does not derive an interval from an unconfirmed free-text vaccine name', () => {
     const { base, result } = pipeline([
       makeAdministration({
         childId: profile.id,
@@ -324,7 +476,6 @@ describe('actual-administration primary intervals', () => {
         brand: 'Hexaxim',
         appliedDate: '2026-09-01',
       }),
-      injection(1, '2026-09-01', { productId: 'rotarix', id: 'rotavirus' }),
     ]);
     expect(result).toEqual(base);
   });
