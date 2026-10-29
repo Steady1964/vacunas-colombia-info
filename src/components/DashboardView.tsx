@@ -99,17 +99,23 @@ export function DashboardView({
         <p>{eventCount} aplicaciones físicas en el carné.</p>
       </section>
       <section className="card">
-        <div className="eyebrow">Primera dosis pendiente de referencia</div>
+        <div className="eyebrow">Próxima dosis · fecha de referencia</div>
         <h2 className="break-words">
           {summary.nextDate
             ? formatCivilDate(summary.nextDate)
             : 'Sin fecha orientativa confirmada'}
         </h2>
+        <p>
+          Esquema seleccionado: {referenceLabel}. Esta fecha es orientativa, no
+          una cita confirmada.
+        </p>
         {next.length > 0 ? (
           <>
-            <p>Edad de referencia según la fuente: {nextSourceAges}.</p>
+            <p>Edad prevista en el esquema: {nextSourceAges}.</p>
             {next[0].calendarAgeLabel && (
-              <p>Edad calendario en esa fecha: {next[0].calendarAgeLabel}.</p>
+              <p>
+                Edad del bebé en la fecha calculada: {next[0].calendarAgeLabel}.
+              </p>
             )}
             <ul>
               {next.map(({ requirement }) => (

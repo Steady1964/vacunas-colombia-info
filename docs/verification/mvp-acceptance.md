@@ -467,6 +467,12 @@ En Chromium aislado, puerto propio **3158**, se crearon el perfil y las cinco ap
 
 **Cero errores del navegador.** Revisión independiente sin hallazgos accionables. Se conservan fechas por edad y fuentes como referencia separada; seis semanas no se presentan como mínimo clínico universal ni cita confirmada. No se añadieron citas manuales, migraciones, dependencias, versiones nuevas de catálogo ni equivalencias de productos. No se accedió a datos reales del usuario; Vercel y dispositivos físicos no comprobados.
 
+## Task 41 — Próxima dosis y significado de la referencia
+
+Se sustituyó «Primera dosis pendiente de referencia» por **Próxima dosis · fecha de referencia**, sin cambiar selección de requisitos, estados, fechas ni correspondencias. La tarjeta identifica el esquema seleccionado y aclara que la fecha es orientativa, no una cita confirmada. Las etiquetas **Edad prevista en el esquema** y **Edad del bebé en la fecha calculada** separan la etapa documental de la edad calendario del bebé.
+
+Comprobado en el navegador aislado sobre el servidor de desarrollo local existente: título y esquema correctos, advertencia conservada y ningún overflow horizontal a **320 y 390 px**; se inspeccionó la captura real del viewport móvil. No se añadieron pruebas permanentes que fijen textos. La comprobación integrada de producción y suite existente se recoge en Task 42.
+
 ## Fuentes clínicas y vigencia
 
 | Fuente o conjunto | Estado documental | Límite de aceptación |
